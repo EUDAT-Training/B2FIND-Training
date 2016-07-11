@@ -1,0 +1,31 @@
+##+++ List of OAI requests, specified by
+##+++       - a project name
+##+++       - the OAI URL (harvest entry point), 
+##+++       - the harvest request (verb: ListIdentifiers or ListRecords),
+##+++       - the MD format or metadataPrefix and
+##+++       - (optional) the OAI sub set
+##+++    will be harvested, converted or/and uploaded by the MD manager
+##+++    mdmanager.py depending on the given mode (option --mode [h|c|u] )
+##++       and given project name (option -c projectName)
+###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+## community         OAI URL                                verb           metadataPrefix  set
+## -----------------------------------------------------------------------------------
+## MyProjects
+lakeplants http://localhost:8181/oai/provider ListIdentifiers oai_dc 
+##%%% EARLINET : MD Provider eudat-oai.dkrz.de (directly extracted from CERA)
+earlinet    http://eudat-oai.dkrz.de:8080/oai/provider ListIdentifiers  iso 
+##%%% EUDAT B2SHARE
+b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml Linguistics
+b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml EUON
+b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml Eudat
+b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml DRIHM
+b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml BBMRI
+b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml NRM
+b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml GBIF
+b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml RDA
+##%%% DataCite : MD Provider is DataCite.org 
+datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-1 ## Griffith University; 38;
+datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-2 ## CSSE Uni Melbourne; 4;
+datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-3 ## Monash University; 39;
+datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-5 ## TERN Central Portal; 178;
+datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-6 ## Curtin University; 140;

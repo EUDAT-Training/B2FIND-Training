@@ -1,0 +1,6 @@
+Common name, Scientific name, Location, Temperament, Diet, Water, Size, Region of the Aquarium, Breeding
+dc:identifier, dc:title, dc:coverage, dc:relation, dc:source, dc:description, dcterms:extent, dc:spatial, dc:type
+
+
+
+    
