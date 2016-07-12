@@ -23,19 +23,20 @@ def parse(fn,opt):
 	fields=list()
 	try:
 		fp = open(fn)
-		ofields = re.split(opt.delimiter,fp.readline().rstrip('\n'))
+		ofields = re.split(opt.delimiter,fp.readline().rstrip('\n').strip())
 
 		if opt.mapfile :
 			r = csv.reader(open(opt.mapfile, "r"),delimiter='>')
 			for row in r:
 				fields.append(row[1].strip())
 		elif opt.config :
-			for of in ofields:
-				mapdc[of]=raw_input('Target field for %s : ' % of.strip())
-                                fields.append(mapdc[of].strip())
 			w = csv.writer(open(opt.config, "w"),delimiter='>')
-			for key, val in mapdc.items():
-				 w.writerow([key, val])
+			for of in ofields:
+				mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
+				##HEW-T print 'oooof %s \n mmmm %s \n' % (of,mapdc[of.strip()])
+                                fields.append(mapdc[of].strip())
+##			for key, val in mapdc.items():
+				w.writerow([of, mapdc[of]])
 		else:
 			fields=ofields
 
