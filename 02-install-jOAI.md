@@ -4,7 +4,7 @@ This document describes how to install joai software, an OAI-PMH data provider a
 ## Environment
 Ubuntu 14.04 server
 
-##Prerequisites
+## Prerequisites
 
 ### 1. Update and upgrade if necessary
 ```sh
@@ -40,11 +40,14 @@ The current version of tomcat is 7, but joai runs as well within tomcat6.
 sudo apt-get install tomcat7
 ```
 
-### 3a. Tomcat trouble shooting
-One known problem with tomcat is, if you have another web server, e.g. an apache running on the same machine.
-... further information about trouble shooting can be found at 
-...!!!...
+#### 3a. Tomcat trouble shooting
+One known problem with tomcat is, that there are conflicts with other web server, e.g. an apache, running on the same machine.
+
+For general 'trubleshooting and Diagnostic techniques' we refer to
+```sh https://wiki.apache.org/tomcat/FAQ/Troubleshooting_and_Diagnostics ```
+<!-- ??
 or ask for support at EUDAT help desk ...??? 
+-->
 
 ### 4. Add the web application jOAI to the Tomcat container
 Place the file 'oai.war' into the 'webapps' directory found in your Tomcat installation directory. 'webapps' is the default location where Tomcat 
@@ -84,17 +87,23 @@ If you now enter in an internet browser
 ```sh
 localhost:8080
 ```
-and all woks fine you should see a page showing
-...  'It works'
-
-... !!! add a figure with the 'It works' page !!!
-
-and the graphical user interface of the web application joi shoul be opened by 
+and all woks fine you should see a page showing **'It works'** and the graphical user interface of the web application joi should be opened by 
 ```sh
 localhost:8080/oai
 ```
+
+<img align="centre" src="img/jOAI_Overview.png" width="800px">
 
 Congratultaions !
 
 Now you can configure and use your OAI-PMH provider and harvester
 as described in 01-configure-your-OAI-server
+
+## 7. Repository configuration
+You should do some basic configurations at the beginning.
+
+In the entry page `Overview` click under `Data Provider` on `Set up the Provider`. On the then opened page `Data Provider Documentation` you will find a lot of information we will need in teh next modul. 
+
+For now we click under `Data Provider setup` on `Repository information`. Here you can add information describing your repository. (Allways use the questionmark buttons to get more detailed inforamtion about the fields).
+
+<img align="centre" src="img/jOAI_EditRepositoryInfo.png" width="800px">

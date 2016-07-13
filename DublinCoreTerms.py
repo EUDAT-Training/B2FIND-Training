@@ -33,9 +33,22 @@ class DublinCore(dublinCoreMetadata):
     xsi:schemaLocation="%s"
     xmlns:dc="http://purl.org/dc/elements/1.1/"
     xmlns:dcterms="http://purl.org/dc/terms/">\n\n''' % (encapsulatingTag, schemaLocation)
-		
+
+
+		### with open('mapfiles/dcelements.txt','r') as f:
+		###	dcelements = f.read().splitlines()
+		##for dcelem in dcelements :
+		##	print 'dcelem %s \n getattr %s \n TTTT %s' % (dcelem,xml.sax.saxutils.escape(getattr(self, dcelem)),xml.sax.saxutils.escape(self.Title))
+		##	if hasattr(self,dcelem.capitalize()) :
+		##		xmlOut += '\t<dc:%s>%s</dc:%s>\n' % (dcelem,xml.sax.saxutils.escape(getattr(self, dcelem.capitalize())),dcelem)
+			##setattr(metadata,dcelem.capitalize(),row.get('dc:'+dcelem,''))
+
+		print 'SSSSS %s' % self.__dict__
+		print 'SSSSS.Title %s' % self.Title
+
 		#if the Title element is set, make the dc:title tag
 		if self.Title:
+			print 'xxxxTTTT %s' % (xml.sax.saxutils.escape(self.Title))
 			xmlOut += '\t<dc:title>%s</dc:title>\n' % xml.sax.saxutils.escape(self.Title)
 		
 		#if the Alternative term is set, make the dcterms:alternative tag
@@ -50,7 +63,7 @@ class DublinCore(dublinCoreMetadata):
 		if self.Spatial:
 			xmlOut += '\t<dcterms:spatial>%s</dcterms:spatial>\n' % xml.sax.saxutils.escape(self.Spatial)
 		
-		#if the creator element is set, make the dc:title tag
+		#if the creator element is set, make the dc:creator tag
 		if self.Creator:
 			xmlOut += '\t<dc:creator>%s</dc:creator>\n' % xml.sax.saxutils.escape(self.Creator)
 		
