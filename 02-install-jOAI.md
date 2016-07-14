@@ -108,4 +108,4 @@ For now we click under `Data Provider setup` on `Repository information`. Here y
 
 <img align="centre" src="img/jOAI_EditRepositoryInfo.png" width="800px">
 
-Note : For now we don't specify the optinal `Namespace identifier`.
+Note : For now we don't specify the optional `Namespace identifier`.
