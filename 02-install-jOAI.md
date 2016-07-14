@@ -107,3 +107,5 @@ In the entry page `Overview` click under `Data Provider` on `Set up the Provider
 For now we click under `Data Provider setup` on `Repository information`. Here you can add information describing your repository. (Allways use the questionmark buttons to get more detailed inforamtion about the fields).
 
 <img align="centre" src="img/jOAI_EditRepositoryInfo.png" width="800px">
+
+Note : For now we don't specify the optinal `Namespace identifier`.
