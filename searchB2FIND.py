@@ -24,6 +24,18 @@ def main():
     args = get_args()
     
     print "\n%s" %('-'*100)
+
+    ckanapi3='http://'+args.ckan+'/api/3'
+    ckan = ckanclient.CkanClient(ckanapi3)
+    ckan_limit=100000
+    start=time.time()
+
+
+    if args.request.endswith('list'):
+        answer = ckan.action(args.request, rows=ckan_limit)
+        print '|- The list of %ss :\n\t%s' % (args.request.split('_')[0],'\n\t'.join(answer).encode('utf8'))
+        sys.exit(0)
+
     # create CKAN search pattern :
     ckan_pattern = ''
     sand=''
@@ -37,11 +49,8 @@ def main():
 
     print ' | - Search\n\t|- in\t%s\n\t|- for\t%s\n' % (args.ckan,ckan_pattern)
 
-    ckanapi3='http://'+args.ckan+'/api/3'
-    ckan = ckanclient.CkanClient(ckanapi3)
-    ckan_limit=100000
-    start=time.time()
-    answer = ckan.action('package_search', q=ckan_pattern, rows=ckan_limit)
+    if args.request == 'package_search' :
+        answer = ckan.action('package_search', q=ckan_pattern, rows=ckan_limit)
     tcount=answer['count']
     print " | - Results:\n\t|- %d records found in %d sec" % (tcount,time.time()-start)
 
@@ -65,7 +74,8 @@ def main():
         'SpatialCoverage':'SpatialCoverage',
         'Format':'Format',
         'Contact':'Contact',
-        'MetadataAccess':'MetadataAccess'
+        'MetadataAccess':'MetadataAccess',
+        'Community':'groups'
 }
 
     admin_fields={
@@ -256,6 +266,7 @@ def get_args():
     p.add_argument('--ckan',  help='CKAN portal address, to which search requests are submitted (default is b2find.eudat.eu)', default='b2find.eudat.eu', metavar='IP/URL')
     p.add_argument('--output', '-o', help="Output file name and format. Format is determined by the extention, supported are 'txt' (plain ascii file) or 'hd5' file. Default is the ascii file results.txt.", default='results.txt', metavar='STRING')
     p.add_argument('--community', '-c', help="Community where you want to search in", default='', metavar='STRING')
+    p.add_argument('--request', '-r', help="Request command. Default is package_search", default='package_search', metavar='STRING')
     p.add_argument('--keys', '-k', help=" Keys to be outputed for the found records. Default is to print out only the B2FIND identifier . If you want only know the total numbers of records found, but no id's should be listed, enter None. Additionally supported fields are all fields of the B2FIND schema and some additional admin properties. If you want statistical information about all B2FIND fields enter 'B2FIND.*' ", default=[], nargs='*')
     p.parse_args('--keys'.split())
     p.add_argument('pattern',  help='CKAN search pattern, i.e. by logical conjunctions joined field:value terms.', default='*:*', metavar='PATTERN', nargs='*')
