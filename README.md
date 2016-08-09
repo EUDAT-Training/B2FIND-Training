@@ -1,3 +1,6 @@
+**`This training material is under construction, please use with care`** 
+
+
 # B2FIND-Training
 <img align="right" src="img/B2FIND.png" width="100px">
 This training module comprises detailed instructions about integration in and usage of the EUDAT metadata service *B2FIND* (version 2.0).
