@@ -27,15 +27,15 @@ def main():
 
     ckanlistrequests=['package_list','group_list','tag_list']
 
+    ## Get options and arguments
     args = get_args(ckanlistrequests)
     
-    ## print "\n%s" %('-'*100)
-
+    ## Settings for CKAN client and API
     ckanapi3='http://'+args.ckan+'/api/3'
     ckan = ckanclient.CkanClient(ckanapi3)
     ckan_limit=100000
-    start=time.time()
 
+    start=time.time()
 
     if args.request.endswith('list'):
         try:
@@ -69,52 +69,22 @@ def main():
     tcount=answer['count']
     print " | - Results:\n\t|- %d records found in %d sec" % (tcount,time.time()-start)
 
-    b2findorder=['Title','Description','Tags','Source','DOI','PID','Checksum','Rights','Discipline','Creator','Publisher','PublicationYear','Language','TemporalCoverage','SpatialCoverage','Format','Contact','MetadataAccess']
+    # Read in B2FIND metadata schema and fields
+    schemafile =  '%s/mapfiles/b2find_schema.json' % (os.getcwd())
+    with open(schemafile, 'r') as f:
+        b2findfields=json.loads(f.read(), object_pairs_hook=OrderedDict)   
 
-    b2findfacets={
-        'Title':'title',
-        'Description':'notes',
-        'Tags':'tags',
-        'Source':'url',
-        'DOI':'DOI',
-        'PID':'PID',
-        'Checksum':'version',
-        'Rights':'Rights',
-        'Discipline':'Discipline',
-        'Creator':'author',
-        'Publisher':'Publisher',
-        'PublicationYear':'PublicationYear',
-        'Language':'Language',
-        'TemporalCoverage':'TemporalCoverage',
-        'TempCoverageBegin':'TempCoverageBegin',
-        'TemporalCoverageEndDate':'TemporalCoverageEndDate',
-        'TemporalCoverage:BeginDate':'TemporalCoverage:BeginDate',
-        'SpatialCoverage':'SpatialCoverage',
-        'minx':'minx',
-        'Format':'Format',
-        'Contact':'Contact',
-        'MetadataAccess':'MetadataAccess',
-        'Community':'groups'
-}
-
-    admin_fields={
-        'ManagerVersion':'ManagerVersion',
-        'modified':'metadata_modified',
-        'created':'metadata_created',
-        'oai_set':'oai_set'
-}
 
     if tcount>0 and args.keys is not None :
         if len(args.keys) == 0 :
             akeys=[]
         else:
             if args.keys[0] == 'B2FIND.*' :
-                akeys=OrderedDict(sorted(b2findfacets.items(), key=lambda i:b2findorder.index(i[0])))
+                akeys=OrderedDict(sorted(b2findfields.keys()))
             else:
                 akeys=args.keys
 
-        suppid=b2findfacets
-        suppid.update(admin_fields)
+        suppid=b2findfields.keys()
 
         fh = io.open(args.output, "w", encoding='utf8')
         record={} 
@@ -147,7 +117,7 @@ def main():
 	       if len(answer['results']) == 0 :
 	           break
 	
-	       # loop over records
+	       # loop over found records
 	       for ds in answer['results']:
 	            counter +=1
 	            ##HEW-T print'    | %-4d | %-40s |' % (counter,ds['name'])
@@ -163,11 +133,12 @@ def main():
 	
 	            # loop over facets
 	            for facet in akeys:
-	                if suppid[facet] in ds: ## CKAN default field
+                        ckanFacet=b2findfields[facet]["ckanName"]
+	                if ckanFacet in ds: ## CKAN default field
 	                    if facet == 'Group':
-	                        record[facet]  = ds[suppid[facet]][0]['display_name']
+	                        record[facet]  = ds[ckanFacet][0]['display_name']
 	                    else:
-	                        record[facet]  = ds[suppid[facet]]
+	                        record[facet]  = ds[ckanFacet]
 	
 	                else: ## CKAN extra field
                             ##HEW-T print 'ds extras %s' % ds['extras']
@@ -207,9 +178,9 @@ def main():
 	
 	        statline=unicode("")
 	        for outt in akeys:
-	            statline+= "| %-16s | %-10d | %6d |\n" % (outt,count[outt],int(count[outt]*100/tcount))
+	            statline+= "| %-16s\n\t| %-15s | %-6d | %3d |\n" % (outt,'-Total-',count[outt],int(count[outt]*100/tcount))
 	            for word in statc[outt].most_common(10):
-	                statline+= '\t| %-10d | %-100s\n' % (word[1], word[0][:100])
+	                statline+= '\t| %-15s | %-6d | %3d |\n' % (word[0][:100], word[1], int(word[1]*100/tcount))
 	
 	        statfh.write(statline)
 	
@@ -221,20 +192,26 @@ def get_args(ckanlistrequests):
         description = "Description: Lists identifers of datasets that fulfill the given search criteria",
         epilog =  '''Examples:
            1. >./searchB2FIND.py -c aleph tags:LEP
-             searchs for all datasets of community ALEPH with tag "LEP" in b2find.eudat.eu.
-           2. >./searchB2FIND.py author:"Jones*" AND Discipline:"Crystal?Structure" --ckan eudat-b1.dkrz.de
-             searchs in eudat-b1.dkrz.de for all datasets having an author starting with "Jones" and belongs to the discipline "Crystal Structure"
+             searchs in b2find.eudat.eu within the community ALEPH 
+             for all datasets with tag "LEP".
+           2. >./searchB2FIND.py author:"Jones*" AND Discipline:"Crystallography"
+             searchs in  b2find.eudat.eu for all datasets having an 
+             author starting with "Jones" and belonging to the 
+             discipline "Crystallography"
            3. >./searchB2FIND.py -c narcis DOI:'*' --keys DOI
-             returns the list of id's and DOI's for all records in community "NARCIS" that have a DOI 
+             returns the list of id's and the related DOI's of all records in 
+             community "NARCIS" that have a DOI. Additonally statistical 
+             information about the coverage and distribution of the facet 
+             DOI is written to an extra file. 
 '''
     )
    
-    p.add_argument('--request', '-r', help="Request command. Default is package_search, and as list requests are %s supported" % ckanlistrequests, default='package_search', metavar='STRING')
+    p.add_argument('--request', '-r', help="Request command. Supported are list requests ('package_list','group_list','tag_list') and 'package_search'. The latter is the default and expects a search pattern as argument." % ckanlistrequests, default='package_search', metavar='STRING')
     p.add_argument('--community', '-c', help="Community where you want to search in", default='', metavar='STRING')
-    p.add_argument('--keys', '-k', help=" B2FIND fields to be outputed for the found records, by default only the CKAN name (B2FIND identifier) is outputed. If set to None only total numbers of records are printed. Additionally statistical information for the given keys is printed to the file stat_results.txt", default=[], nargs='*')
+    p.add_argument('--keys', '-k', help=" B2FIND fields additionally outputed for the found records. Additionally statistical information is printed into an extra output file.", default=[], nargs='*')
     p.parse_args('--keys'.split())
     p.add_argument('--ckan',  help='CKAN portal address, to which search requests are submitted (default is b2find.eudat.eu)', default='b2find.eudat.eu', metavar='URL')
-    p.add_argument('--output', '-o', help="Output file name and format. Format is determined by the extention, supported are 'txt' (plain ascii file) or 'hd5' file. Default is the ascii file results.txt.", default='results.txt', metavar='FILE')
+    p.add_argument('--output', '-o', help="Output file name (default is results.txt)", default='results.txt', metavar='FILE')
     p.add_argument('pattern',  help='CKAN search pattern, i.e. by logical conjunctions joined field:value terms.', default='*:*', metavar='PATTERN', nargs='*')
     
     args = p.parse_args()
