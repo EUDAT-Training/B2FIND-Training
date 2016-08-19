@@ -33,7 +33,7 @@ def main():
     ## Settings for CKAN client and API
     ckanapi3='http://'+args.ckan+'/api/3'
     ckan = ckanclient.CkanClient(ckanapi3)
-    ckan_limit=100000
+    ckan_limit=500000
 
     start=time.time()
 
@@ -111,6 +111,7 @@ def main():
         cstart=0
         oldperc=0
         start2=time.time()
+
         while (cstart < tcount) :
 	       if (cstart > 0):
 	           answer = ckan.action('package_search', q=ckan_pattern, rows=ckan_limit, start=cstart)
@@ -130,9 +131,11 @@ def main():
 	
 	            
 	            record['id']  = '%s' % (ds['name'])
+	            outline=record['id']
 	
 	            # loop over facets
 	            for facet in akeys:
+                        ##HEW-T print 'facet : %s' % facet
                         ckanFacet=b2findfields[facet]["ckanName"]
 	                if ckanFacet in ds: ## CKAN default field
 	                    if facet == 'Group':
@@ -162,10 +165,7 @@ def main():
 	                if not ( record[facet] == 'N/A' or record[facet] == 'Not Stated') and len(record[facet])>0 : 
 	                    count[facet]+=1
 	
-	
-	            outline=record['id']
-	            for aid in akeys:
-	                outline+='\t | %-30s' % record[aid][:30]
+		        outline+='\t | %-30s' % record[facet][:30]
 	                ##outline+='\n   \t| %-20s' % (statc[aid].keys(),statc[aid].values())
 	            fh.write(outline+'\n')
 	       cstart+=len(answer['results']) 
@@ -210,7 +210,7 @@ def get_args(ckanlistrequests):
     p.add_argument('--community', '-c', help="Community where you want to search in", default='', metavar='STRING')
     p.add_argument('--keys', '-k', help=" B2FIND fields additionally outputed for the found records. Additionally statistical information is printed into an extra output file.", default=[], nargs='*')
     p.parse_args('--keys'.split())
-    p.add_argument('--ckan',  help='CKAN portal address, to which search requests are submitted (default is b2find.eudat.eu)', default='b2find.eudat.eu', metavar='URL')
+    p.add_argument('--ckan',  help='CKAN portal address, to which search requests are submitted (default is b2find.eudat.eu)', default='b2find.eudat.eu:8080', metavar='URL')
     p.add_argument('--output', '-o', help="Output file name (default is results.txt)", default='results.txt', metavar='FILE')
     p.add_argument('pattern',  help='CKAN search pattern, i.e. by logical conjunctions joined field:value terms.', default='*:*', metavar='PATTERN', nargs='*')
     
