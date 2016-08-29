@@ -26,7 +26,7 @@ Following the full, in-depth tutorial will allow you to understand how the compo
 
 ## Submodules
 
-The order and numbering of the submodules in the table below follows the curriculum of the training as shown in the figure above. Beside the *Target audience* we assign in the column *Required for B2FIND* mainly if a submodule is needed w.r.t. B2FIND usage or integration. Each component takes about 0.5 to 1.0 hours.
+The order and numbering of the submodules in the table below follow the curriculum of the training as shown in the figure above. Beside the *Target audience* we assign in the column *Required for B2FIND* if a submodule is needed w.r.t. B2FIND usage or integration. Each component takes about 0.5 to 1.0 hours.
 
 | #    | Submodule            | Target audience           | Required for B2FIND |
 |-----|----------------------|---------------------------|---------------------|
@@ -39,7 +39,7 @@ The order and numbering of the submodules in the table below follows the curricu
 | 03.b | [Validate metadata](03.b-validate-metadata.md) | data managers and researchers | B2FIND integration |
 | 04 | [Install CKAN](04-install-CKAN.md) | site admins | B2FIND integration (availbale portal b2find.eudat.eu) |
 | 04.a | [Configure CKAN](04.a-configure-CKAN.md) | data managers | B2FIND integration (already done for b2find.eudat.eu) |
-| 04.b | Upload metadata(04.b-upload-metadata.md) | B2FIND integration, to b2find.eudat.eu done by B2FIND team) |
+| 04.b | [Upload metadata] (04.b-upload-metadata.md) | data managers | B2FIND integration, to the B2FIND catalogue done by B2FIND team |
 | 05 | [Using B2FIND](05-using-B2FIND.md)	| researchers | B2FIND usage
 | 05.a | [Graphical User Interface](05.a-search-GUI.md)	| researchers | B2FIND usage |
 | 05.b | [Command Line Interface](05.b-search-CLI.md)	| researchers | B2FIND usage |
