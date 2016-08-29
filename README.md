@@ -28,8 +28,8 @@ Following the full, in-depth tutorial will allow you to understand how the compo
 
 The order and numbering of the submodules in the table below follows the curriculum of the training as shown in the figure above. Beside the *Target audience* we assign in the column *Required for B2FIND* mainly if a submodule is needed w.r.t. B2FIND usage or integration. Each component takes about 0.5 to 1.0 hours.
 
-#  | File                      | Target audience           | Required for B2FIND
---------------------------|---------------------------|-------------------
+#    | Submodule            | Target audience           | Required for B2FIND
+-----|--------------------------|---------------------------|-------------------
 01.a | [Generate metadata](01.a-generate-metadata.md)| researchers/data managers | Not necessarily
 01.b | [Specify metadata](01.b-specify-metadata.md)  | researchers/data managers | B2FIND integration 
 02 | [Install the jOAI software ](02-install-jOAI.md) | site admins | B2FIND integration 
