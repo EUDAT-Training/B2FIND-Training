@@ -29,13 +29,11 @@ def parse(fn,opt):
 			r = csv.reader(open(opt.mapfile, "r"),delimiter='>')
 			for row in r:
 				fields.append(row[1].strip())
-		elif opt.config :
-			w = csv.writer(open(opt.config, "w"),delimiter='>')
+		elif opt.generate :
+			w = csv.writer(open(opt.generate, "w"),delimiter='>')
 			for of in ofields:
 				mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
-				##HEW-T print 'oooof %s \n mmmm %s \n' % (of,mapdc[of.strip()])
                                 fields.append(mapdc[of].strip())
-##			for key, val in mapdc.items():
 				w.writerow([of, mapdc[of]])
 		else:
 			fields=ofields
@@ -111,13 +109,13 @@ def main():
 	usage = "Usage : %prog [options] SOURCE"
 	parser = OptionParser(usage=usage)
 	parser.add_option("-o", "--outdir", dest="outdir", default='outdata',
-                  help="output directory for Dublincore XML files", metavar="OUTDIR")
-	parser.add_option("-c", "--config",
-                  help="configure mapping on the fly and store in MAPFILE", metavar="MAPFILE")
+                  help="output directory for Dublincore XML files, by default set to 'outdata'.", metavar="OUTDIR")
+	parser.add_option("-g", "--generate",
+                  help="generate mapping rules on the fly and store in MAPFILE", metavar="MAPFILE")
 	parser.add_option("-d", "--delimiter",default=',',
-		  help="the delimiter used in the original data", metavar="DELIMITER")
+		  help="the delimiter used in the original data. By default set to ','", metavar="DELIMITER")
 	parser.add_option("-m", "--mapfile",
-		  help="The file that specifies the mapping from original to DC fields")
+		  help="The file that specifies the mapping from original fields to the target fields")
 
 	(options, args) = parser.parse_args()
 

@@ -30,8 +30,8 @@ The order and numbering of the submodules in the table below follow the curricul
 
 | #    | Submodule            | Target audience           | Required for B2FIND |
 |-----|----------------------|---------------------------|---------------------|
-| 01.a | [Generate metadata](01.a-generate-metadata.md) | researchers/data managers | Not necessarily |
-| 01.b | [Specify metadata](01.b-specify-metadata.md)  | researchers/data managers | B2FIND integration | 
+| 01.a | [Specify metadata](01.a-specify-metadata.md)  | researchers/data managers | B2FIND integration | 
+| 01.b | [Generate metadata](01.b-generate-metadata.md) | researchers/data managers | Not necessarily |
 | 02 | [Install the jOAI software ](02-install-jOAI.md) | site admins | B2FIND integration |
 | 02.a | [Configure your data provider](02.a-configure-OAI-data_provider.md) | site admins | B2FIND integration |
 | 02.b | [Configure your harvester](02.b-configure-OAI-harvester.md) | site admins | Not needed for B2FIND integration |

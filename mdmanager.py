@@ -1708,7 +1708,7 @@ def main():
     ManagerVersion = '2.0'
 
     # parse command line options and arguments:
-    modes=['h','harvest','c','convert','m','map','v','validate','o','oaiconvert','u','upload','h-c','c-u','h-u', 'h-d', 'd','delete']
+    modes=['g','generate','h','harvest','c','convert','m','map','v','validate','o','oaiconvert','u','upload','h-c','c-u','h-u', 'h-d', 'd','delete']
     p = options_parser(modes)
     global options
     options,arguments = p.parse_args()
@@ -1823,6 +1823,10 @@ def process(options,pstat):
         logging.critical("[CRITICAL] Either option source (option -s) or list of sources (option -l) is required")
         exit()
     
+    ## GENERATION mode:    
+    if (pstat['status']['g'] == 'tbd'):
+        # start the process harvesting:
+        print '\n|- Generation started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
     ## HARVESTING mode:    
     if (pstat['status']['h'] == 'tbd'):
         # start the process harvesting:
@@ -2432,7 +2436,7 @@ def pstat_init (p,modes,mode,source,iphost):
         mode = 'h-u'
  
     # initialize status, count and timing of processes
-    plist=['a','h','m','v','u','c','o','d']
+    plist=['g','h','m','v','u','c','o','d']
     pstat = {
         'status' : {},
         'text' : {},
@@ -2458,8 +2462,9 @@ def pstat_init (p,modes,mode,source,iphost):
     else:
        stext='a list of MD providers'
        
-    pstat['text']['h']='Harvest community XML files from ' + stext 
-    pstat['text']['c']='Convert community XML to B2FIND JSON and do semantic mapping'  
+    pstat['text']['g']='Generate XML files from raw information' 
+    pstat['text']['h']='Harvest XML files from ' + stext 
+    pstat['text']['c']='Convert XML to B2FIND JSON'  
     pstat['text']['m']='Map community XML to B2FIND JSON and do semantic mapping'  
     pstat['text']['v']='Validate JSON records against B2FIND schema'  
     pstat['text']['o']='OAI-Convert B2FIND JSON to B2FIND XML'  
@@ -2467,6 +2472,7 @@ def pstat_init (p,modes,mode,source,iphost):
     pstat['text']['d']='Delete B2FIND datasets from %s' % iphost
     
     pstat['short']['h-u']='TotalIngestion'
+    pstat['short']['g']='Generation'
     pstat['short']['h']='Harvesting'
     pstat['short']['c']='Converting'
     pstat['short']['m']='Mapping'
