@@ -11,7 +11,7 @@
 ## community         OAI URL                                verb           metadataPrefix  set
 ## -----------------------------------------------------------------------------------
 ## MyProjects
-lakeplants http://localhost:8181/oai/provider ListIdentifiers oai_dc 
+fishproject http://localhost:8181/oai/provider ListIdentifiers oai_dc 
 ##%%% EARLINET : MD Provider eudat-oai.dkrz.de (directly extracted from CERA)
 earlinet    http://eudat-oai.dkrz.de:8080/oai/provider ListIdentifiers  iso 
 ##%%% EUDAT B2SHARE

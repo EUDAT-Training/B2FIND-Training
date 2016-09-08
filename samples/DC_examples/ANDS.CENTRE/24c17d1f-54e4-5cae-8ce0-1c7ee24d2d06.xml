@@ -1,0 +1,46 @@
+<record xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <header>
+    <identifier>oai:oai.datacite.org:8133132</identifier>
+    <datestamp>2016-05-11T00:53:42Z</datestamp>
+    <setSpec>ANDS</setSpec>
+    <setSpec>ANDS.CENTRE-1</setSpec>
+  </header>
+  <metadata>
+    <oai_dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+      <dc:title>Kakadu National Park 1985-2011 Flood Inundation Frequency</dc:title>
+      <dc:creator>Ward, Doug</dc:creator>
+      <dc:creator>Petty, Aaron</dc:creator>
+      <dc:creator>Setterfield, Samantha</dc:creator>
+      <dc:creator>Douglas, Michael</dc:creator>
+      <dc:creator>Ferdinands, Keith</dc:creator>
+      <dc:creator>Hamilton, Stephen K</dc:creator>
+      <dc:creator>Phinn, Stuart</dc:creator>
+      <dc:publisher>Griffith University</dc:publisher>
+      <dc:date>2015</dc:date>
+      <dc:date>Collected: 1985-2011</dc:date>
+      <dc:identifier>doi:10.4225/01/572bfa3474a40</dc:identifier>
+      <dc:relation>doi:10.1016/j.rse.2014.02.009</dc:relation>
+      <dc:subject>040608 - Surfacewater Hydrology</dc:subject>
+      <dc:subject>remote sensing</dc:subject>
+      <dc:subject>microwave</dc:subject>
+      <dc:subject>radar</dc:subject>
+      <dc:subject>optical</dc:subject>
+      <dc:subject>tropical floodplains</dc:subject>
+      <dc:subject>flood inundation</dc:subject>
+      <dc:subject>aquatic vegetation</dc:subject>
+      <dc:subject>macrophytes</dc:subject>
+      <dc:description>Abstract</dc:description>
+      <dc:description>The Alligator Rivers Region is located in the wet-dry tropics along the coastal zone of northern Australia and contains Kakadu National Park, which is recognised under the Ramsar Convention on Wetlands and is a World Heritage listed site. Multiple anthropogenic stressors increasingly affect the floodplains of this region, and baseline information on floodplain inundation dynamics is necessary to manage these threats and develop adaption strategies for sea level rise. This study uses classification tree modelling to combine microwave (ALOS L-band Synthetic Aperture Radar) and optical (Landsat Thematic Mapper, TM 5) satellite data with field-sampled aquatic vegetation and depth logger data to predict the seasonal and inter-annual dynamics of aquatic plant cover and extent of inundation in the region. The USGS Landsat TM 5 image archive was sampled between 1985 and 2011 using three seasonal samples per year to create a comprehensive long-term time series of seasonal and inter-annual floodplain inundation extents. Classification accuracy for the inundation mapping was estimated at 86% based on seasonal depth logger data. The mean extent of inundation at the end of the wet season (March / April) was 1,784 km2 (range 2,283 - 1,309 km2), receding on average to approximately 25% of its extent by August / September. Seasonal inundation patterns exhibit an exponential recession of inundation into &#8216;backswamp&#8217; areas on the fringes of the floodplains with hydro-periods on the order of 5 months. The findings of this work significantly improve our understanding of dynamics in this environmentally and culturally unique area and provide a basis for application in other seasonally flooded environments.</dc:description>
+      <dc:language>en</dc:language>
+      <dc:type>Dataset</dc:type>
+      <dc:type>Spatial data layers</dc:type>
+      <dc:format>10.81 MB</dc:format>
+      <dc:format>.doc</dc:format>
+      <dc:format>.tiff</dc:format>
+      <dc:rights>Creative Commons Attribution 3.0 Australia (CC BY 3.0 AU)</dc:rights>
+      <dc:rights>http://creativecommons.org/licenses/by/3.0/au/deed.en</dc:rights>
+      <dc:coverage>132.3084 -12.6872 132.9808 -12.0854</dc:coverage>
+      <dc:coverage>The Alligator Rivers Region including Kakadu National Park</dc:coverage>
+    </oai_dc:dc>
+  </metadata>
+</record>

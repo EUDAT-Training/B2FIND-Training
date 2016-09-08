@@ -1,0 +1,21 @@
+<record xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <header>
+    <identifier>oai:oai.datacite.org:869996</identifier>
+    <datestamp>2016-07-08T02:15:50Z</datestamp>
+    <setSpec>ANDS</setSpec>
+    <setSpec>ANDS.CENTRE-1</setSpec>
+  </header>
+  <metadata>
+    <oai_dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+      <dc:title>Australian Rivers Institute</dc:title>
+      <dc:title>Collection</dc:title>
+      <dc:creator>Bunn, Stuart</dc:creator>
+      <dc:creator>Brooks, Andrew</dc:creator>
+      <dc:publisher>Griffith University</dc:publisher>
+      <dc:date>2011</dc:date>
+      <dc:identifier>doi:10.4225/01/4F8E1334371D0</dc:identifier>
+      <dc:description>Other</dc:description>
+      <dc:description>The Institute consists of researchers with expertise in: catchment and river processes; water allocation and environmental flows; coastal and estuarine processes; aquatic biodiversity and conservation; restoration science; and monitoring and assessment. The collection includes metadata related to research undertaken as part of the Tropical Rivers and Co&#8230;</dc:description>
+    </oai_dc:dc>
+  </metadata>
+</record>

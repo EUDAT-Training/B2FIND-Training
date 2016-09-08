@@ -1,0 +1,22 @@
+<record xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <header>
+    <identifier>oai:oai.datacite.org:869997</identifier>
+    <datestamp>2016-07-08T04:39:13Z</datestamp>
+    <setSpec>ANDS</setSpec>
+    <setSpec>ANDS.CENTRE-1</setSpec>
+  </header>
+  <metadata>
+    <oai_dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+      <dc:title>Queensland Films 1930-1960: from Talkies to Television</dc:title>
+      <dc:title>Collection</dc:title>
+      <dc:creator>Woodrow, Ross</dc:creator>
+      <dc:creator>Laughren, Patrick</dc:creator>
+      <dc:creator>Queensland College of Art</dc:creator>
+      <dc:publisher>Griffith University</dc:publisher>
+      <dc:date>2011</dc:date>
+      <dc:identifier>doi:10.4225/01/4F8E1426244BD</dc:identifier>
+      <dc:description>Other</dc:description>
+      <dc:description>Queensland Films 1930-1960: from Talkies to Television is an open collection that includes a selection of digital recordings from films made in Queensland in the years from the coming of the talkies to the advent of television. The compilation gathers extracts from advertisements, animation, newsreels, sponsored productions, travelogues, comic "trick" &#8230;</dc:description>
+    </oai_dc:dc>
+  </metadata>
+</record>
