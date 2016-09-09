@@ -1,0 +1,20 @@
+<record xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <header>
+    <identifier>oai:oai.datacite.org:821692</identifier>
+    <datestamp>2016-07-08T04:41:31Z</datestamp>
+    <setSpec>ANDS</setSpec>
+    <setSpec>ANDS.CENTRE-1</setSpec>
+  </header>
+  <metadata>
+    <oai_dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+      <dc:title>Griffith Corpus of Spoken Australian English (GCSAusE)</dc:title>
+      <dc:title>Collection</dc:title>
+      <dc:creator>Haugh, Michael Bevan</dc:creator>
+      <dc:publisher>Griffith University</dc:publisher>
+      <dc:date>2011</dc:date>
+      <dc:identifier>doi:10.4225/01/4F3DB08617645</dc:identifier>
+      <dc:description>Other</dc:description>
+      <dc:description>The Griffith Corpus of Spoken Australian English (GCSAusE) comprises a collection of transcribed and annotated recordings of spoken interaction amongst Australian speakers of English, as well as users of English in Australia more generally, collected by staff and students at Griffith University.</dc:description>
+    </oai_dc:dc>
+  </metadata>
+</record>

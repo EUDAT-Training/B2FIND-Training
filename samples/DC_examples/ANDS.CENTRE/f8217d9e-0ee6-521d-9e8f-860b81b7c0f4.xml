@@ -1,0 +1,23 @@
+<record xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <header>
+    <identifier>oai:oai.datacite.org:870045</identifier>
+    <datestamp>2016-07-08T02:15:17Z</datestamp>
+    <setSpec>ANDS</setSpec>
+    <setSpec>ANDS.CENTRE-1</setSpec>
+  </header>
+  <metadata>
+    <oai_dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+      <dc:title>Clinical and Community Practice Innovation</dc:title>
+      <dc:title>Data Collection</dc:title>
+      <dc:creator>Kendall, Elizabeth</dc:creator>
+      <dc:creator>Sunderland, Naomi</dc:creator>
+      <dc:creator>Research Centre for Clinical and Community Practice Innovation, Griffith University</dc:creator>
+      <dc:publisher>Griffith University</dc:publisher>
+      <dc:date>2011</dc:date>
+      <dc:identifier>doi:10.4225/01/4F8E14EA3179E</dc:identifier>
+      <dc:description>Other</dc:description>
+      <dc:description>The Research Centre for Clinical and Community Practice Innovation consists of researchers from nursing, social work, human services, rehabilitation, psychology, physiotherapy, pharmacy and public health. This PUBLIC collection contains information that will help transform health and community services via the development of collaborative, innovative an&#8230;</dc:description>
+      <dc:type>Collection</dc:type>
+    </oai_dc:dc>
+  </metadata>
+</record>

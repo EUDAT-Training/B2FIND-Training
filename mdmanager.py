@@ -875,13 +875,13 @@ class MAPPER():
            os.makedirs(outpath)
 
         # check and read rules from mapfile
-        if (target_mdschema and not target_mdschema.startswith('#')):
+        if (target_mdschema != None and not target_mdschema.startswith('#')):
             mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
         else:
             mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,mdprefix,mapext)
 
         if not os.path.isfile(mapfile):
-            logging.error('[WARNING] Mapfile %s does not exist !' % mapfile)
+            logging.debug('[WARNING] Community specific mapfile %s does not exist !' % mapfile)
             mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
             if not os.path.isfile(mapfile):
                 logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
@@ -1188,7 +1188,6 @@ class MAPPER():
             mapext='conf' ##!!!HEW --> json
         else:
             mapext='xml'
-        mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,mdprefix,mapext)
         if not os.path.isfile(mapfile):
            mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
            if not os.path.isfile(mapfile):
@@ -1708,7 +1707,7 @@ def main():
     ManagerVersion = '2.0'
 
     # parse command line options and arguments:
-    modes=['h','harvest','c','convert','m','map','v','validate','o','oaiconvert','u','upload','h-c','c-u','h-u', 'h-d', 'd','delete']
+    modes=['g','generate','h','harvest','c','convert','m','map','v','validate','o','oaiconvert','u','upload','h-c','c-u','h-u', 'h-d', 'd','delete']
     p = options_parser(modes)
     global options
     options,arguments = p.parse_args()
@@ -1823,6 +1822,10 @@ def process(options,pstat):
         logging.critical("[CRITICAL] Either option source (option -s) or list of sources (option -l) is required")
         exit()
     
+    ## GENERATION mode:    
+    if (pstat['status']['g'] == 'tbd'):
+        # start the process harvesting:
+        print '\n|- Generation started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
     ## HARVESTING mode:    
     if (pstat['status']['h'] == 'tbd'):
         # start the process harvesting:
@@ -1863,8 +1866,8 @@ def process(options,pstat):
                 process_map(MP,[[
                     options.community,
                     options.source,
-                    options.mdprefix,
                     options.outdir + '/' + options.mdprefix,
+                    options.mdprefix,
                     options.mdsubset,
                     options.target_mdschema
                 ]])
@@ -1948,25 +1951,17 @@ def process_map(MP, rlist):
     ir=0
     for request in rlist:
         ir+=1
-        if (len (request) > 5):            
-            mapfile='%s/%s-%s.xml' % ('mapfiles',request[0],request[5])
+        if (len(request) > 5 and request[5]):            
             target=request[5]
         else:
-            mapfile='%s/%s/%s-%s.xml' % (os.getcwd(),'mapfiles',request[0],request[3])
-            if not os.path.isfile(mapfile):
-                mapfile='%s/%s/%s.xml' % (os.getcwd(),'mapfiles',request[3])
-                if not os.path.isfile(mapfile):
-                    logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
             target=None
-        logging.info('   |# %-4d : %-10s\t%-20s : %-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],os.path.basename(mapfile),'Started',time.strftime("%H:%M:%S")))
-        
         cstart = time.time()
         
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+request[4])
         else:
-            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
-            
+            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET_1')
+             
         results = MP.map(ir,request[0],request[3],path,target)
 
         ctime=time.time()-cstart
@@ -2410,7 +2405,7 @@ def options_parser(modes):
     group_single.add_option('--verb', help="Verbs or requests defined in OAI-PMH, can be ListRecords (default) or ListIdentifers here",default='ListRecords', metavar='STRING')
     group_single.add_option('--mdsubset', help="Subset of harvested meta data",default=None, metavar='STRING')
     group_single.add_option('--mdprefix', help="Prefix of harvested meta data",default=None, metavar='STRING')
-    group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None, metavar='STRING')
+    group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
     
     group_upload = optparse.OptionGroup(p, "Upload Options",
         "These options will be required to upload an dataset to a CKAN database.")
@@ -2432,7 +2427,7 @@ def pstat_init (p,modes,mode,source,iphost):
         mode = 'h-u'
  
     # initialize status, count and timing of processes
-    plist=['a','h','m','v','u','c','o','d']
+    plist=['g','h','m','v','u','c','o','d']
     pstat = {
         'status' : {},
         'text' : {},
@@ -2458,8 +2453,9 @@ def pstat_init (p,modes,mode,source,iphost):
     else:
        stext='a list of MD providers'
        
-    pstat['text']['h']='Harvest community XML files from ' + stext 
-    pstat['text']['c']='Convert community XML to B2FIND JSON and do semantic mapping'  
+    pstat['text']['g']='Generate XML files from raw information' 
+    pstat['text']['h']='Harvest XML files from ' + stext 
+    pstat['text']['c']='Convert XML to B2FIND JSON'  
     pstat['text']['m']='Map community XML to B2FIND JSON and do semantic mapping'  
     pstat['text']['v']='Validate JSON records against B2FIND schema'  
     pstat['text']['o']='OAI-Convert B2FIND JSON to B2FIND XML'  
@@ -2467,6 +2463,7 @@ def pstat_init (p,modes,mode,source,iphost):
     pstat['text']['d']='Delete B2FIND datasets from %s' % iphost
     
     pstat['short']['h-u']='TotalIngestion'
+    pstat['short']['g']='Generation'
     pstat['short']['h']='Harvesting'
     pstat['short']['c']='Converting'
     pstat['short']['m']='Mapping'

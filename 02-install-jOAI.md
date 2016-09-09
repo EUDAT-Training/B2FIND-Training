@@ -1,5 +1,5 @@
 # Installation of jOAI
-This document describes how to install the jOAI software. In the following two modules 02.a and 02.b we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. jOAI will run within Apache Tomcat and w e will use an Ubuntu machine to guide you through the examples. 
+This document describes how to install the jOAI software. In the following two modules 02.a and 02.b we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. jOAI will run within Apache Tomcat and we will use an Ubuntu machine to guide you through the examples. 
 
 ## Environment
 Ubuntu 14.04 server
@@ -76,12 +76,7 @@ sudo apt-get install tomcat7
 One known problem with tomcat is, that there are conflicts with other web servers, e.g. an apache, running on the same machine.
 
 For general **trubleshooting and Diagnostic techniques** we refer to
-```sh https://wiki.apache.org/tomcat/FAQ/Troubleshooting_and_Diagnostics ```
-<!-- ??
-or ask for support at EUDAT help desk ...??? 
-CS: I would say not, we are not the helpdesk of tomcat. For the general training we provide a 
-reference implementation in which everything runs smoothely.
--->
+``` https://wiki.apache.org/tomcat/FAQ/Troubleshooting_and_Diagnostics ```
 
 ### 4. Add the web application jOAI to the Tomcat container
 Place the file *oai.war* into the *webapps* directory found in your Tomcat installation directory. *webapps* is the default location where Tomcat searches for web applications.

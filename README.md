@@ -30,14 +30,14 @@ The order and numbering of the submodules in the table below follow the curricul
 
 | #    | Submodule            | Target audience           | Required for B2FIND |
 |-----|----------------------|---------------------------|---------------------|
-| 01.a | [Generate metadata](01.a-generate-metadata.md) | researchers/data managers | Not necessarily |
-| 01.b | [Specify metadata](01.b-specify-metadata.md)  | researchers/data managers | B2FIND integration | 
+| 01.a | [Specify metadata](01.a-specify-metadata.md)  | researchers/data managers | B2FIND integration | 
+| 01.b | [Generate metadata](01.b-generate-metadata.md) | researchers/data managers | Not necessarily |
 | 02 | [Install the jOAI software ](02-install-jOAI.md) | site admins | B2FIND integration |
 | 02.a | [Configure your data provider](02.a-configure-OAI-data_provider.md) | site admins | B2FIND integration |
 | 02.b | [Configure your harvester](02.b-configure-OAI-harvester.md) | site admins | Not needed for B2FIND integration |
 | 03.a | [Map metadata](03.a-map-metadata.md) | data managers and researchers | B2FIND integration |
 | 03.b | [Validate metadata](03.b-validate-metadata.md) | data managers and researchers | B2FIND integration |
-| 04 | [Install CKAN](04-install-CKAN.md) | site admins | B2FIND integration (availbale portal b2find.eudat.eu) |
+| 04 | [Install CKAN](04-install-CKAN.md) | site admins | B2FIND integration (done, portal b2find.eudat.eu already available) |
 | 04.a | [Configure CKAN](04.a-configure-CKAN.md) | data managers | B2FIND integration (already done for b2find.eudat.eu) |
 | 04.b | [Upload metadata] (04.b-upload-metadata.md) | data managers | B2FIND integration, to the B2FIND catalogue done by B2FIND team |
 | 05 | [Using B2FIND](05-using-B2FIND.md)	| researchers | B2FIND usage

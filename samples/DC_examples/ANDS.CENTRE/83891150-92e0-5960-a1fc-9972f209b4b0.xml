@@ -1,0 +1,19 @@
+<record xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <header>
+    <identifier>oai:oai.datacite.org:1623373</identifier>
+    <datestamp>2016-07-08T01:57:23Z</datestamp>
+    <setSpec>ANDS</setSpec>
+    <setSpec>ANDS.CENTRE-1</setSpec>
+  </header>
+  <metadata>
+    <oai_dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+      <dc:title>Bioassays and Risk Communication: Improved extraction methods for bioanalysis of very complex matrices : data</dc:title>
+      <dc:creator>Leusch, Fredric</dc:creator>
+      <dc:publisher>Griffith University</dc:publisher>
+      <dc:date>2013</dc:date>
+      <dc:identifier>doi:10.4225/01/513D561E6E21E</dc:identifier>
+      <dc:description>Other</dc:description>
+      <dc:description>Over time, bioanalysis tools have the capacity to contribute to monitoring strategies that will meet community expectations and ensure safe exposures to a wide range of water sources. Improved detection of the presence of chemicals in water will enhance risk assessment and inform future water management options in Queensland. Data in this collection was gathered during a project funded by the Urban Water Security Research Alliance, that aimed to improve the recovery of micropollutants through optimisation of extraction techniques for complex matrices. Researchers conducted laboratory-based recovery experiments using several solid-phase extraction (SPE) phases in the presence of a defined 'cocktail' of compounds with variable physiochemical properties. GCMS/LCMS analysis (gas chromatography-mass spectrometry and liquid chromatography-mass spectrometry) was undertaken.</dc:description>
+    </oai_dc:dc>
+  </metadata>
+</record>
