@@ -45,6 +45,13 @@ The order and numbering of the submodules in the table below follow the curricul
 | 05.b | [Command Line Interface](05.b-search-CLI.md)	| researchers | B2FIND usage |
 | 05.c | [Data access](05.c-data-access.md) |  researchers | B2FIND usage |
 
+## Use cases
+Because it's easier to follow and understand the training on the base of concrete use cases we provide some simple examples and the according data samples.
+
+| Project name | Usecase description | Related submodules | Sample data  |
+|--------------|---------------------|--------------------|------------------|
+| FishProject  | A researcher or data manager received the order from her boss to prepare metadata originated from project *fishProject*. ... | all |  Raw metadata samples (comma seperated list) ```samples/RAW_data/sample.csv``` |
+
 <!-- LATER ON, 
 The tutorial will show the functionality of single components and how to combine them in order to arrive at proper metadata management. 
 If you follow all steps of the training course you will aim in an infrastrucre as shown in the scheme below.
@@ -69,3 +76,5 @@ To build the setup you will need to prepare or have access to at least one (pote
 <!-- ##TODO 
 If you want to follow a training remotely and need access to preinstalled machines contact #TODO
 -->
+
+
