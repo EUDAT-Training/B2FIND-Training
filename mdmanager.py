@@ -20,12 +20,18 @@ import time, datetime
 import simplejson as json
 
 import logging
+logger = logging.getLogger()
 import traceback
 
 # 
 import urllib2
 import urllib, urllib2, socket
 from itertools import tee 
+
+# needed for GENERATOR
+import csv
+from DublinCoreTerms import DublinCore
+
 
 # needed for HARVESTER class:
 import sickle as SickleClass
@@ -46,11 +52,173 @@ import io
 # needed for UPLOADER class:
 from collections import OrderedDict
 
+def setup_custom_logger(name,verbose):
+    log_format='%(levelname)s :  %(message)s'
+    log_level=logging.CRITICAL
+    if verbose == 1 :
+        log_format='%(levelname)s in  %(module)s\t%(funcName)s\t%(lineno)s : %(message)s'
+        log_level=logging.ERROR
+    elif  verbose == 2 :
+        log_format='%(levelname)s in %(module)s\t%(funcName)s\t%(lineno)s : %(message)s'
+        log_level=logging.WARNING
+    elif verbose == 3 :
+        log_format='%(levelname)s at %(asctime)s in L %(lineno)s : %(message)s'
+        log_level=logging.INFO
+    elif verbose > 3 :
+        log_format='%(levelname)s at %(asctime)s %(msecs)d in L %(lineno)s : %(message)s'
+        log_level=logging.DEBUG
+
+
+    formatter = logging.Formatter(fmt=log_format)
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+
+    logger.setLevel(log_level)
+    logger.addHandler(handler)
+    return logger
+
+class GENERATOR(object):
+    
+    """
+    ### GENERATOR - class
+    # Provides methods to generate XML records from raw data as csv's or tsv's
+    #
+    # Parameters:
+    # -----------
+    # 1. (dict)  pstat   - dictionary with the states of every process
+    # 2. (path)  rootdir - rootdir of teh input and output data.
+    #
+    # Public Methods:
+    # ---------------
+    # generate(request) - generate XML files from comma or tab separated values
+    #
+    # Usage:
+    # ------
+
+    # create GENERATOR object                       
+    GEN = GENERATOR(pstat,rootdir)
+
+    # generate corresponing to the request:
+    request = [
+                    community,
+                    delimiter,
+                    mdprefix,
+                    mdsubset
+                ]
+    results = GEN.generate(request)
+    """
+    
+    def __init__ (self, pstat, base_outdir):
+        self.pstat = pstat
+        self.base_outdir = base_outdir
+        self.DC_NS = 'http://purl.org/dc/elements/1.1/'
+
+    def generate(self, nr, request):
+        ## method generate(GENERATOR object, [community, delimiter, mdprefix, mdsubset])
+        # Generate XML files in format <mdprefix> and in subdir <mdsubset> from path <source> raw metadata (csv's, tsv's).
+        # Generate every N. file a new subset directory.
+        #
+        # Parameters:
+        # -----------
+        # (list)  request - A request list with following items:
+        #                    1. community
+        #                    2. source
+        #                    3. verb (comma | tab)
+        #                    4. mdprefix (e.g. oai_dc)
+        #                    5. mdsubset
+        #
+        # Return Values:
+        # --------------
+        # 1. (integer)  is -1 if something went wrong    
+    
+    
+        start=time.time()
+        ## set parameters
+        community=request[0]
+        inpath=request[1]
+        if request[2] == 'comma':
+            delimiter=','
+        else :
+            delimiter='\t'
+        mdprefix=request[3]
+        mdsubset=request[4]   if len(request)>4 else None
+
+        outpath = '/'.join([self.base_outdir,community+'-'+mdprefix,mdsubset+'_1','xml'])
+        if not os.path.isdir(outpath) :
+            os.makedirs(outpath)
+        ## csv file to parse
+        fn='%s' % inpath
+
+        ## mapfile
+        mapfile="mapfiles/%s-%s.csv" % (community,mdprefix)
+
+        """ Parse a CSV or TSV file """
+	mapdc=dict()
+	fields=list()
+	try:
+		fp = open(fn)
+		ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
+                print 'ofields %s' % ofields
+
+		if os.path.isfile(mapfile) :
+			r = csv.reader(open(mapfile, "r"),delimiter='>')
+			for row in r:
+				fields.append(row[1].strip())
+		else : 
+			w = csv.writer(open(mapfile, "w"),delimiter='>')
+			for of in ofields:
+				mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
+                                fields.append(mapdc[of].strip())
+				w.writerow([of, mapdc[of]])
+
+		if not delimiter == ',' :
+			tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
+		else:
+			tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
+		
+		for row in tsv:
+			dc = self.makedc(row)
+			if 'dc:identifier' in row:
+                            self.writefile(outpath+'/'+"".join(row['dc:identifier'].split()), dc)
+			else:
+                            print ' ERROR : At least target field dc:identifier must be specified' 
+			    sys.exit()
+
+	except IOError as (errno, strerror):
+		print "Error ({0}): {1}".format(errno, strerror)
+		raise SystemExit
+	fp.close()
+
+        return -1
+
+    def makedc(self,row):
+	""" Generate a Dublin Core XML file from a TSV """
+	metadata = DublinCore()
+	with open('mapfiles/dcelements.txt','r') as f:
+		dcelements = f.read().splitlines()
+	for dcelem in dcelements :
+		setattr(metadata,dcelem.capitalize(),row.get('dc:'+dcelem,''))
+
+	with open('mapfiles/dcterms.txt','r') as f:
+		dcterms = f.read().splitlines()
+	for dcterm in dcterms :
+		setattr(metadata,dcterm.capitalize(),row.get('dcterms:'+dcterm,''))
+
+	return metadata
+
+    def writefile(self,name, obj):
+	""" Writes Dublin Core or Macrepo XML object to a file """
+	if isinstance(obj, DublinCore):
+		fp = open(name + '-DC.xml', 'w')
+		fp.write(obj.makeXML(self.DC_NS))
+	fp.close()
+
 class HARVESTER(object):
     
     """
     ### HARVESTER - class
-    # Provides methods to harvest metadata records via protocols as OAI-PMH
+    # Provides methods to harvest metadata records via OAI-PMH and other protocols
     #
     # Parameters:
     # -----------
@@ -71,30 +239,13 @@ class HARVESTER(object):
 
     # create HARVESTER object                       
     HV = HARVESTER(pstat,rootdir,fromdate)
-
-    # harvest from a source via sickle module:
-    request = [
-                    community,
-                    source,
-                    verb,
-                    mdprefix,
-                    mdsubset
-                ]
+    # harvest metadata of a community from a source via verb 
+    #   with md OAI format mdprefix and OAI set mdsubset :
+    request = [community,source,verb,mdprefix,mdsubset]
     results = HV.harvest(request)
     """
     
     def __init__ (self, pstat, base_outdir, fromdate):
-        # choose the debug level:
-##        log.basicConfig(format='III')
-##        self.log_level = {
-##            'log':log.INFO,
-##            'err':log.ERROR,
-##            'err':log.DEBUG,
-##            'std':log.INFO,
-##        }
-        
-##        self.logger = log.getLogger()
-##        self.logger.setLevel(log.DEBUG)
         self.pstat = pstat
         self.base_outdir = base_outdir
         self.fromdate = fromdate        
@@ -1718,11 +1869,10 @@ def main():
     # make jobdir
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     jid = os.getpid()
-    # create logger and OUT output handler and initialise it:
-##HEW-DDD    OUT = B2FIND.OUTPUT(pstat,now,jid,options)
-##HEW-DDD    global logger 
-##HEW-DDD    logger = logging.getLogger()
-    
+
+    ## logger
+    logger = setup_custom_logger('root',options.verbose)
+
     # print out general info:
     print '\nVersion:  \t%s' % ManagerVersion
     print 'Run mode:   \t%s' % pstat['short'][mode]
@@ -1787,92 +1937,63 @@ def main():
 
 
 def process(options,pstat):
-    ## process (options,pstat,OUT) - function
-    # Starts the specific process routines for harvesting, converting, mapping, validating, oai-converting and/or uploading
+    ## process (options,pstat) - function
+    # Starts processing as specified in pstat['tbd'] and 
+    #  according the request list given bey the options
     #
     # Parameters:
     # -----------
-    # 1. (OptionsParser object)    - 
+    # 1. options (OptionsParser object)
+    # 2. pstat   (process status dict)  
     #
-    # Return Values:
-    # --------------
-    # return values
-
-    ##HEW-D logging.basicConfig(format='process:')
     
     # set single or multi mode:
     mode = None
+    procOptions=['community','source','verb','mdprefix','mdsubset','target_mdschema']
     if(options.source):
         mode = 'single'
-        
-        if ( not(
-            options.community and
-            options.source and
-            options.verb and
-            options.mdprefix
-        )):
-            logging.critical("\033[1m [CRITICAL] " + "When single mode is used following options are required:\n\t%s" % (
-                '\n\t'.join(['community','source','verb','mdprefix'])) + "\033[0;0m" 
-            )
-            exit()
-        
-    elif(options.list):
-        mode = 'multi'
-    else:
-        logging.critical("[CRITICAL] Either option source (option -s) or list of sources (option -l) is required")
-        exit()
-    
-    ## GENERATION mode:    
-    if (pstat['status']['g'] == 'tbd'):
-        # start the process harvesting:
-        print '\n|- Generation started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
-    ## HARVESTING mode:    
-    if (pstat['status']['h'] == 'tbd'):
-        # start the process harvesting:
-        print '\n|- Harvesting started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
-        HV = HARVESTER(pstat,options.outdir,options.fromdate)
-        
-        if mode is 'multi':
-            logging.info(' |- Joblistx:  \t%s' % options.list)
-            logging.debug(' |- Community:\t%s' % options.community)
-            logging.debug(' |- OAI subset:\t%s' % options.mdsubset)
-            logging.debug(' |- Source MD format:\t%s' % options.mdprefix)
-
-            process_harvest(HV,parse_list_file('harvest',options.list, options.community,options.mdsubset,options.mdprefix))
-        else:
-            process_harvest(HV,[[
+        mandParams=['community','verb','mdprefix'] # mandatory processing params
+        for param in mandParams :
+            if not getattr(options,param) :
+                logger.critical("Processing parameter %s is required in single mode" % param)
+                sys.exit(-1)
+        reqlist=[[
                 options.community,
                 options.source,
                 options.verb,
                 options.mdprefix,
-                options.mdsubset
-            ]])
+                options.mdsubset,
+                options.target_mdschema
+            ]]
+    elif(options.list):
+        mode = 'multi'
+        logger.debug(' |- Joblist:  \t%s' % options.list)
+        reqlist=parse_list_file('harvest',options.list, options.community,options.mdsubset,options.mdprefix,options.target_mdschema)
 
-    if (pstat['status']['h'] == 'no'):
-        ## MAPPINING - Mode:  
-        if (pstat['status']['m'] == 'tbd'):
-            # start the process mapping:
-            logging.info('\n|- Mapping started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
-            MP = MAPPER()
+    ## check job request (processing) options
+    for opt in procOptions :
+        if hasattr(options,opt) : logger.debug(' |- %s:\t%s' % (opt.upper(),getattr(options,opt)))
+
+    ## GENERATION mode:    
+    if (pstat['status']['g'] == 'tbd'):
+        print '\n|- Generation started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        GEN = GENERATOR(pstat,options.outdir)
+        process_generate(GEN,reqlist)
         
-            # start the process mapping:
-            if mode is 'multi':
-                convert_list='harvest_list'
-                logging.info(' |- Joblist:  \t%s' % convert_list )
-                if (options.community != '') : logging.debug(' |- Community:\t%s' % options.community)
-                if (options.mdsubset != None) : logging.debug(' - OAI subset:\t%s' % options.mdsubset)
-                process_map(MP, parse_list_file('convert', convert_list or options.list, options.community,options.mdsubset, options.mdprefix, options.target_mdschema))
-            else:
-                process_map(MP,[[
-                    options.community,
-                    options.source,
-                    options.outdir + '/' + options.mdprefix,
-                    options.mdprefix,
-                    options.mdsubset,
-                    options.target_mdschema
-                ]])
-        ## VALIDATOR - Mode:  
-        if (pstat['status']['v'] == 'tbd'):
+    ## HARVESTING mode:    
+    if (pstat['status']['h'] == 'tbd'):
+        print '\n|- Harvesting started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        HV = HARVESTER(pstat,options.outdir,options.fromdate)
+        process_harvest(HV,reqlist)
+        
+    ## MAPPINING - Mode:  
+    if (pstat['status']['m'] == 'tbd'):
+        print '\n|- Mapping started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        MP = MAPPER()
+        process_map(MP,reqlist)
+
+    ## VALIDATOR - Mode:  
+    if (pstat['status']['v'] == 'tbd'):
             MP = MAPPER()
             logging.info('\n|- Validating started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
         
@@ -1889,8 +2010,8 @@ def process(options,pstat):
                     options.outdir + '/' + options.mdprefix,
                     options.mdsubset
                 ]])
-        ## UPLOADING - Mode:  
-        if (pstat['status']['u'] == 'tbd'):
+    ## UPLOADING - Mode:  
+    if (pstat['status']['u'] == 'tbd'):
             # create CKAN object                       
             CKAN = CKAN_CLIENT(options.iphost,options.auth)
             UP = UPLOADER(CKAN)
@@ -1917,7 +2038,7 @@ def process_harvest(HV, rlist):
     #
     # Parameters:
     # -----------
-    # (object)  HARVESTER - object from the class HARVESTER
+    # (object)  HV    - instance of class HARVESTER
     # (list)    rlist - list of request lists 
     #
     # Return Values:
@@ -1934,7 +2055,30 @@ def process_harvest(HV, rlist):
             logging.error("Couldn't harvest from %s" % request)
 
         harvesttime=time.time()-harveststart
-        #results['time'] = harvesttime
+
+def process_generate(GEN, rlist):
+    ## process_generate (GENERATOR object, rlist) - function
+    # Generate metadata per request.
+    #
+    # Parameters:
+    # -----------
+    # (object)  GEN   - instance of class HARVESTER
+    # (list)    rlist - list of request lists 
+    #
+    # Return Values:
+    # --------------
+    # None
+    ir=0
+    for request in rlist:
+        ir+=1
+        genstart = time.time()
+        logging.info('   |# %-4d : %-30s \n\t|- %-10s |@ %-10s |' % (ir,request,'Started',time.strftime("%H:%M:%S")))
+        results = GEN.generate(ir,request)
+    
+        if (results == -1):
+            logging.error("Couldn't generate metadata according request %s" % request)
+
+        gentime=time.time()-genstart
 
 def process_map(MP, rlist):
     ## process_map (MAPPER object, rlist) - function
@@ -2392,9 +2536,7 @@ def options_parser(modes):
     p.add_option('--ckan_check',
          help="check existence and checksum against existing datasets in CKAN database",
          default='False', metavar='BOOLEAN')
-    p.add_option('--outdir', '-d', help="The relative root dir in which all harvested files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH')
-    
-         
+    p.add_option('--outdir', '-d', help="The relative root dir in which all harvested files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH')         
     group_multi = optparse.OptionGroup(p, "Multi Mode Options",
         "Use these options if you want to ingest from a list in a file.")
     group_multi.add_option('--list', '-l', help="list of OAI harvest sources (default is ./harvest_list)", default='harvest_list',metavar='FILE')
@@ -2482,11 +2624,6 @@ def exit_program (OUT, message=''):
     OUT.HTML_print_end()
 
     if (OUT.options.verbose != False):
-      ##HEW? try:
-      ##HEW  os.system('firefox '+OUT.jobdir+'/overview.html')
-      ##HEW except Exception, err:
-      ##HEW   print("[ERROR] %s : Can not open result html in browser" % err)
-      ##HEWos.system('cat '+OUT.jobdir+'/overview.html')
       logging.debug('For more info open HTML file %s' % OUT.jobdir+'/overview.html')
 
 if __name__ == "__main__":
