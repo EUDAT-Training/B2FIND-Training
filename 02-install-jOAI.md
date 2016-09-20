@@ -1,5 +1,7 @@
 # Installation of jOAI
-This document describes how to install the jOAI software. In the following two modules 02.a and 02.b we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. jOAI will run within Apache Tomcat and we will use an Ubuntu machine to guide you through the examples. 
+The modules 2 and 3 will show you how to install and configure the underlying software and technology which is used by B2FIND.
+
+This document describes how to install the jOAI software with which you can harvest OAI-PMH endpoints and with which you can offer an OAI-PMH endpoint. In the following two modules 02.a and 02.b we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. jOAI will run within Apache Tomcat and we will use an Ubuntu machine to guide you through the examples. 
 
 ## Environment
 Ubuntu 14.04 server
