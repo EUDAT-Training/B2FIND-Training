@@ -62,6 +62,8 @@ Edit the Jetty configuration file ```/etc/default/jetty``` and change the follow
 # change to 0 to allow Jetty to start
 NO_START=0            # (line 4)
 JETTY_HOST=127.0.0.1  # (line 16)
+# When working on a remote machine
+JETTY_HOST=<fqdn or IP>
 JETTY_PORT=8983       # (line 19)
 ```
 
@@ -78,7 +80,13 @@ You should now see a welcome page from Solr if you open ```http://localhost:8983
 ```sh
 JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64/
 ```
-> 2. Another error maybe a `HTTP ERROR 500` saying that `JSP support not configured`. In this case you have to ...!!! 
+> 2. Another error maybe a `HTTP ERROR 500` saying that `JSP support not configured`. This might happen on Ubuntu machines.
+```
+wget https://launchpad.net/~vshn/+archive/ubuntu/solr/+files/solr-jetty-jsp-fix_1.0.2_all.deb
+sudo dpkg -i solr-jetty-jsp-fix_1.0.2_all.deb
+sudo service jetty restart
+```
+
 
 Replace the default ```schema.xml``` file with a symlink to the CKAN schema file included in the sources.
 ```sh
