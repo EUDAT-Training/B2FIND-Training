@@ -165,13 +165,5 @@ Open ```http://localhost``` or ```http://<fqdn or ip>``` in your web browser. Yo
 
 > Troubleshooting :
 > If your tomcat for the OAI server runs on the same machine as apache for CKAN, You will encounter clashes with the port. 
-
-Either you decide which service you want use and stop the other e.g. by
-```sh
-sudo service tomcat7 stop
-```
-or
-```sh
-sudo service apache2 stop
-```
-or you let run the tomcat for jOAI run on another port as decribed in ```02-install-jOAI.md``` in teh section *3a. Tomcat trouble shooting* .
+> Either you decide which service you want use and stop the other one by ```sudo service tomcat7 stop``` or ```sudo service apache2 stop```.
+> or you let run the tomcat for jOAI run on another port. How this could be done is decribed in ```02-install-jOAI.md``` in the section *3a. Tomcat trouble shooting*.
