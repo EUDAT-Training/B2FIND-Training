@@ -80,6 +80,12 @@ You should now see a welcome page from Solr if you open ```http://localhost:8983
 ```sh
 JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64/
 ```
+Or you can add the path to your java version in the ```/etc/defaul/jetty``` file (line 35)
+```sh
+JDK_DIRS="/usr/lib/jvm/java-8-oracle /usr/lib/jvm/default-java /usr/lib/jvm/java-6-sun"
+```
+This line lists all possible location for a the JDK and takes the first valid one.
+
 > 2. Another error maybe a `HTTP ERROR 500` saying that `JSP support not configured`. This might happen on Ubuntu machines.
 ```
 wget https://launchpad.net/~vshn/+archive/ubuntu/solr/+files/solr-jetty-jsp-fix_1.0.2_all.deb
