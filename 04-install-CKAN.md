@@ -159,7 +159,11 @@ Open ```http://localhost``` or ```http://<fqdn or ip>``` in your web browser. Yo
 <!-- figure follows -->
 
 > Troubleshooting :
-> If your tomcat for teh OAI server runs on teh same machine, this will not work in parallel. Please decide which service you want use and stop the other e.g. by
+> If your tomcat for the OAI server runs on the same machine as apache for CKAN, You will encounter clashes with the port. Please decide which service you want use and stop the other e.g. by
 ```sh
 sudo service tomcat7 stop
+```
+or
+```sh
+sudo service apache2 stop
 ```
