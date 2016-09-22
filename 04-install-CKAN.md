@@ -84,7 +84,7 @@ Or you can add the path to your java version in the ```/etc/defaul/jetty``` file
 ```sh
 JDK_DIRS="/usr/lib/jvm/java-8-oracle /usr/lib/jvm/default-java /usr/lib/jvm/java-6-sun"
 ```
-This line lists all possible location for a the JDK and takes the first valid one.
+This line lists all possible locations for the JDK and takes the first valid one.
 
 > 2. Another error maybe a `HTTP ERROR 500` saying that `JSP support not configured`. This might happen on Ubuntu machines.
 ```
