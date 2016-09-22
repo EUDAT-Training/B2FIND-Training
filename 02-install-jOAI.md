@@ -76,8 +76,21 @@ sudo apt-get install tomcat7
 
 #### 3a. Tomcat trouble shooting
 One known problem with tomcat is, that there are conflicts with other web servers, e.g. an apache, running on the same machine.
+If you want run e.g. a CKAN instance in parallel, you must change the port of the connector in the file ```/etc/tomcat7/server.xml``` :
+```sh
+   <!-- Changed port 8080 to 8181 -->
+    <Connector port="8181" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               URIEncoding="UTF-8"
+               redirectPort="8443" />
+```    
+After restart of tomcat will jOAI run now on
+```
+http://localhost:8181/oai/
+```
+and CKAN still on ```localhost```.
 
-For general **trubleshooting and Diagnostic techniques** we refer to
+For general **troubleshooting and Diagnostic techniques** we refer to
 ``` https://wiki.apache.org/tomcat/FAQ/Troubleshooting_and_Diagnostics ```
 
 ### 4. Add the web application jOAI to the Tomcat container
@@ -132,7 +145,7 @@ If you now enter in an internet browser
 ```sh
 localhost:8080
 ```
-and all woks fine you should see a page showing **'It works'** and the graphical user interface of the web application joi should be opened by 
+and all works fine you should see a page showing **'It works'** and the graphical user interface of the web application joi should be opened by 
 ```sh
 localhost:8080/oai
 ```

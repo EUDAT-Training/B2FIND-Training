@@ -121,10 +121,15 @@ Create a new PostgreSQL database, called ckan_default, owned by the database use
 sudo -u postgres createdb -O ckan_default ckan_default -E utf-8
 ```
 
-Finally you have to reset *USERNAME:PASSWORD* by the above specified database user and password and *HOST* by ```localhost``` and *DBNAME* by the name of the postgres database in the line
+Finally you have to sustitute
+- *USERNAME:PASSWORD* by the above specified database user and password
+- *HOST* by ```localhost``` and 
+- *DBNAME* by the name of the postgres database 
+in the line
 ```sh
 sqlalchemy.url = postgres://USERNAME:PASSWORD@HOST/DBNAME
-``` in the configuration file ```/etc/ckan/default/production.ini```.
+``` 
+of the configuration file ```/etc/ckan/default/production.ini```.
 
 ### 8. Update the configuration and initialize the database
 Edit the CKAN configuration file ```/etc/ckan/default/production.ini``` to set up the following options:
@@ -159,7 +164,9 @@ Open ```http://localhost``` or ```http://<fqdn or ip>``` in your web browser. Yo
 <!-- figure follows -->
 
 > Troubleshooting :
-> If your tomcat for the OAI server runs on the same machine as apache for CKAN, You will encounter clashes with the port. Please decide which service you want use and stop the other e.g. by
+> If your tomcat for the OAI server runs on the same machine as apache for CKAN, You will encounter clashes with the port. 
+
+Either you decide which service you want use and stop the other e.g. by
 ```sh
 sudo service tomcat7 stop
 ```
@@ -167,3 +174,4 @@ or
 ```sh
 sudo service apache2 stop
 ```
+or you let run the tomcat for jOAI run on another port as decribed in ```02-install-jOAI.md``` in teh section *3a. Tomcat trouble shooting* .
