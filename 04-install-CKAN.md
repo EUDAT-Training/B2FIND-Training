@@ -121,7 +121,7 @@ Create a new PostgreSQL database, called ckan_default, owned by the database use
 sudo -u postgres createdb -O ckan_default ckan_default -E utf-8
 ```
 
-Finally you have to reset *USERNAME:PASSWORD* by the above specified database user and password and *HOST* by ```localhsot``` and *DBNAME* by the name of the postgres database in the line
+Finally you have to reset *USERNAME:PASSWORD* by the above specified database user and password and *HOST* by ```localhost``` and *DBNAME* by the name of the postgres database in the line
 ```sh
 sqlalchemy.url = postgres://USERNAME:PASSWORD@HOST/DBNAME
 ``` in the configuration file ```/etc/ckan/default/production.ini```.
@@ -132,7 +132,12 @@ Edit the CKAN configuration file ```/etc/ckan/default/production.ini``` to set u
 Each CKAN site should have a unique ```site_id``` and provide the URL in ```site_url```, for example:
 ```sh
 ckan.site_id = demo
-ckan.site_url = http://demo.ckan.org
+ckan.site_url = <fqdn or IP of your machine, or localhost>
+```
+If working on remote machines you might also have to set the 
+
+```sh
+solr_url = http://<fqdn or IP>:8983/solr
 ```
 
 Initialize your CKAN database by running this command in a terminal:
@@ -149,7 +154,7 @@ sudo service nginx restart
 ```
 
 ### 8. You’re done!
-Open ```http://localhost``` in your web browser. You should see the CKAN front page, which will look something like this:
+Open ```http://localhost``` or ```http://<fqdn or ip>``` in your web browser. You should see the CKAN front page, which will look something like this:
 
 <!-- figure follows -->
 
