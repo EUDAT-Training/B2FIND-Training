@@ -137,12 +137,15 @@ class GENERATOR(object):
         ## set parameters
         community=request[0]
         inpath=request[1]
-        if request[2] == 'comma':
+        if request[2] == 'comma' or request[2] == 'ListRecords' : # default
             delimiter=','
         else :
             delimiter='\t'
         mdprefix=request[3]
-        mdsubset=request[4]   if len(request)>4 else None
+        if len(request)>4 and request[4] != None:
+            mdsubset=request[4]  
+        else:
+            mdsubset='SET'
 
         outpath = '/'.join([self.base_outdir,community+'-'+mdprefix,mdsubset+'_1','xml'])
         if not os.path.isdir(outpath) :
@@ -159,7 +162,7 @@ class GENERATOR(object):
 	try:
 		fp = open(fn)
 		ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
-                print 'ofields %s' % ofields
+                print ' |- Original fields:\n\t%s' % ofields
 
 		if os.path.isfile(mapfile) :
 			r = csv.reader(open(mapfile, "r"),delimiter='>')
@@ -177,10 +180,13 @@ class GENERATOR(object):
 		else:
 			tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
 		
+                print ' |- Generate XML files in %s' % outpath
 		for row in tsv:
 			dc = self.makedc(row)
 			if 'dc:identifier' in row:
-                            self.writefile(outpath+'/'+"".join(row['dc:identifier'].split()), dc)
+                            outfile="".join(row['dc:identifier'].split())+'.xml'
+                            print '  |--> %s' % outfile
+                            self.writefile(outpath+'/'+outfile, dc)
 			else:
                             print ' ERROR : At least target field dc:identifier must be specified' 
 			    sys.exit()
@@ -210,7 +216,7 @@ class GENERATOR(object):
     def writefile(self,name, obj):
 	""" Writes Dublin Core or Macrepo XML object to a file """
 	if isinstance(obj, DublinCore):
-		fp = open(name + '-DC.xml', 'w')
+		fp = open(name, 'w')
 		fp.write(obj.makeXML(self.DC_NS))
 	fp.close()
 
@@ -1966,6 +1972,9 @@ def process(options,pstat):
                 options.target_mdschema
             ]]
     elif(options.list):
+        if (pstat['status']['g'] == 'tbd'):
+            logger.critical("  Processing parameter [ --source | -s SOURCE ] is required in generation mode")
+            sys.exit(-1)
         mode = 'multi'
         logger.debug(' |- Joblist:  \t%s' % options.list)
         reqlist=parse_list_file('harvest',options.list, options.community,options.mdsubset,options.mdprefix,options.target_mdschema)
