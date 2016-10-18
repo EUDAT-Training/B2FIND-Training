@@ -165,20 +165,22 @@ class GENERATOR(object):
                 print ' |- Original fields:\n\t%s' % ofields
 
 		if os.path.isfile(mapfile) :
-			r = csv.reader(open(mapfile, "r"),delimiter='>')
-			for row in r:
-				fields.append(row[1].strip())
+                    print ' |- Use existing mapfile\t%s' % mapfile
+                    r = csv.reader(open(mapfile, "r"),delimiter='>')
+                    for row in r:
+                        fields.append(row[1].strip())
 		else : 
-			w = csv.writer(open(mapfile, "w"),delimiter='>')
-			for of in ofields:
-				mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
-                                fields.append(mapdc[of].strip())
-				w.writerow([of, mapdc[of]])
+                    print ' |- Generate mapfile\t%s' % mapfile
+                    w = csv.writer(open(mapfile, "w"),delimiter='>')
+                    for of in ofields:
+                        mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
+                        fields.append(mapdc[of].strip())
+                        w.writerow([of, mapdc[of]])
 
 		if not delimiter == ',' :
-			tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
+                    tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
 		else:
-			tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
+                    tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
 		
                 print ' |- Generate XML files in %s' % outpath
 		for row in tsv:
