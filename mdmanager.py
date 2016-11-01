@@ -2520,52 +2520,51 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
 def options_parser(modes):
     
     p = optparse.OptionParser(
-        description = '''Description                                                              
-===========                                                                           
- Management of metadata, comprising                                      
-      - Harvesting of XML files from an OAI-PMH endpoint \n\t
-
-              - Mapping : Convert XML to JSON and perform semantic mapping on metadata \n\t
-
-\n              - Validation : Performe checks on the mapped JSON records and create coverage statistics\n\t
-              - Uploading of JSON records as datasets to a metadata catalogue\n\t
+        description = '''
+Description                                                                
+===========                                                                
+Management of metadata, comprising the whole life cycle, i.e. the following 
+processing modes : \n\t                                                    
+- Generation of formated XML files from 'raw' metadata, e.g. csv \n\t      
+- Harvesting of XML files from an OAI-PMH endpoint \n\t                    
+- Mapping of XML to JSON records applying semantic rules and vocabularies\n\t
+- Validation of the mapped JSON records and creating coverage statistics\n\t
+- Uploading of JSON records as datasets to a metadata catalogue (CKAN)\n\t
 ''',
         formatter = optparse.TitledHelpFormatter(),
         prog = 'mdmanager.py',
         epilog='For any further information and documentation please look at the README.md file or send an email to widmann@dkrz.de.'
     )
         
-    p.add_option('-v', '--verbose', action="count",
-                        help="increase output verbosity (e.g., -vv is more than -v)", default=False)
-    p.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='\nThis specifies the processing mode. Supported modes are (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
-    p.add_option('--community', '-c', help="community where data harvested from and uploaded to", default='', metavar='STRING')
-    p.add_option('--fromdate', help="Filter harvested files by date (Format: YYYY-MM-DD).", default=None, metavar='DATE')
-    p.add_option('--handle_check', 
-         help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credstore file",
-         default=None,metavar='FILE')
-    p.add_option('--ckan_check',
-         help="check existence and checksum against existing datasets in CKAN database",
-         default='False', metavar='BOOLEAN')
-    p.add_option('--outdir', '-d', help="The relative root dir in which all harvested files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH')         
-    group_multi = optparse.OptionGroup(p, "Multi Mode Options",
-        "Use these options if you want to ingest from a list in a file.")
-    group_multi.add_option('--list', '-l', help="list of OAI harvest sources (default is ./harvest_list)", default='harvest_list',metavar='FILE')
-         
-    group_single = optparse.OptionGroup(p, "Single Mode Options",
-        "Use these options if you want to ingest from only ONE source.")
-    group_single.add_option('--source', '-s', help="A URL to .xml files which you want to harvest",default=None,metavar='PATH')
-    group_single.add_option('--verb', help="Verbs or requests defined in OAI-PMH, can be ListRecords (default) or ListIdentifers here",default='ListRecords', metavar='STRING')
-    group_single.add_option('--mdsubset', help="Subset of harvested meta data",default=None, metavar='STRING')
-    group_single.add_option('--mdprefix', help="Prefix of harvested meta data",default=None, metavar='STRING')
-    group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
+    p.add_option('-v', '--verbose', action="count", help="increase output verbosity (e.g., -vv is more than -v)", default=False)
+    p.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='This specifies the processing mode. Supported modes are (g)enerating, (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
+    p.add_option('--outdir', '-d', help="The relative data path (default is 'oaidata/').",default='oaidata', metavar='PATH')
+    p.add_option('--community', '-c', help="community or project where metadata are originated.", default='', metavar='STRING')
+    group_multi = optparse.OptionGroup(p, "Request for Multiple Sources",
+        "This is the default operation mode and performs ingestion from a list of sources.")
+    group_multi.add_option('--list', '-l', help="list of requests to several sources (default is ./harvest_list)", default='harvest_list',metavar='FILE')
+    group_single = optparse.OptionGroup(p, "Request for a Single Source",
+        "Use the options '-s | --source SOURCE if you want to ingest from only ONE source.")
+    group_single.add_option('--source', '-s', help="Source of metadata to be processed. In generation mode this is the path to the raw metadata and in harvesting mode this is the URL endpoint from which records are harvested from (e.g. the OAI-URL)",default=None,metavar='STRING')
+
+    group_harvest = optparse.OptionGroup(p, "Generate and Harvest Options",
+        "These options are required to generate or harvest metadata from the specified sources.")
+    group_harvest.add_option('--verb', help="Specifiers of the procesing request. In generation mode this is the delimiter of the source (e.g. \'comma\'(default) or \'tab\' and in harvesting mode this is a 'verb' supported by OAI-PMH ( e.g. ListRecords (default) or ListIdentifers)",default='ListRecords', metavar='STRING')
+    group_harvest.add_option('--mdsubset', help="Subset of the processed data meta data (for OAI-PMH harvesting the OAI subset, if availbale)",default=None, metavar='STRING')
+    group_harvest.add_option('--mdprefix', help="Meta data schema of the source (for OAI-PMH harvesting the OAI metadata prefix",default=None, metavar='STRING')
+    group_harvest.add_option('--fromdate', help="filter metadata to be processed by date (Format: YYYY-MM-DD).", default=None, metavar='DATE')
+    group_harvest.add_option('--target_mdschema', help="(Optional) Meta data schema of the target",default=None,metavar='STRING')
     
     group_upload = optparse.OptionGroup(p, "Upload Options",
         "These options will be required to upload an dataset to a CKAN database.")
     group_upload.add_option('--iphost', '-i', help="IP adress of B2FIND portal (CKAN instance)", metavar='IP')
     group_upload.add_option('--auth', help="Authentification for CKAN APIs (API key, by default taken from file $HOME/.netrc)",metavar='STRING')
+    group_upload.add_option('--handle_check', help="check and generate handles corresponding to the settings in the CREDENDIALFILE", default=None,metavar='CREDENTIALFILE')
+    group_upload.add_option('--ckan_check', help="check existence and checksum of records in CKAN database during upload", default='False', metavar='BOOLEAN')
     
     p.add_option_group(group_multi)
     p.add_option_group(group_single)
+    p.add_option_group(group_harvest)
     p.add_option_group(group_upload)
     
     return p
