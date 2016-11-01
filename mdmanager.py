@@ -162,7 +162,7 @@ class GENERATOR(object):
 	try:
 		fp = open(fn)
 		ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
-                print ' |- Original fields:\n\t%s' % ofields
+                ##HEW-D print ' |- Original fields:\n\t%s' % ofields
 
 		if os.path.isfile(mapfile) :
                     print ' |- Use existing mapfile\t%s' % mapfile
@@ -1028,8 +1028,6 @@ class MAPPER():
             outpath=path+'-'+target_mdschema+'/json'
         else:
             outpath=path+'/json'
-
-
         if (not os.path.isdir(outpath)):
            os.makedirs(outpath)
 
@@ -1319,7 +1317,7 @@ class MAPPER():
             ##    print ' Following key-value errors fails validation:\n' + errlist 
             return vall
 
-    def validate(self,community,mdprefix,path):
+    def validate(self,community,mdprefix,path,target_mdschema):
         ## validate(MAPPER object, community, mdprefix, path) - method
         # validates the (mapped) JSON files in directory <path> against the B2FIND md schema
         # Parameters:
@@ -1347,27 +1345,43 @@ class MAPPER():
             mapext='conf' ##!!!HEW --> json
         else:
             mapext='xml'
-        if not os.path.isfile(mapfile):
-           mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
-           if not os.path.isfile(mapfile):
-              logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
-              return results
-        mf=open(mapfile) 
 
-        # check paths
-        if not os.path.exists(path):
-            logging.error('[ERROR] The directory "%s" does not exist! No files to validate are found!\n(Maybe your convert list has old items?)' % (path))
+        # check and read rules from mapfile
+        if (target_mdschema != None and not target_mdschema.startswith('#')):
+            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
+        else:
+            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,mdprefix,mapext)
+
+
+        if not os.path.isfile(mapfile):
+            logging.debug('[WARNING] Community specific mapfile %s does not exist !' % mapfile)
+            mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
+            if not os.path.isfile(mapfile):
+                logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
+                return results
+        logging.debug('  |- Mapfile\t%s' % os.path.basename(mapfile))
+        mf = codecs.open(mapfile, "r", "utf-8")
+        ##HEW-??? mf=open(mapfile) 
+
+        # check output directory for mapped json's
+        if (target_mdschema and not target_mdschema.startswith('#')):
+            outpath=path+'-'+target_mdschema+'/json/'
+        else:
+            outpath=path+'/json/'
+
+        if not os.path.exists(outpath):
+            logging.error('[ERROR] Can not access directory "%s" does not exist! (No files to validate are found) !' % (outpath))
             return results
-        elif not os.path.exists(path + '/json') or not os.listdir(path + '/json'):
-            logging.error('[ERROR] The directory "%s/json" does not exist or no json files to validate are found!\n(Maybe your convert list has old items?)' % (path))
+        elif not os.listdir(outpath):
+            logging.error('[ERROR] Can not access json files to validate.' % (outpath))
             return results
     
-        # find all .json files in path/json:
-        files = filter(lambda x: x.endswith('.json'), os.listdir(path+'/json'))
+        # find all .json files in outpath=path/json:
+        files = filter(lambda x: x.endswith('.json'), os.listdir(outpath))
         results['tcount'] = len(files)
         oaiset=path.split(mdprefix)[1].strip('/')
         
-        logging.debug(' %s     INFO  Validation of %d files in %s/json' % (time.strftime("%H:%M:%S"),results['tcount'],path))
+        logging.debug(' %s     INFO  Validation of %d files in %s/json' % (time.strftime("%H:%M:%S"),results['tcount'],outpath))
         if results['tcount'] == 0 :
             logging.error(' ERROR : Found no files to validate !')
             return results
@@ -1400,18 +1414,18 @@ class MAPPER():
             bartags=perc/10
             if perc%10 == 0 and perc != oldperc :
                 oldperc=perc
-                logging.info("\r\t[%-20s] %d / %d%% in %d sec" % ('='*bartags, fcount, perc, time.time()-start ))
+                print "\r\t[%-20s] %d / %d%% in %d sec" % ('='*bartags, fcount, perc, time.time()-start )
                 sys.stdout.flush()
 
             jsondata = dict()
-            logging.debug('    | v | %-4d | %-s/json/%s |' % (fcount,os.path.basename(path),filename))
+            logging.debug('    | v | %-4d | %-s/%s |' % (fcount,os.path.basename(outpath),filename))
 
-            if ( os.path.getsize(path+'/json/'+filename) > 0 ):
-                with open(path+'/json/'+filename, 'r') as f:
+            if ( os.path.getsize(outpath+filename) > 0 ):
+                with open(outpath+filename, 'r') as f:
                     try:
                         jsondata=json.loads(f.read())
                     except:
-                        log.error('    | [ERROR] Cannot load the json file %s' % path+'/json/'+filename)
+                        log.error('    | [ERROR] Cannot load the json file %s' % outpath+filename)
                         results['ecount'] += 1
                         continue
             else:
@@ -1481,7 +1495,7 @@ class MAPPER():
         logging.debug('%s     INFO  B2FIND : %d records validated; %d records caused error(s).' % (time.strftime("%H:%M:%S"),fcount,results['ecount']))
 
         # count ... all .json files in path/json
-        results['count'] = len(filter(lambda x: x.endswith('.json'), os.listdir(path)))
+        results['count'] = len(filter(lambda x: x.endswith('.json'), os.listdir(outpath)))
 
         logging.info(
                 '   \t|- %-10s |@ %-10s |\n\t| Provided | Validated | Failed |\n\t| %8d | %9d | %6d |' 
@@ -1612,26 +1626,29 @@ class CKAN_CLIENT(object):
         # make json data in conformity with URL standards
         data_string = unicode(urllib.quote(json.dumps(data_dict)), errors='replace')
 
-        logging.debug('\t|-- Action %s\n\t|-- Calling %s ' % (action,action_url))	
+        logging.debug('\t|-- Action %s\n\t|-- Calling %s\n\t|Data %s' % (action,action_url,data_string))	
         ##HEW-Tlogging.debug('\t|-- Object %s ' % data_dict)	
         try:
             request = urllib2.Request(action_url)
             if (self.api_key): request.add_header('Authorization', self.api_key)
             response = urllib2.urlopen(request,data_string)
         except urllib2.HTTPError as e:
-            logging.debug('\tHTTPError %s : The server %s couldn\'t fulfill the action %s.' % (e.code,self.ip_host,action))
+            logging.error('\tHTTPError %s %s : The server %s couldn\'t fulfill the action %s.' % (e.code,e,self.ip_host,action))
             if ( e.code == 403 ):
-                logging.error('\tAccess forbidden, maybe the API key is not valid?')
+                logging.critical('\tAccess forbidden, maybe the API key is not valid?')
+                exit(e.code)
+            if ( e.code == 404 ):
+                logging.critical('\t%s' % e)
                 exit(e.code)
             elif ( e.code == 409 and action == 'package_create'):
-                logging.debug('\tMaybe the dataset already exists => try to update the package')
+                logging.error('\tMaybe the dataset already exists => try to update the package')
                 self.action('package_update',data_dict)
                 ##HEW-D return {"success" : False}
             elif ( e.code == 409):
-                logging.debug('\tMaybe you have a parameter error?')
+                logging.critical('\tMaybe you have a parameter error?')
                 return {"success" : False}
             elif ( e.code == 500):
-                logging.error('\tInternal server error')
+                logging.critical('\tInternal server error')
                 exit(e.code)
         except urllib2.URLError as e:
             logging.error('\tURLError %s : %s' % (e,e.reason))
@@ -1758,7 +1775,7 @@ class UPLOADER (object):
         mandFields=['title','url','oai_identifier']
         for field in mandFields :
             if field not in jsondata: ##  or jsondata[field] == ''):
-                raise Exception("The mandatory field '%s' is missing" % field)
+                logging.error("The mandatory field '%s' is missing" % field)
         ##HEW-D elif ('url' in jsondata and not self.check_url(jsondata['url'])):
         ##HEW-D     errmsg = "'url': The source url is broken"
         ##HEW-D     if(status > 1): status = 1  # set status
@@ -1828,6 +1845,7 @@ class UPLOADER (object):
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
             logging.debug('\t - Try to create dataset %s' % ds)
+            logging.debug('\t   with jsondata:\n\t %s' % jsondata)
             
             results = self.CKAN.action('package_create',jsondata)
             if (results and results['success']):
@@ -2005,43 +2023,19 @@ def process(options,pstat):
 
     ## VALIDATOR - Mode:  
     if (pstat['status']['v'] == 'tbd'):
-            MP = MAPPER()
-            logging.info('\n|- Validating started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
-        
-            # start the process converting:
-            if mode is 'multi':
-                convert_list='harvest_list'
-                logging.info(' |- Joblist:  \t%s' % options.list)
-                process_validate(MP, parse_list_file('validate', convert_list or options.list, options.community,options.mdsubset))
-            else:
-                process_validate(MP,[[
-                    options.community,
-                    options.source,
-                    options.mdprefix,
-                    options.outdir + '/' + options.mdprefix,
-                    options.mdsubset
-                ]])
+        print '\n|- Validating started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        MP = MAPPER()
+        process_validate(MP,reqlist)        
+
     ## UPLOADING - Mode:  
     if (pstat['status']['u'] == 'tbd'):
-            # create CKAN object                       
-            CKAN = CKAN_CLIENT(options.iphost,options.auth)
-            UP = UPLOADER(CKAN)
-            logging.info('\n|- Uploading started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
-            logging.info(' |- Host:  \t%s' % CKAN.ip_host )
+        # create CKAN object                       
+        CKAN = CKAN_CLIENT(options.iphost,options.auth)
+        UP = UPLOADER(CKAN)
+        print '\n|- Uploading started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        logging.info(' |- Host:  \t%s' % CKAN.ip_host )
 
-            # start the process uploading:
-            if mode is 'multi':
-                convert_list='harvest_list'
-                logging.info(' |- Joblist:  \t%s' % convert_list )
-                process_upload(UP, parse_list_file('upload', convert_list or options.list, options.community, options.mdsubset), options)
-            else:
-                process_upload(UP,[[
-                    options.community,
-                    options.source,
-                    options.mdprefix,
-                    options.outdir + '/' + options.mdprefix,
-                    options.mdsubset
-                ]],options)
+        process_upload(UP,reqlist,options) 
 
 def process_harvest(HV, rlist):
     ## process_harvest (HARVESTER object, rlist) - function
@@ -2137,20 +2131,23 @@ def process_validate(MP, rlist):
     ir=0
     for request in rlist:
         ir+=1
-        if len(request) > 4:
-            outfile='%s/%s/%s' % (request[2],request[4],'validation.stat')
+        if (len(request) > 5 and request[5]):            
+            target=request[5]
         else:
-            outfile='%s/%s/%s' % (request[2],'SET','validation.stat')
-
-        logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
+            target=None
         cstart = time.time()
-        
+
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+request[4])
         else:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
 
-        results = MP.validate(request[0],request[3],path)
+        outfile='%s/%s' % (path,'validation.stat')
+
+        logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
+        cstart = time.time()
+        
+        results = MP.validate(request[0],request[3],path,target)
 
         ctime=time.time()-cstart
         results['time'] = ctime
@@ -2238,7 +2235,7 @@ def process_upload(UP, rlist, options):
         dir=os.path.abspath('oaidata/'+community+'-'+mdprefix+'/'+subset)
 
         if not os.path.exists(dir):
-            logging.error('[ERROR] The directory "%s" does not exist! No files for uploading are found!\n(Maybe your upload list has old items?)' % (dir))
+            logging.critical('[ERROR] The directory "%s" does not exist! No files for uploading are found!\n(Maybe your upload list has old items?)' % (dir))
             
             # save stats:
             ##UP.OUT.save_stats(community+'-'+mdprefix,subset,'u',results)
@@ -2269,7 +2266,7 @@ def process_upload(UP, rlist, options):
             bartags=perc/5
             if perc%10 == 0 and perc != oldperc :
                 oldperc=perc
-                logging.info("\t[%-20s] %d / %d%%\r" % ('='*bartags, fcount, perc ))
+                print "\t[%-20s] %d / %d%%\r" % ('='*bartags, fcount, perc )
                 sys.stdout.flush()
 
             jsondata = dict()
@@ -2292,9 +2289,11 @@ def process_upload(UP, rlist, options):
             logging.info('    | u | %-4d | %-40s |' % (fcount,ds_id))
 
             # get OAI identifier from json data extra field 'oai_identifier':
-            oai_id = jsondata['oai_identifier'][0]
-            logging.debug("        |-> identifier: %s\n" % (oai_id))
-            
+            if 'oai_identifier' in jsondata :
+                oai_id = jsondata['oai_identifier'][0]
+                logging.debug("        |-> identifier: %s\n" % (oai_id))
+            else:
+                oai_id = ds_id
             ### CHECK JSON DATA for upload
             jsondata=UP.check(jsondata)
 
@@ -2513,7 +2512,7 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
         reqlist.append(request.split())
         
     if len(reqlist) == 0:
-        logging.error(' No matching request found in %s' % filename)
+        logging.critical(' No matching request found in %s' % filename)
         exit()
  
     return reqlist
