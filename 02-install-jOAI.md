@@ -84,11 +84,17 @@ If you want run e.g. a CKAN instance in parallel, you must change the port of th
                URIEncoding="UTF-8"
                redirectPort="8443" />
 ```    
-After restart of tomcat will jOAI run now on
+After restart of tomcat will run on
 ```
-http://localhost:8181/oai/
+sudo service tomcat7 start
+http://localhost:8181/
 ```
-and CKAN still on ```localhost```.
+or when you work on a remote server (VM)
+
+```
+http://<ip-address or fully qualified domain name>:8081/
+```
+**Since we will deploy CKAN, which makes use of apache, we advise you to use port 8181.**
 
 For general **troubleshooting and Diagnostic techniques** we refer to
 ``` https://wiki.apache.org/tomcat/FAQ/Troubleshooting_and_Diagnostics ```
@@ -143,16 +149,19 @@ sudo service tomcat7 <stop, start, restart>
 
 If you now enter in an internet browser
 ```sh
-localhost:8080
+<localhost>:8181
 ```
-and all works fine you should see a page showing **'It works'** and the graphical user interface of the web application joi should be opened by 
-```sh
-localhost:8080/oai
+or
 ```
-
-When you are working remotely on a server you can access the web interface by
+<ip address or fully qualified domain name>:8181
+```
+and all works fine you should see a page showing **'It works'** and the graphical user interface of the web application jOAI should be opened by 
 ```sh
-http://<server url>:8080/oai/
+localhost:8181/oai
+```
+or
+```sh
+http://<ip-address or fully qualified domain name>:8181/oai/
 ```
 
 <img align="centre" src="img/jOAI_Overview.png" width="800px">
