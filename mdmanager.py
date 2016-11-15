@@ -1244,13 +1244,10 @@ class MAPPER():
         out=' %s to json stdout\nsome stuff\nlast line ..' % infformat
         if (err is not None ): logging.error('[ERROR] ' + err)
 
-        logging.info(
-                '   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |' 
-                % ( 'Finished',time.strftime("%H:%M:%S"),
+        print '   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |' % ( 'Finished',time.strftime("%H:%M:%S"),
                     results['tcount'],
                     fcount,
-                    results['ecount']
-                ))
+                    results['ecount'])
 
         # search in output for result statistics
         last_line = out.split('\n')[-2]
