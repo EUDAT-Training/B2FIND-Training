@@ -1772,7 +1772,7 @@ class UPLOADER (object):
         errmsg = ''
         
         ## check mandatory fields ...
-        mandFields=['title','url','oai_identifier']
+        mandFields=['title','url'] ##HEW-DEL ,'oai_identifier']
         for field in mandFields :
             if field not in jsondata: ##  or jsondata[field] == ''):
                 logging.error("The mandatory field '%s' is missing" % field)
@@ -1840,7 +1840,7 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
-        jsondata["owner_org"]="rda"
+        jsondata["owner_org"]="FishOrg" ## "rda"
    
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
@@ -2210,6 +2210,7 @@ def process_upload(UP, rlist, options):
         "fgdc" : "No specification for fgdc available",
         "hdcp2" : "No specification for hdcp2 available"
         }
+
     for request in rlist:
         ir+=1
         logging.info('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
@@ -2228,8 +2229,14 @@ def process_upload(UP, rlist, options):
             'time':0
         }
         
-        if CKAN.action('group_show',{"id":community}) == None or not (CKAN.action('group_show',{"id":community})['success']) :
-          logging.error(" CKAN group %s does not exist" % community)
+        try:
+            group_show=CKAN.action('group_show',{"id":community})
+        except :
+            logging.critical(" Could not check for CKAN group %s" % community)
+            sys.exit()    
+
+        if group_show == None or not group_show['success'] :
+          logging.critical(" CKAN group %s does not exist" % community)
           sys.exit()
 
         dir=os.path.abspath('oaidata/'+community+'-'+mdprefix+'/'+subset)
