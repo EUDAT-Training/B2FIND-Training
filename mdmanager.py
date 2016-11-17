@@ -1626,7 +1626,7 @@ class CKAN_CLIENT(object):
         # make json data in conformity with URL standards
         data_string = unicode(urllib.quote(json.dumps(data_dict)), errors='replace')
 
-        logging.debug('\t|-- Action %s\n\t|-- Calling %s\n\t|Data %s' % (action,action_url,data_string))	
+        logging.debug('\t|-- Action %s\n\t|-- Calling %s\n\t|Data %s' % (action,action_url,data_dict))	
         ##HEW-Tlogging.debug('\t|-- Object %s ' % data_dict)	
         try:
             request = urllib2.Request(action_url)
@@ -1635,7 +1635,7 @@ class CKAN_CLIENT(object):
         except urllib2.HTTPError as e:
             logging.error('\tHTTPError %s %s : The server %s couldn\'t fulfill the action %s.' % (e.code,e,self.ip_host,action))
             if ( e.code == 403 ):
-                logging.critical('\tAccess forbidden, maybe the API key is not valid?')
+                logging.critical('\tAccess forbidden, maybe the API key or CKAN organization is not valid?')
                 exit(e.code)
             if ( e.code == 404 ):
                 logging.error('\t%s' % e)
@@ -1840,7 +1840,6 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
-        jsondata["owner_org"]="eudat" ## "FishOrg" ## "rda"
    
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
@@ -2228,16 +2227,25 @@ def process_upload(UP, rlist, options):
             'tcount':0,
             'time':0
         }
-        
+
         try:
-            group_show=CKAN.action('group_show',{"id":community})
+            group_list=CKAN.action('group_list')
+            if community not in group_list['result']:
+                logging.critical("Community %s not found in CKAN group list %s" % (community,group_list['result']))
+                sys.exit()
         except :
-            logging.critical(" Could not access CKAN group %s" % community)
+            logging.critical("Could not list CKAN groups")
             sys.exit()
 
-        if group_show == None or not group_show['success'] :
-          logging.critical(" CKAN group %s does not exist" % community)
-          sys.exit()
+        try:
+            group_show=CKAN.action('group_show',{"id":community})
+            if group_show == None or not group_show['success'] :
+                logging.critical(" CKAN group %s does not exist" % community)
+                sys.exit()
+        except :
+            logging.critical("Could not show CKAN group %s" % community)
+            ##-?? sys.exit()
+
 
         dir=os.path.abspath('oaidata/'+community+'-'+mdprefix+'/'+subset)
 
@@ -2277,6 +2285,7 @@ def process_upload(UP, rlist, options):
                 sys.stdout.flush()
 
             jsondata = dict()
+            
             pathfname= dir+'/json/'+filename
             if ( os.path.getsize(pathfname) > 0 ):
                 with open(pathfname, 'r') as f:
@@ -2291,9 +2300,11 @@ def process_upload(UP, rlist, options):
                 continue
 
             # get dataset id (CKAN name) from filename (a uuid generated identifier):
-            ds_id = os.path.splitext(filename)[0]
+            ds_id = os.path.splitext(filename)[0].lower()
             
             logging.info('    | u | %-4d | %-40s |' % (fcount,ds_id))
+
+            jsondata["owner_org"]=options.ckan_organization ## "eudat" ## "FishOrg" ## "rda"
 
             # get OAI identifier from json data extra field 'oai_identifier':
             if 'oai_identifier' in jsondata :
@@ -2568,6 +2579,7 @@ processing modes : \n\t
     group_upload.add_option('--auth', help="Authentification for CKAN APIs (API key, by default taken from file $HOME/.netrc)",metavar='STRING')
     group_upload.add_option('--handle_check', help="check and generate handles corresponding to the settings in the CREDENDIALFILE", default=None,metavar='CREDENTIALFILE')
     group_upload.add_option('--ckan_check', help="check existence and checksum of records in CKAN database during upload", default='False', metavar='BOOLEAN')
+    group_upload.add_option('--ckan_organization', help="assign CKAN organization to dataset", default='rda', metavar='STRING')
     
     p.add_option_group(group_multi)
     p.add_option_group(group_single)
