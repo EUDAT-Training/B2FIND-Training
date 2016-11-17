@@ -132,13 +132,15 @@ def main():
 	            
 	            record['id']  = '%s' % (ds['name'])
 	            outline=record['id']
+
+                    ##HEW-T print 'ds : %s' % ds
 	
 	            # loop over facets
 	            for facet in akeys:
                         ##HEW-T print 'facet : %s' % facet
                         ckanFacet=b2findfields[facet]["ckanName"]
 	                if ckanFacet in ds: ## CKAN default field
-	                    if facet == 'Group':
+	                    if facet == 'Community':
 	                        record[facet]  = ds[ckanFacet][0]['display_name']
 	                    else:
 	                        record[facet]  = ds[ckanFacet]
