@@ -185,7 +185,7 @@
     "Community" : {
         "name" : "community",
         "description" : "",
-        "ckanName" : "group",
+        "ckanName" : "groups",
         "ckanType" : "default",
         "display" : "shown",
         "type" : "textual",
