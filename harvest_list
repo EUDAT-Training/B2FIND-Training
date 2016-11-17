@@ -11,9 +11,10 @@
 ## community         OAI URL                                verb           metadataPrefix  set
 ## -----------------------------------------------------------------------------------
 ## MyProjects
+## The famous fishproject
 fishproject http://localhost:8181/oai/provider ListIdentifiers oai_dc 
-##%%% EARLINET : MD Provider eudat-oai.dkrz.de (directly extracted from CERA)
-earlinet    http://eudat-oai.dkrz.de:8080/oai/provider ListIdentifiers  iso 
+## Some seismological data from GFZ@Potsdam :
+gfz     http://doidb.wdc-terra.org/oaip/oai        ListRecords       oai_datacite DOIDB
 ##%%% EUDAT B2SHARE
 b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml Linguistics
 b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml EUON
@@ -25,7 +26,4 @@ b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml GBIF
 b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml RDA
 ##%%% DataCite : MD Provider is DataCite.org 
 datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-1 ## Griffith University; 38;
-datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-2 ## CSSE Uni Melbourne; 4;
-datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-3 ## Monash University; 39;
-datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-5 ## TERN Central Portal; 178;
-datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-6 ## Curtin University; 140;
+
