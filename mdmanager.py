@@ -1638,7 +1638,7 @@ class CKAN_CLIENT(object):
                 logging.critical('\tAccess forbidden, maybe the API key is not valid?')
                 exit(e.code)
             if ( e.code == 404 ):
-                logging.critical('\t%s' % e)
+                logging.error('\t%s' % e)
                 exit(e.code)
             elif ( e.code == 409 and action == 'package_create'):
                 logging.error('\tMaybe the dataset already exists => try to update the package')
@@ -2232,8 +2232,8 @@ def process_upload(UP, rlist, options):
         try:
             group_show=CKAN.action('group_show',{"id":community})
         except :
-            logging.critical(" Could not check for CKAN group %s" % community)
-            sys.exit()    
+            logging.critical(" Could not access CKAN group %s" % community)
+            sys.exit()
 
         if group_show == None or not group_show['success'] :
           logging.critical(" CKAN group %s does not exist" % community)
