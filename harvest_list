@@ -12,7 +12,7 @@
 ## -----------------------------------------------------------------------------------
 ## MyProjects
 ## The famous fishproject
-fishproject http://localhost:8181/oai/provider ListIdentifiers oai_dc 
+fishproject http://localhost:8181/oai/provider ListIdentifiers oai_dc sample_1
 ## Some seismological data from GFZ@Potsdam :
 gfz     http://doidb.wdc-terra.org/oaip/oai        ListRecords       oai_datacite DOIDB
 ##%%% EUDAT B2SHARE
