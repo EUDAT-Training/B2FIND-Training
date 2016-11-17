@@ -1041,7 +1041,7 @@ class MAPPER():
             logging.debug('[WARNING] Community specific mapfile %s does not exist !' % mapfile)
             mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
             if not os.path.isfile(mapfile):
-                logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
+                logging.critical('[CRITCAL] Can not access mapfile mapfiles/[%s-]%s ' % (community,os.path.basename(mapfile)))
                 return results
         logging.debug('  |- Mapfile\t%s' % os.path.basename(mapfile))
         mf = codecs.open(mapfile, "r", "utf-8")
@@ -1244,10 +1244,13 @@ class MAPPER():
         out=' %s to json stdout\nsome stuff\nlast line ..' % infformat
         if (err is not None ): logging.error('[ERROR] ' + err)
 
-        print '   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |' % ( 'Finished',time.strftime("%H:%M:%S"),
+        logging.info(
+                '   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |' 
+                % ( 'Finished',time.strftime("%H:%M:%S"),
                     results['tcount'],
                     fcount,
-                    results['ecount'])
+                    results['ecount']
+                ))
 
         # search in output for result statistics
         last_line = out.split('\n')[-2]
@@ -1837,7 +1840,7 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
-        jsondata["owner_org"]="FishOrg" ## "rda"
+        jsondata["owner_org"]="eudat" ## "FishOrg" ## "rda"
    
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
