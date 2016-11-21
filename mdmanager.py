@@ -162,7 +162,7 @@ class GENERATOR(object):
 	try:
 		fp = open(fn)
 		ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
-                ##HEW-D print ' |- Original fields:\n\t%s' % ofields
+                print ' |- Original fields:\n\t%s' % ofields
 
 		if os.path.isfile(mapfile) :
                     print ' |- Use existing mapfile\t%s' % mapfile
@@ -1028,6 +1028,8 @@ class MAPPER():
             outpath=path+'-'+target_mdschema+'/json'
         else:
             outpath=path+'/json'
+
+
         if (not os.path.isdir(outpath)):
            os.makedirs(outpath)
 
@@ -1041,7 +1043,7 @@ class MAPPER():
             logging.debug('[WARNING] Community specific mapfile %s does not exist !' % mapfile)
             mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
             if not os.path.isfile(mapfile):
-                logging.critical('[CRITCAL] Can not access mapfile mapfiles/[%s-]%s ' % (community,os.path.basename(mapfile)))
+                logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
                 return results
         logging.debug('  |- Mapfile\t%s' % os.path.basename(mapfile))
         mf = codecs.open(mapfile, "r", "utf-8")
@@ -1317,7 +1319,7 @@ class MAPPER():
             ##    print ' Following key-value errors fails validation:\n' + errlist 
             return vall
 
-    def validate(self,community,mdprefix,path,target_mdschema):
+    def validate(self,community,mdprefix,path):
         ## validate(MAPPER object, community, mdprefix, path) - method
         # validates the (mapped) JSON files in directory <path> against the B2FIND md schema
         # Parameters:
@@ -1345,43 +1347,27 @@ class MAPPER():
             mapext='conf' ##!!!HEW --> json
         else:
             mapext='xml'
-
-        # check and read rules from mapfile
-        if (target_mdschema != None and not target_mdschema.startswith('#')):
-            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
-        else:
-            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,mdprefix,mapext)
-
-
         if not os.path.isfile(mapfile):
-            logging.debug('[WARNING] Community specific mapfile %s does not exist !' % mapfile)
-            mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
-            if not os.path.isfile(mapfile):
-                logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
-                return results
-        logging.debug('  |- Mapfile\t%s' % os.path.basename(mapfile))
-        mf = codecs.open(mapfile, "r", "utf-8")
-        ##HEW-??? mf=open(mapfile) 
+           mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
+           if not os.path.isfile(mapfile):
+              logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
+              return results
+        mf=open(mapfile) 
 
-        # check output directory for mapped json's
-        if (target_mdschema and not target_mdschema.startswith('#')):
-            outpath=path+'-'+target_mdschema+'/json/'
-        else:
-            outpath=path+'/json/'
-
-        if not os.path.exists(outpath):
-            logging.error('[ERROR] Can not access directory "%s" does not exist! (No files to validate are found) !' % (outpath))
+        # check paths
+        if not os.path.exists(path):
+            logging.error('[ERROR] The directory "%s" does not exist! No files to validate are found!\n(Maybe your convert list has old items?)' % (path))
             return results
-        elif not os.listdir(outpath):
-            logging.error('[ERROR] Can not access json files to validate.' % (outpath))
+        elif not os.path.exists(path + '/json') or not os.listdir(path + '/json'):
+            logging.error('[ERROR] The directory "%s/json" does not exist or no json files to validate are found!\n(Maybe your convert list has old items?)' % (path))
             return results
     
-        # find all .json files in outpath=path/json:
-        files = filter(lambda x: x.endswith('.json'), os.listdir(outpath))
+        # find all .json files in path/json:
+        files = filter(lambda x: x.endswith('.json'), os.listdir(path+'/json'))
         results['tcount'] = len(files)
         oaiset=path.split(mdprefix)[1].strip('/')
         
-        logging.debug(' %s     INFO  Validation of %d files in %s/json' % (time.strftime("%H:%M:%S"),results['tcount'],outpath))
+        logging.debug(' %s     INFO  Validation of %d files in %s/json' % (time.strftime("%H:%M:%S"),results['tcount'],path))
         if results['tcount'] == 0 :
             logging.error(' ERROR : Found no files to validate !')
             return results
@@ -1414,18 +1400,18 @@ class MAPPER():
             bartags=perc/10
             if perc%10 == 0 and perc != oldperc :
                 oldperc=perc
-                print "\r\t[%-20s] %d / %d%% in %d sec" % ('='*bartags, fcount, perc, time.time()-start )
+                logging.info("\r\t[%-20s] %d / %d%% in %d sec" % ('='*bartags, fcount, perc, time.time()-start ))
                 sys.stdout.flush()
 
             jsondata = dict()
-            logging.debug('    | v | %-4d | %-s/%s |' % (fcount,os.path.basename(outpath),filename))
+            logging.debug('    | v | %-4d | %-s/json/%s |' % (fcount,os.path.basename(path),filename))
 
-            if ( os.path.getsize(outpath+filename) > 0 ):
-                with open(outpath+filename, 'r') as f:
+            if ( os.path.getsize(path+'/json/'+filename) > 0 ):
+                with open(path+'/json/'+filename, 'r') as f:
                     try:
                         jsondata=json.loads(f.read())
                     except:
-                        log.error('    | [ERROR] Cannot load the json file %s' % outpath+filename)
+                        log.error('    | [ERROR] Cannot load the json file %s' % path+'/json/'+filename)
                         results['ecount'] += 1
                         continue
             else:
@@ -1495,7 +1481,7 @@ class MAPPER():
         logging.debug('%s     INFO  B2FIND : %d records validated; %d records caused error(s).' % (time.strftime("%H:%M:%S"),fcount,results['ecount']))
 
         # count ... all .json files in path/json
-        results['count'] = len(filter(lambda x: x.endswith('.json'), os.listdir(outpath)))
+        results['count'] = len(filter(lambda x: x.endswith('.json'), os.listdir(path)))
 
         logging.info(
                 '   \t|- %-10s |@ %-10s |\n\t| Provided | Validated | Failed |\n\t| %8d | %9d | %6d |' 
@@ -1626,29 +1612,26 @@ class CKAN_CLIENT(object):
         # make json data in conformity with URL standards
         data_string = unicode(urllib.quote(json.dumps(data_dict)), errors='replace')
 
-        logging.debug('\t|-- Action %s\n\t|-- Calling %s\n\t|Data %s' % (action,action_url,data_dict))	
+        logging.debug('\t|-- Action %s\n\t|-- Calling %s ' % (action,action_url))	
         ##HEW-Tlogging.debug('\t|-- Object %s ' % data_dict)	
         try:
             request = urllib2.Request(action_url)
             if (self.api_key): request.add_header('Authorization', self.api_key)
             response = urllib2.urlopen(request,data_string)
         except urllib2.HTTPError as e:
-            logging.error('\tHTTPError %s %s : The server %s couldn\'t fulfill the action %s.' % (e.code,e,self.ip_host,action))
+            logging.debug('\tHTTPError %s : The server %s couldn\'t fulfill the action %s.' % (e.code,self.ip_host,action))
             if ( e.code == 403 ):
-                logging.critical('\tAccess forbidden, maybe the API key or CKAN organization is not valid?')
-                exit(e.code)
-            if ( e.code == 404 ):
-                logging.error('\t%s' % e)
+                logging.error('\tAccess forbidden, maybe the API key is not valid?')
                 exit(e.code)
             elif ( e.code == 409 and action == 'package_create'):
-                logging.error('\tMaybe the dataset already exists => try to update the package')
+                logging.debug('\tMaybe the dataset already exists => try to update the package')
                 self.action('package_update',data_dict)
                 ##HEW-D return {"success" : False}
             elif ( e.code == 409):
-                logging.critical('\tMaybe you have a parameter error?')
+                logging.debug('\tMaybe you have a parameter error?')
                 return {"success" : False}
             elif ( e.code == 500):
-                logging.critical('\tInternal server error')
+                logging.error('\tInternal server error')
                 exit(e.code)
         except urllib2.URLError as e:
             logging.error('\tURLError %s : %s' % (e,e.reason))
@@ -1772,10 +1755,10 @@ class UPLOADER (object):
         errmsg = ''
         
         ## check mandatory fields ...
-        mandFields=['title','url'] ##HEW-DEL ,'oai_identifier']
+        mandFields=['title','url','oai_identifier']
         for field in mandFields :
             if field not in jsondata: ##  or jsondata[field] == ''):
-                logging.error("The mandatory field '%s' is missing" % field)
+                raise Exception("The mandatory field '%s' is missing" % field)
         ##HEW-D elif ('url' in jsondata and not self.check_url(jsondata['url'])):
         ##HEW-D     errmsg = "'url': The source url is broken"
         ##HEW-D     if(status > 1): status = 1  # set status
@@ -1840,11 +1823,11 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
+        jsondata["owner_org"]="rda"
    
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
             logging.debug('\t - Try to create dataset %s' % ds)
-            logging.debug('\t   with jsondata:\n\t %s' % jsondata)
             
             results = self.CKAN.action('package_create',jsondata)
             if (results and results['success']):
@@ -2022,19 +2005,43 @@ def process(options,pstat):
 
     ## VALIDATOR - Mode:  
     if (pstat['status']['v'] == 'tbd'):
-        print '\n|- Validating started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
-        MP = MAPPER()
-        process_validate(MP,reqlist)        
-
+            MP = MAPPER()
+            logging.info('\n|- Validating started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
+        
+            # start the process converting:
+            if mode is 'multi':
+                convert_list='harvest_list'
+                logging.info(' |- Joblist:  \t%s' % options.list)
+                process_validate(MP, parse_list_file('validate', convert_list or options.list, options.community,options.mdsubset))
+            else:
+                process_validate(MP,[[
+                    options.community,
+                    options.source,
+                    options.mdprefix,
+                    options.outdir + '/' + options.mdprefix,
+                    options.mdsubset
+                ]])
     ## UPLOADING - Mode:  
     if (pstat['status']['u'] == 'tbd'):
-        # create CKAN object                       
-        CKAN = CKAN_CLIENT(options.iphost,options.auth)
-        UP = UPLOADER(CKAN)
-        print '\n|- Uploading started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
-        logging.info(' |- Host:  \t%s' % CKAN.ip_host )
+            # create CKAN object                       
+            CKAN = CKAN_CLIENT(options.iphost,options.auth)
+            UP = UPLOADER(CKAN)
+            logging.info('\n|- Uploading started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
+            logging.info(' |- Host:  \t%s' % CKAN.ip_host )
 
-        process_upload(UP,reqlist,options) 
+            # start the process uploading:
+            if mode is 'multi':
+                convert_list='harvest_list'
+                logging.info(' |- Joblist:  \t%s' % convert_list )
+                process_upload(UP, parse_list_file('upload', convert_list or options.list, options.community, options.mdsubset), options)
+            else:
+                process_upload(UP,[[
+                    options.community,
+                    options.source,
+                    options.mdprefix,
+                    options.outdir + '/' + options.mdprefix,
+                    options.mdsubset
+                ]],options)
 
 def process_harvest(HV, rlist):
     ## process_harvest (HARVESTER object, rlist) - function
@@ -2130,23 +2137,20 @@ def process_validate(MP, rlist):
     ir=0
     for request in rlist:
         ir+=1
-        if (len(request) > 5 and request[5]):            
-            target=request[5]
+        if len(request) > 4:
+            outfile='%s/%s/%s' % (request[2],request[4],'validation.stat')
         else:
-            target=None
-        cstart = time.time()
+            outfile='%s/%s/%s' % (request[2],'SET','validation.stat')
 
+        logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
+        cstart = time.time()
+        
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+request[4])
         else:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
 
-        outfile='%s/%s' % (path,'validation.stat')
-
-        logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
-        cstart = time.time()
-        
-        results = MP.validate(request[0],request[3],path,target)
+        results = MP.validate(request[0],request[3],path)
 
         ctime=time.time()-cstart
         results['time'] = ctime
@@ -2209,7 +2213,6 @@ def process_upload(UP, rlist, options):
         "fgdc" : "No specification for fgdc available",
         "hdcp2" : "No specification for hdcp2 available"
         }
-
     for request in rlist:
         ir+=1
         logging.info('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
@@ -2227,30 +2230,15 @@ def process_upload(UP, rlist, options):
             'tcount':0,
             'time':0
         }
-
-        try:
-            group_list=CKAN.action('group_list')
-            if community not in group_list['result']:
-                logging.critical("Community %s not found in CKAN group list %s" % (community,group_list['result']))
-                sys.exit()
-        except :
-            logging.critical("Could not list CKAN groups")
-            sys.exit()
-
-        try:
-            group_show=CKAN.action('group_show',{"id":community})
-            if group_show == None or not group_show['success'] :
-                logging.critical(" CKAN group %s does not exist" % community)
-                sys.exit()
-        except :
-            logging.critical("Could not show CKAN group %s" % community)
-            ##-?? sys.exit()
-
+        
+        if CKAN.action('group_show',{"id":community}) == None or not (CKAN.action('group_show',{"id":community})['success']) :
+          logging.error(" CKAN group %s does not exist" % community)
+          sys.exit()
 
         dir=os.path.abspath('oaidata/'+community+'-'+mdprefix+'/'+subset)
 
         if not os.path.exists(dir):
-            logging.critical('[ERROR] The directory "%s" does not exist! No files for uploading are found!\n(Maybe your upload list has old items?)' % (dir))
+            logging.error('[ERROR] The directory "%s" does not exist! No files for uploading are found!\n(Maybe your upload list has old items?)' % (dir))
             
             # save stats:
             ##UP.OUT.save_stats(community+'-'+mdprefix,subset,'u',results)
@@ -2281,11 +2269,10 @@ def process_upload(UP, rlist, options):
             bartags=perc/5
             if perc%10 == 0 and perc != oldperc :
                 oldperc=perc
-                print "\t[%-20s] %d / %d%%\r" % ('='*bartags, fcount, perc )
+                logging.info("\t[%-20s] %d / %d%%\r" % ('='*bartags, fcount, perc ))
                 sys.stdout.flush()
 
             jsondata = dict()
-            
             pathfname= dir+'/json/'+filename
             if ( os.path.getsize(pathfname) > 0 ):
                 with open(pathfname, 'r') as f:
@@ -2300,18 +2287,14 @@ def process_upload(UP, rlist, options):
                 continue
 
             # get dataset id (CKAN name) from filename (a uuid generated identifier):
-            ds_id = os.path.splitext(filename)[0].lower()
+            ds_id = os.path.splitext(filename)[0]
             
             logging.info('    | u | %-4d | %-40s |' % (fcount,ds_id))
 
-            jsondata["owner_org"]=options.ckan_organization ## "eudat" ## "FishOrg" ## "rda"
-
             # get OAI identifier from json data extra field 'oai_identifier':
-            if 'oai_identifier' in jsondata :
-                oai_id = jsondata['oai_identifier'][0]
-                logging.debug("        |-> identifier: %s\n" % (oai_id))
-            else:
-                oai_id = ds_id
+            oai_id = jsondata['oai_identifier'][0]
+            logging.debug("        |-> identifier: %s\n" % (oai_id))
+            
             ### CHECK JSON DATA for upload
             jsondata=UP.check(jsondata)
 
@@ -2530,7 +2513,7 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
         reqlist.append(request.split())
         
     if len(reqlist) == 0:
-        logging.critical(' No matching request found in %s' % filename)
+        logging.error(' No matching request found in %s' % filename)
         exit()
  
     return reqlist
@@ -2538,52 +2521,51 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
 def options_parser(modes):
     
     p = optparse.OptionParser(
-        description = '''
-Description                                                                
-===========                                                                
-Management of metadata, comprising the whole life cycle, i.e. the following 
-processing modes : \n\t                                                    
-- Generation of formated XML files from 'raw' metadata, e.g. csv \n\t      
-- Harvesting of XML files from an OAI-PMH endpoint \n\t                    
-- Mapping of XML to JSON records applying semantic rules and vocabularies\n\t
-- Validation of the mapped JSON records and creating coverage statistics\n\t
-- Uploading of JSON records as datasets to a metadata catalogue (CKAN)\n\t
+        description = '''Description                                                              
+===========                                                                           
+ Management of metadata, comprising                                      
+      - Generation of formated XML records from raw metadata sets \n\t                           
+      - Harvesting of XML files from a data provider endpoint \n\t                           
+      - Mapping of specially formated XML to a target JSON schema \n\t                             
+      - Validation of mapped JSON records as compatible with target schema \n\t
+      - Uploading of JSON records to B2FIND or another CKAN instance \n\t
 ''',
         formatter = optparse.TitledHelpFormatter(),
         prog = 'mdmanager.py',
         epilog='For any further information and documentation please look at the README.md file or send an email to widmann@dkrz.de.'
     )
         
-    p.add_option('-v', '--verbose', action="count", help="increase output verbosity (e.g., -vv is more than -v)", default=False)
-    p.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='This specifies the processing mode. Supported modes are (g)enerating, (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
-    p.add_option('--outdir', '-d', help="The relative data path (default is 'oaidata/').",default='oaidata', metavar='PATH')
-    p.add_option('--community', '-c', help="community or project where metadata are originated.", default='', metavar='STRING')
-    group_multi = optparse.OptionGroup(p, "Request for Multiple Sources",
-        "This is the default operation mode and performs ingestion from a list of sources.")
-    group_multi.add_option('--list', '-l', help="list of requests to several sources (default is ./harvest_list)", default='harvest_list',metavar='FILE')
-    group_single = optparse.OptionGroup(p, "Request for a Single Source",
-        "Use the options '-s | --source SOURCE if you want to ingest from only ONE source.")
-    group_single.add_option('--source', '-s', help="Source of metadata to be processed. In generation mode this is the path to the raw metadata and in harvesting mode this is the URL endpoint from which records are harvested from (e.g. the OAI-URL)",default=None,metavar='STRING')
-
-    group_harvest = optparse.OptionGroup(p, "Generate and Harvest Options",
-        "These options are required to generate or harvest metadata from the specified sources.")
-    group_harvest.add_option('--verb', help="Specifiers of the procesing request. In generation mode this is the delimiter of the source (e.g. \'comma\'(default) or \'tab\' and in harvesting mode this is a 'verb' supported by OAI-PMH ( e.g. ListRecords (default) or ListIdentifers)",default='ListRecords', metavar='STRING')
-    group_harvest.add_option('--mdsubset', help="Subset of the processed data meta data (for OAI-PMH harvesting the OAI subset, if availbale)",default=None, metavar='STRING')
-    group_harvest.add_option('--mdprefix', help="Meta data schema of the source (for OAI-PMH harvesting the OAI metadata prefix",default=None, metavar='STRING')
-    group_harvest.add_option('--fromdate', help="filter metadata to be processed by date (Format: YYYY-MM-DD).", default=None, metavar='DATE')
-    group_harvest.add_option('--target_mdschema', help="(Optional) Meta data schema of the target",default=None,metavar='STRING')
+    p.add_option('-v', '--verbose', action="count",
+                        help="increase output verbosity (e.g., -vv is more than -v)", default=False)
+    p.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='\nThis specifies the processing mode. Supported modes are (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
+    p.add_option('--community', '-c', help="community where data harvested from and uploaded to", default='', metavar='STRING')
+    p.add_option('--fromdate', help="Filter harvested files by date (Format: YYYY-MM-DD).", default=None, metavar='DATE')
+    p.add_option('--handle_check', 
+         help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credstore file",
+         default=None,metavar='FILE')
+    p.add_option('--ckan_check',
+         help="check existence and checksum against existing datasets in CKAN database",
+         default='False', metavar='BOOLEAN')
+    p.add_option('--outdir', '-d', help="The relative root dir in which all harvested files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH')         
+    group_multi = optparse.OptionGroup(p, "Multi Mode Options",
+        "Use these options if you want to ingest from a list in a file.")
+    group_multi.add_option('--list', '-l', help="list of OAI harvest sources (default is ./harvest_list)", default='harvest_list',metavar='FILE')
+         
+    group_single = optparse.OptionGroup(p, "Single Mode Options",
+        "Use these options if you want to ingest from only ONE source.")
+    group_single.add_option('--source', '-s', help="A URL to .xml files which you want to harvest",default=None,metavar='PATH')
+    group_single.add_option('--verb', help="Verbs or requests defined in OAI-PMH, can be ListRecords (default) or ListIdentifers here",default='ListRecords', metavar='STRING')
+    group_single.add_option('--mdsubset', help="Subset of harvested meta data",default=None, metavar='STRING')
+    group_single.add_option('--mdprefix', help="Prefix of harvested meta data",default=None, metavar='STRING')
+    group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
     
     group_upload = optparse.OptionGroup(p, "Upload Options",
         "These options will be required to upload an dataset to a CKAN database.")
     group_upload.add_option('--iphost', '-i', help="IP adress of B2FIND portal (CKAN instance)", metavar='IP')
     group_upload.add_option('--auth', help="Authentification for CKAN APIs (API key, by default taken from file $HOME/.netrc)",metavar='STRING')
-    group_upload.add_option('--handle_check', help="check and generate handles corresponding to the settings in the CREDENDIALFILE", default=None,metavar='CREDENTIALFILE')
-    group_upload.add_option('--ckan_check', help="check existence and checksum of records in CKAN database during upload", default='False', metavar='BOOLEAN')
-    group_upload.add_option('--ckan_organization', help="assign CKAN organization to dataset", default='rda', metavar='STRING')
     
     p.add_option_group(group_multi)
     p.add_option_group(group_single)
-    p.add_option_group(group_harvest)
     p.add_option_group(group_upload)
     
     return p
