@@ -2524,12 +2524,11 @@ def options_parser(modes):
         description = '''Description                                                              
 ===========                                                                           
  Management of metadata, comprising                                      
-      - Harvesting of XML files from an OAI-PMH endpoint \n\t
-
-              - Mapping : Convert XML to JSON and perform semantic mapping on metadata \n\t
-
-\n              - Validation : Performe checks on the mapped JSON records and create coverage statistics\n\t
-              - Uploading of JSON records as datasets to a metadata catalogue\n\t
+      - Generation of formated XML records from raw metadata sets \n\t                           
+      - Harvesting of XML files from a data provider endpoint \n\t                           
+      - Mapping of specially formated XML to a target JSON schema \n\t                             
+      - Validation of mapped JSON records as compatible with target schema \n\t
+      - Uploading of JSON records to B2FIND or another CKAN instance \n\t
 ''',
         formatter = optparse.TitledHelpFormatter(),
         prog = 'mdmanager.py',
