@@ -13,7 +13,7 @@ Additionally we provide hands-on material for the whole metadata management work
 
 <img align="centre" src="img/MD_workflow.png" width="800px">
 
-We provide step by step installation instructions which indocate how the training services and tools are setup and which will give the users an idea how to install the software stack temselves. 
+We provide step by step installation instructions which indicate how the training services and tools are setup and which will give the users an idea how to install the software stack temselves. 
 
 ## Target audience
 
