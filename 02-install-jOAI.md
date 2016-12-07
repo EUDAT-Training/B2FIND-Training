@@ -76,7 +76,7 @@ sudo apt-get install tomcat7
 
 #### 3a. Tomcat trouble shooting
 One known problem with tomcat is, that there are conflicts with other web servers, e.g. an apache, running on the same machine.
-If you want run e.g. a CKAN instance in parallel, you must change the port of the connector in the file ```/etc/tomcat7/server.xml``` :
+If you want run e.g. a CKAN instance in parallel, the software that provides the user portal to B2FIND, you must change the port of the connector in the file ```/etc/tomcat7/server.xml``` :
 ```sh
    <!-- Changed port 8080 to 8181 -->
     <Connector port="8181" protocol="HTTP/1.1"
@@ -92,9 +92,9 @@ http://localhost:8181/
 or when you work on a remote server (VM)
 
 ```
-http://<ip-address or fully qualified domain name>:8081/
+http://<ip-address or fully qualified domain name>:8181/
 ```
-**Since we will deploy CKAN, which makes use of apache, we advise you to use port 8181.**
+**Since we will deploy CKAN, which makes use of apache, we advise you to use port 8181. Please also change your firewall accordingly.**
 
 For general **troubleshooting and Diagnostic techniques** we refer to
 ``` https://wiki.apache.org/tomcat/FAQ/Troubleshooting_and_Diagnostics ```
@@ -168,6 +168,8 @@ http://<ip-address or fully qualified domain name>:8181/oai/
 
 Congratultaions !
 
+**Note**, when running tomcat for the first time after a configuration change, the loading of the webpage can take very long.
+
 Now you can configure and use your OAI-PMH provider and harvester
 as described in 01-configure-your-OAI-server
 
@@ -181,3 +183,8 @@ For now we click on the link **Repository information**. Here you can add inform
 <img align="centre" src="img/jOAI_EditRepositoryInfo.png" width="800px">
 
 Note : For now we don't specify the optional `Namespace identifier`.
+
+## 8. (Optional) Repository security
+After this installation anyone has access to all ionformation on the server. To restrict access to sensitive data such as harvesting information follow:
+http://www.dlese.org/oai/docs/configuring_joai.jsp#accessControl
+This is optional and not required to follow the tutorial. However on a production system we strongly recommend to restrict access.

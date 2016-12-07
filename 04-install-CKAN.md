@@ -75,7 +75,8 @@ sudo service jetty start
 You should now see a welcome page from Solr if you open ```http://localhost:8983/solr/``` in your web browser (replace localhost with your server address if needed).
 
 > Trobleshooting :
-> 1. If you get the message ```Could not start Jetty servlet engine because no Java Development Kit (JDK) was found.``` you will have to edit the JAVA_HOME setting in ```/etc/default/jetty``` to point to your machine’s JDK install location. 
+
+> If you receive the message ```Could not start Jetty servlet engine because no Java Development Kit (JDK) was found.``` you will have to edit the JAVA_HOME setting in ```/etc/default/jetty``` to point to your machine’s JDK install location. 
 > For example:
 ```sh
 JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64/
@@ -86,7 +87,7 @@ JDK_DIRS="/usr/lib/jvm/java-8-oracle /usr/lib/jvm/default-java /usr/lib/jvm/java
 ```
 This line lists all possible locations for the JDK and takes the first valid one.
 
-> 2. Another error maybe a `HTTP ERROR 500` saying that `JSP support not configured`. This might happen on Ubuntu machines.
+> Another error maybe a `HTTP ERROR 500` saying that `JSP support not configured`. This might happen on Ubuntu machines.
 ```
 wget https://launchpad.net/~vshn/+archive/ubuntu/solr/+files/solr-jetty-jsp-fix_1.0.2_all.deb
 sudo dpkg -i solr-jetty-jsp-fix_1.0.2_all.deb
@@ -137,7 +138,7 @@ Edit the CKAN configuration file ```/etc/ckan/default/production.ini``` to set u
 Each CKAN site should have a unique ```site_id``` and provide the URL in ```site_url```, for example:
 ```sh
 ckan.site_id = demo
-ckan.site_url = <fqdn or IP of your machine, or localhost>
+ckan.site_url = http://<fqdn or IP of your machine, or localhost>
 ```
 If working on remote machines you might also have to set the 
 
