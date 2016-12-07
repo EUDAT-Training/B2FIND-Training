@@ -3,21 +3,38 @@ This document describes the usage of the python script `mdmanager.py`,
 which is used in all training modules belonging to the 'ingestion of metadata', i.e. from [01] to [04].
 
 ## Environment
-Ubuntu 14.04 server
+Ubuntu 14.04 server with the following system packages:
+
+```sh
+sudo apt-get install git
+sudo apt-get install python-setuptools python-dev build-essential
+sudo apt-get install enchant
+sudo easy_install pip
+```
 
 ## Prerequisites
 
 ### 1. Python
-To run the script you need Python 2.7 or later.
+To run the script you need Python 2.7.
 
 ### 2. The source code
-The python script [mdmanager.py](mdmanager.py) comes with this training material.
+The python script [mdmanager.py](mdmanager.py) comes with this training material. To download the repository do:
+```sh
+git clone https://github.com/EUDAT-Training/B2FIND-Training.git
+```
 
 Additionally the script requires several modules listed in the file `requirements.txt`, which need to be installed first by
 
 ```sh
+cd B2FIND-Training
 pip install -r requirments.txt
 ```
+Check with
+```sh
+pip freeze 
+```
+whether all packages have been installed correctly.
+
  > Note: If you use different python compilers you need to make sure that pip is linked to the one you would like to use. If not linked correctly you will receive an error:
  ```sh
  Requirement already satisfied (use --upgrade to upgrade): dublincore in /home/xxx/anaconda2/lib/python2.7/site-packages
