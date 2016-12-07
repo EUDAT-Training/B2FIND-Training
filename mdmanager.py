@@ -302,6 +302,7 @@ class HARVESTER(object):
         }
         
         start=time.time()
+        ntotrecs=0
 
         sickle = SickleClass.Sickle(req['url'], max_retries=3, timeout=300)
         outtypedir='xml'
@@ -322,10 +323,18 @@ class HARVESTER(object):
             logging.error("[ERROR %s ] : %s" % (e,traceback.format_exc()))
             return -1
 
-        ntotrecs=sum(1 for _ in rc)
+        try:
+            ntotrecs=len(list(rc))
+        except :
+            print 'iterate through iterable does not work ?'
 
-        print "\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start)
-        
+        ### ntotrecs=sum(1 for _ in rc)
+
+        if ntotrecs > 0 :
+            print "\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start)
+        else:
+            print "\t|- Iterate through records in %d sec" % (time.time()-start)
+
         logging.debug('    |   | %-4s | %-45s | %-45s |\n    |%s|' % ('#','OAI Identifier','DS Identifier',"-" * 106))
 
         # set subset:
@@ -348,13 +357,13 @@ class HARVESTER(object):
             ## counter and progress bar
             fcount+=1
             if fcount <= noffs : continue
-            perc=int(fcount*100/ntotrecs)
-            bartags=perc/5 #HEW-D fcount/100
-            if perc%10 == 0 and perc != oldperc :
-                oldperc=perc
-                print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 )
-                sys.stdout.flush()
-
+            if ntotrecs > 0 :
+                perc=int(fcount*100/ntotrecs)
+                bartags=perc/5 #HEW-D fcount/100
+                if perc%10 == 0 and perc != oldperc :
+                    oldperc=perc
+                    print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 )
+                    sys.stdout.flush()
 
             if req["lverb"] == 'ListIdentifiers' :
                     if (record.deleted):
@@ -412,6 +421,18 @@ class HARVESTER(object):
                     ## logging.debug(metadata)
                     stats['ecount']+=1
                     continue
+
+        # add all subset stats to total stats and reset the temporal subset stats:
+        for key in ['tcount', 'ecount', 'count', 'dcount']:
+                stats['tot'+key] += stats[key]
+            
+
+        print '   \t|- %-10s |@ %-10s |\n\t| Provided | Harvested | Failed | Deleted |\n\t| %8d | %9d | %6d | %6d |' % ( 'Finished',time.strftime("%H:%M:%S"),
+                    stats['tottcount'],
+                    stats['totcount'],
+                    stats['totecount'],
+                    stats['totdcount']
+                )
 
 class MAPPER():
 
@@ -1246,13 +1267,11 @@ class MAPPER():
         out=' %s to json stdout\nsome stuff\nlast line ..' % infformat
         if (err is not None ): logging.error('[ERROR] ' + err)
 
-        logging.info(
-                '   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |' 
-                % ( 'Finished',time.strftime("%H:%M:%S"),
+        print '   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |'  % ( 'Finished',time.strftime("%H:%M:%S"),
                     results['tcount'],
                     fcount,
                     results['ecount']
-                ))
+                )
 
         # search in output for result statistics
         last_line = out.split('\n')[-2]
@@ -1960,6 +1979,8 @@ def process(options,pstat):
     procOptions=['community','source','verb','mdprefix','mdsubset','target_mdschema']
     if(options.source):
         mode = 'single'
+        ##HEW Not used in training
+        options.target_mdschema=None
         mandParams=['community','verb','mdprefix'] # mandatory processing params
         for param in mandParams :
             if not getattr(options,param) :
@@ -1979,6 +2000,8 @@ def process(options,pstat):
             sys.exit(-1)
         mode = 'multi'
         logger.debug(' |- Joblist:  \t%s' % options.list)
+        ## HEW set options.target_mdschema to NONE for Training
+        options.target_mdschema=None
         reqlist=parse_list_file('harvest',options.list, options.community,options.mdsubset,options.mdprefix,options.target_mdschema)
 
     ## check job request (processing) options
@@ -2538,34 +2561,49 @@ def options_parser(modes):
     p.add_option('-v', '--verbose', action="count",
                         help="increase output verbosity (e.g., -vv is more than -v)", default=False)
     p.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='\nThis specifies the processing mode. Supported modes are (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
-    p.add_option('--community', '-c', help="community where data harvested from and uploaded to", default='', metavar='STRING')
-    p.add_option('--fromdate', help="Filter harvested files by date (Format: YYYY-MM-DD).", default=None, metavar='DATE')
-    p.add_option('--handle_check', 
-         help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credstore file",
-         default=None,metavar='FILE')
-    p.add_option('--ckan_check',
-         help="check existence and checksum against existing datasets in CKAN database",
-         default='False', metavar='BOOLEAN')
-    p.add_option('--outdir', '-d', help="The relative root dir in which all harvested files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH')         
-    group_multi = optparse.OptionGroup(p, "Multi Mode Options",
-        "Use these options if you want to ingest from a list in a file.")
-    group_multi.add_option('--list', '-l', help="list of OAI harvest sources (default is ./harvest_list)", default='harvest_list',metavar='FILE')
+    p.add_option('--community', '-c', help="community or project, where data harvested from and uploaded to. This 'label' is used through the whole metadata life cycle or workflow.", default='', metavar='STRING')
+
+    ##HEW-D really needed (for Training) ???  
+    p.add_option('--outdir', '-d', help="The relative root dir in which all harvested files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH') 
+        
+    group_multi = optparse.OptionGroup(p, "Multi Mode Option",
+        "Use the list option if you want to ingest from multiple sources via the requests specified in the list file.")
+    group_multi.add_option('--list', '-l', help="list of harvest sources and requests (default is ./harvest_list)", default='harvest_list',metavar='FILE')
          
     group_single = optparse.OptionGroup(p, "Single Mode Options",
-        "Use these options if you want to ingest from only ONE source.")
-    group_single.add_option('--source', '-s', help="A URL to .xml files which you want to harvest",default=None,metavar='PATH')
-    group_single.add_option('--verb', help="Verbs or requests defined in OAI-PMH, can be ListRecords (default) or ListIdentifers here",default='ListRecords', metavar='STRING')
-    group_single.add_option('--mdsubset', help="Subset of harvested meta data",default=None, metavar='STRING')
-    group_single.add_option('--mdprefix', help="Prefix of harvested meta data",default=None, metavar='STRING')
-    group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
+        "Use the source option if you want to ingest from only ONE source.")
+    group_single.add_option('--source', '-s', help="In 'generation mode' a PATH to raw metadata given as spreadsheets or in 'harvest mode' an URL to a data provider you want to harvest metadata records from.",default=None,metavar='URL or PATH')
+
+    group_generate = optparse.OptionGroup(p, "Generation Options",
+        "These options will be required to generate formatted metadata sets (by default DublinCore XML files) from 'raw' spreadsheet data that resides in the PATH given by SOURCE.")
+    group_generate.add_option('--delimiter', help="Delimiter, which seperates the fields and associated values in the datasets (lines) of the spreadsheets, can be 'comma' (default) or 'tab'",default='comma', metavar='STRING')
+
+    group_harvest = optparse.OptionGroup(p, "Harvest Options",
+        "These options will be required to harvest metadata records from a data provider (by default via OAI-PMH from the URL given by SOURCE).")
+    group_harvest.add_option('--verb', help="Verbs or requests defined in OAI-PMH, can be ListRecords (default) or ListIdentifers",default='ListRecords', metavar='STRING')
+    group_harvest.add_option('--mdsubset', help="(Optional) Subset of harvested meta data",default=None, metavar='STRING')
+    group_harvest.add_option('--mdprefix', help="Metadata format and schema of harvested meta data (default is the OAI mdprefix 'oai_dc'",default='oai_dc', metavar='STRING')
+    group_harvest.add_option('--fromdate', help="Filter harvested files by date (Format: YYYY-MM-DD).", default=None, metavar='DATE')
+
+    group_map = optparse.OptionGroup(p, "Mapping Options",
+        "These options will be required to map metadata records formatted in a supported, but community specific, metadata format to JSON records formatted in a common target schema. (by default XML records are mapped onto the B2FIND schema, compatable to be uploaded to a CKAN repository.")
+    group_map.add_option('--subset', help="(Optional) Subset and subdirectory of meta data records to be mapped",default=None, metavar='STRING')
+    group_map.add_option('--mdshema', help="Metadata format and schema of hmeta data records to be mapped (default is the OAI mdprefix 'oai_dc'",default=None, metavar='STRING')
+
+    ##HEW-D : Not used in Training (yet) !!! group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
     
     group_upload = optparse.OptionGroup(p, "Upload Options",
         "These options will be required to upload an dataset to a CKAN database.")
     group_upload.add_option('--iphost', '-i', help="IP adress of B2FIND portal (CKAN instance)", metavar='IP')
     group_upload.add_option('--auth', help="Authentification for CKAN APIs (API key, by default taken from file $HOME/.netrc)",metavar='STRING')
-    
+    ##HEW-D:(Not used yet in the Training) group_upload.add_option('--handle_check', help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credential file", default=None,metavar='FILE')
+    ##HEW-D:(Not used yet in the Training) group_upload.add_option('--ckan_check',help="check existence and checksum against existing datasets in CKAN dattabase",default='False', metavar='BOOLEAN')
+
     p.add_option_group(group_multi)
     p.add_option_group(group_single)
+    p.add_option_group(group_generate)
+    p.add_option_group(group_harvest)
+    p.add_option_group(group_map)
     p.add_option_group(group_upload)
     
     return p
