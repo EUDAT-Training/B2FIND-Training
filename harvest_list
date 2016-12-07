@@ -12,6 +12,8 @@
 ## -----------------------------------------------------------------------------------
 ## MyProjects
 fishproject http://localhost:8181/oai/provider ListIdentifiers oai_dc 
+## Seismological networks
+seisnet  http://doidb.wdc-terra.org/oaip/oai  ListRecords   oai_datacite  DOIDB.SEISNET
 ##%%% EARLINET : MD Provider eudat-oai.dkrz.de (directly extracted from CERA)
 earlinet    http://eudat-oai.dkrz.de:8080/oai/provider ListIdentifiers  iso 
 ##%%% EUDAT B2SHARE
