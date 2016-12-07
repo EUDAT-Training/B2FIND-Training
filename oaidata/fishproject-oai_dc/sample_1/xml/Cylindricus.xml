@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:identifier>Cylindricus</dc:identifier>
+	<dc:title>Neolamprologus cylindricus</dc:title>
+	<dc:type>Passive</dc:type>
+	<dcterms:created>Difficult</dcterms:created>
+	<dcterms:extent>5 inches</dcterms:extent>
+	<dcterms:medium>PH 7.7 to 9.0, Temp 72 to 80 F</dcterms:medium>
+	<dcterms:provenance>Middle-Bottom</dcterms:provenance>
+	<dcterms:requires>Ominvore</dcterms:requires>
+	<dcterms:spatial>Lake Tanganyika</dcterms:spatial>
+</metadata>
