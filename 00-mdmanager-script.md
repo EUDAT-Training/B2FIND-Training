@@ -72,59 +72,79 @@ Options
 We want to emphasize here the cross-process option `community` specifying the community or the project which 'owns' the metadata.
 This is related to the *use cases* through which we guide you through the tutorial. 
 
-### Single and multiple source requests
+### Operation modes for single and multiple sources
 
 #### Multiple Sources
 
 ```sh
-Request for Multiple Sources
-----------------------------
-This is the default operation mode and performs ingestion from a list of
-sources.
+Multiple Sources Operation Option
+---------------------------------
+Use the list option if you want to ingest from multiple sources via the
+requests specified in the list file.
 
---list=FILE, -l FILE    list of requests to several sources (default is
+--list=FILE, -l FILE    list of harvest sources and requests (default is
                         ./harvest_list)
 ```
 
 #### Single Source
 ```sh
-Request for a Single Source
----------------------------
-Use the options '-s | --source SOURCE if you want to ingest from only ONE
-source.
+Single Source Operation Option
+------------------------------
+Use the source option if you want to ingest from only ONE source.
 
---source=STRING, -s STRING
-                        Source of metadata to be processed. In generation mode
-                        this is the path to the raw metadata and in harvesting
-                        mode this is the URL endpoint from which records are
-                        harvested from (e.g. the OAI-URL)
+--source=URL or PATH, -s URL or PATH
+                        In 'generation mode' a PATH to raw metadata given as
+                        spreadsheets or in 'harvest mode' an URL to a data
+                        provider you want to harvest metadata records from.
 ```
 
 In this case the other options, which depend on the excecuted processing mode and are explained below, must be as well explicitly specified.
 
 ### Processing mode specific options
 
-#### Generation and Harvesting mode
+#### Generation mode
 
 ```sh
-Generate and Harvest Options
-----------------------------
-These options are required to generate or harvest metadata from the specified
-sources.
+------------------
+These options will be required to generate formatted metadata sets (by default
+DublinCore XML files) from 'raw' spreadsheet data that resides in the PATH
+given by SOURCE.
 
---verb=STRING           Specifiers of the procesing request. In generation
-                        mode this is the delimiter of the source (e.g.
-                        'comma'(default) or 'tab' and in harvesting mode this
-                        is a 'verb' supported by OAI-PMH ( e.g. ListRecords
-                        (default) or ListIdentifers)
---mdsubset=STRING       Subset of the processed data meta data (for OAI-PMH
-                        harvesting the OAI subset, if availbale)
---mdprefix=STRING       Meta data schema of the source (for OAI-PMH harvesting
-                        the OAI metadata prefix
---fromdate=DATE         filter metadata to be processed by date (Format: YYYY-
-                        MM-DD).
---target_mdschema=STRING
-                        (Optional) Meta data schema of the target
+--delimiter=STRING      Delimiter, which seperates the fields and associated
+                        values in the datasets (lines) of the spreadsheets,
+                        can be 'comma' (default) or 'tab'
+```
+
+#### Harvesting mode
+```sh
+Harvest Options
+---------------
+These options will be required to harvest metadata records from a data
+provider (by default via OAI-PMH from the URL given by SOURCE).
+
+--verb=STRING           Verbs or requests defined in OAI-PMH, can be
+                        ListRecords (default) or ListIdentifers
+--mdsubset=STRING       (Optional) Subset of harvested meta data
+--mdprefix=STRING       Metadata format and schema of harvested meta data
+                        (default is the OAI mdprefix 'oai_dc'
+--fromdate=DATE         Filter harvested files by date (Format: YYYY-MM-DD).
+```
+
+#### Mapping mode
+
+```sh
+Mapping Options
+---------------
+These options will be required to map metadata records formatted in a
+supported, but community specific, metadata format to JSON records formatted
+in a common target schema. (by default XML records are mapped onto the B2FIND
+schema, compatable to be uploaded to a CKAN repository.
+
+--subset=STRING         (Optional) Subset and subdirectory of meta data
+                        records to be mapped
+--mdshema=STRING        Metadata format and schema of hmeta data records to be
+                        mapped (default is the OAI mdprefix 'oai_dc'
+
 ```
 
 #### Upload mode
@@ -137,11 +157,6 @@ These options will be required to upload an dataset to a CKAN database.
 --iphost=IP, -i IP      IP adress of B2FIND portal (CKAN instance)
 --auth=STRING           Authentification for CKAN APIs (API key, by default
                         taken from file $HOME/.netrc)
---handle_check=CREDENTIALFILE
-                        check and generate handles corresponding to the
-                        settings in the CREDENDIALFILE
---ckan_check=BOOLEAN    check existence and checksum of records in CKAN
-                        database during upload
 ```
 
 ### Information and support

@@ -2566,11 +2566,11 @@ def options_parser(modes):
     ##HEW-D really needed (for Training) ???  
     p.add_option('--outdir', '-d', help="The relative root dir in which all harvested files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH') 
         
-    group_multi = optparse.OptionGroup(p, "Multi Mode Option",
+    group_multi = optparse.OptionGroup(p, "Multiple Sources Operation Option",
         "Use the list option if you want to ingest from multiple sources via the requests specified in the list file.")
     group_multi.add_option('--list', '-l', help="list of harvest sources and requests (default is ./harvest_list)", default='harvest_list',metavar='FILE')
          
-    group_single = optparse.OptionGroup(p, "Single Mode Options",
+    group_single = optparse.OptionGroup(p, "Single Source Operation Option",
         "Use the source option if you want to ingest from only ONE source.")
     group_single.add_option('--source', '-s', help="In 'generation mode' a PATH to raw metadata given as spreadsheets or in 'harvest mode' an URL to a data provider you want to harvest metadata records from.",default=None,metavar='URL or PATH')
 
