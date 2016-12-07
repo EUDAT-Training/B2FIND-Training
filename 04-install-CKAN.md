@@ -138,7 +138,7 @@ Edit the CKAN configuration file ```/etc/ckan/default/production.ini``` to set u
 Each CKAN site should have a unique ```site_id``` and provide the URL in ```site_url```, for example:
 ```sh
 ckan.site_id = demo
-ckan.site_url = <fqdn or IP of your machine, or localhost>
+ckan.site_url = http://<fqdn or IP of your machine, or localhost>
 ```
 If working on remote machines you might also have to set the 
 
