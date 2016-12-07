@@ -86,8 +86,8 @@ Options
 ...
 ```
 
-We want to emphasize here the cross-process option `community` specifying the community or the project which 'owns' the metadata.
-This is related to the *use cases* through which we guide you through the tutorial. 
+We want to emphasize here the cross-process option *community* specifying the community or the project which 'owns' the metadata. This parameter is employed by all modes of the script and use used to tie the different steps of preparing and uploading metadata together, which are executed by running the script in its different modes.
+In this repository we will take you through all these steps along a *use cases*, the name of the use case will be employed as *community* parameter. 
 
 ### Single and multiple source requests
 
