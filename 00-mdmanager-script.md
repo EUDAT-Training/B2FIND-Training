@@ -102,6 +102,7 @@ sources.
 --list=FILE, -l FILE    list of requests to several sources (default is
                         ./harvest_list)
 ```
+**Exercise** Inspect the file *harvest_list* for the general formatting of such a file.
 
 #### Single Source
 ```sh
@@ -117,7 +118,7 @@ source.
                         harvested from (e.g. the OAI-URL)
 ```
 
-In this case the other options, which depend on the excecuted processing mode and are explained below, must be as well explicitly specified.
+The example use case will employ this mode and we will hint at how to set parameters and how they influence the bahviour in the following sections.
 
 ### Processing mode specific options
 
