@@ -143,16 +143,16 @@ sudo service tomcat7 <stop, start, restart>
 
 If you now enter in an internet browser
 ```sh
-localhost:8181
+localhost:8080
 ```
 and all works fine you should see a page showing **'It works'** and the graphical user interface of the web application joi should be opened by 
 ```sh
-localhost:8181/oai
+localhost:8080/oai
 ```
 
 When you are working remotely on a server you can access the web interface by
 ```sh
-http://<server url>:8181/oai/
+http://<server url>:8080/oai/
 ```
 
 <img align="centre" src="img/jOAI_Overview.png" width="800px">
@@ -172,9 +172,3 @@ For now we click on the link **Repository information**. Here you can add inform
 <img align="centre" src="img/jOAI_EditRepositoryInfo.png" width="800px">
 
 Note : For now we don't specify the optional `Namespace identifier`.
-
-## 8. (Optional) Repository security
-After this installation anyone has access to all ionformation on the server. To restrict access to sensitive data such as harvesting information follow:
-http://www.dlese.org/oai/docs/configuring_joai.jsp#accessControl
-This is optional and not required to follow the tutorial. However on a production system we strongly recommend to restrict access.
-
