@@ -2564,16 +2564,16 @@ def options_parser(modes):
     p.add_option('--community', '-c', help="community or project, where data harvested from and uploaded to. This 'label' is used through the whole metadata life cycle or workflow.", default='', metavar='STRING')
 
     ##HEW-D really needed (for Training) ???  
-    p.add_option('--outdir', '-d', help="The relative root dir in which all harvested files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH') 
+    p.add_option('--outdir', '-d', help="The relative root dirictory in which all harvested and processed files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH') 
+
+    group_single = optparse.OptionGroup(p, "Single Source Operation Mode",
+        "Use the source option if you want to ingest from only ONE source.")
+    group_single.add_option('--source', '-s', help="In 'generation mode' a PATH to raw metadata given as spreadsheets or in 'harvest mode' an URL to a data provider you want to harvest metadata records from.",default=None,metavar='URL or PATH')
         
-    group_multi = optparse.OptionGroup(p, "Multiple Sources Operation Option",
+    group_multi = optparse.OptionGroup(p, "Multiple Sources Operation Mode",
         "Use the list option if you want to ingest from multiple sources via the requests specified in the list file.")
     group_multi.add_option('--list', '-l', help="list of harvest sources and requests (default is ./harvest_list)", default='harvest_list',metavar='FILE')
          
-    group_single = optparse.OptionGroup(p, "Single Source Operation Option",
-        "Use the source option if you want to ingest from only ONE source.")
-    group_single.add_option('--source', '-s', help="In 'generation mode' a PATH to raw metadata given as spreadsheets or in 'harvest mode' an URL to a data provider you want to harvest metadata records from.",default=None,metavar='URL or PATH')
-
     group_generate = optparse.OptionGroup(p, "Generation Options",
         "These options will be required to generate formatted metadata sets (by default DublinCore XML files) from 'raw' spreadsheet data that resides in the PATH given by SOURCE.")
     group_generate.add_option('--delimiter', help="Delimiter, which seperates the fields and associated values in the datasets (lines) of the spreadsheets, can be 'comma' (default) or 'tab'",default='comma', metavar='STRING')
@@ -2599,8 +2599,8 @@ def options_parser(modes):
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--handle_check', help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credential file", default=None,metavar='FILE')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--ckan_check',help="check existence and checksum against existing datasets in CKAN dattabase",default='False', metavar='BOOLEAN')
 
-    p.add_option_group(group_multi)
     p.add_option_group(group_single)
+    p.add_option_group(group_multi)
     p.add_option_group(group_generate)
     p.add_option_group(group_harvest)
     p.add_option_group(group_map)

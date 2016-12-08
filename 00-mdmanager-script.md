@@ -1,6 +1,6 @@
 # The *mdmanager.py* script
 This document describes the usage of the python script `mdmanager.py`,
-which is used in all training modules belonging to the 'ingestion of metadata', i.e. from [01] to [04].
+which is used in all training modules belonging to the 'ingestion of metadata', i.e. from [01.b Generate metadata](01.b-generate-metadata.md) to [04.b Upload metadata] (04.b-upload-metadata.md).
 
 ## Environment
 Ubuntu 14.04 server with the following system packages:
@@ -35,11 +35,11 @@ pip freeze
 ```
 whether all packages have been installed correctly.
 
- > Note: If you use different python compilers you need to make sure that pip is linked to the one you would like to use. If not linked correctly you will receive an error:
+ > Note: If you use different python compilers you need to make sure that pip is linked to the one you would like to use. If not linked correctly you will receive errors as:
  ```sh
  Requirement already satisfied (use --upgrade to upgrade): dublincore in /home/xxx/anaconda2/lib/python2.7/site-packages
 ```
-> you have to add this path to your Python path by
+> In this case you have to add this path to your Python path by
 ```sh
  export PYTHONPATH=$PYTHONPATH:/home/xxx/anaconda2/lib/python2.7/site-packages/
 ```
@@ -83,31 +83,24 @@ Options
                         (v)alidating, and (u)ploading.
 --community=STRING, -c STRING
                         community or project where metadata are originated.
-...
+--outdir=PATH, -d PATH  The relative root dir in which all harvested and 
+	       	  	processed files are saved. The converting and the 
+			uploading processes work with the files from this dir. 
+			(default is 'oaidata')
 ```
 
 We want to emphasize here the cross-process option *community* specifying the community or the project which 'owns' the metadata. This parameter is employed by all modes of the script and use used to tie the different steps of preparing and uploading metadata together, which are executed by running the script in its different modes.
-In this repository we will take you through all these steps along a *use cases*, the name of the use case will be employed as *community* parameter. 
+In this repository we will take you through all these steps along *use cases*, whereby the name of the treated use case will be employed as the parameter *community*. 
 
 ### Operation modes for single and multiple sources
 
-#### Multiple Sources
-
-```sh
-Multiple Sources Operation Option
----------------------------------
-Use the list option if you want to ingest from multiple sources via the
-requests specified in the list file.
-
---list=FILE, -l FILE    list of harvest sources and requests (default is
-                        ./harvest_list)
-```
-**Exercise** Inspect the file *harvest_list* for the general formatting of such a file.
+In the following sections the sample use cases will employ both of these operation modes and we will hint at how to set parameters and how they influence the bahaviour in the following sections.
 
 #### Single Source
+
 ```sh
-Single Source Operation Option
-------------------------------
+Single Source Operation Mode
+----------------------------
 Use the source option if you want to ingest from only ONE source.
 
 --source=URL or PATH, -s URL or PATH
@@ -116,12 +109,24 @@ Use the source option if you want to ingest from only ONE source.
                         provider you want to harvest metadata records from.
 ```
 
-The example use case will employ this mode and we will hint at how to set parameters and how they influence the bahviour in the following sections.
+#### Multiple Sources
+
+```sh
+Multiple Sources Operation Mode
+-------------------------------
+Use the list option if you want to ingest from multiple sources via the
+requests specified in the list file.
+
+--list=FILE, -l FILE    list of harvest sources and requests (default is
+                        ./harvest_list)
+```
+**Exercise** Inspect the file *harvest_list* for the general formatting of such a file.
 
 ### Processing mode specific options
+Depending on the processing step or mode you want to perform, specific options are used.
 
 #### Generation mode
-
+This means using mode option `--mode g` and is linked to the module [ 01.b Generate metadata](01.b-generate-metadata.md)
 ```sh
 ------------------
 These options will be required to generate formatted metadata sets (by default
@@ -134,6 +139,7 @@ given by SOURCE.
 ```
 
 #### Harvesting mode
+This means using mode option `--mode h` and is linked to the module [02.b Configure your harvester](02.b-configure-OAI-harvester.md)
 ```sh
 Harvest Options
 ---------------
@@ -149,7 +155,7 @@ provider (by default via OAI-PMH from the URL given by SOURCE).
 ```
 
 #### Mapping mode
-
+This means using mode option `--mode m` and is linked to the module [ 03.a Map metadata](03.a-map-metadata.md)
 ```sh
 Mapping Options
 ---------------
@@ -166,6 +172,7 @@ schema, compatable to be uploaded to a CKAN repository.
 ```
 
 #### Upload mode
+This means using mode option `--mode u` and is linked to the module [04.b Upload metadata] (04.b-upload-metadata.md)
 
 ```sh
 Upload Options
