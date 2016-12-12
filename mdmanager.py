@@ -1116,8 +1116,6 @@ class MAPPER():
             fcount+=1
             perc=int(fcount*100/int(len(files)))
             bartags=perc/5
-                ##??? perc=int(fcount*100/int(100)) ##HEW-?? len(records) not known
-
             if perc%10 == 0 and perc != oldperc:
                 oldperc=perc
                 print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start )
@@ -1338,7 +1336,7 @@ class MAPPER():
             ##    print ' Following key-value errors fails validation:\n' + errlist 
             return vall
 
-    def validate(self,community,mdprefix,path):
+    def validate(self,community,mdprefix,path,target_mdschema):
         ## validate(MAPPER object, community, mdprefix, path) - method
         # validates the (mapped) JSON files in directory <path> against the B2FIND md schema
         # Parameters:
@@ -1366,6 +1364,13 @@ class MAPPER():
             mapext='conf' ##!!!HEW --> json
         else:
             mapext='xml'
+
+        # check and read rules from mapfile
+        if (target_mdschema != None and not target_mdschema.startswith('#')):
+            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
+        else:
+            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,mdprefix,mapext)
+
         if not os.path.isfile(mapfile):
            mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
            if not os.path.isfile(mapfile):
@@ -1416,10 +1421,10 @@ class MAPPER():
             ## counter and progress bar
             fcount+=1
             perc=int(fcount*100/int(len(files)))
-            bartags=perc/10
-            if perc%10 == 0 and perc != oldperc :
+            bartags=perc/5
+            if perc%10 == 0 and perc != oldperc:
                 oldperc=perc
-                logging.info("\r\t[%-20s] %d / %d%% in %d sec" % ('='*bartags, fcount, perc, time.time()-start ))
+                print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start )
                 sys.stdout.flush()
 
             jsondata = dict()
@@ -2129,10 +2134,6 @@ def process_map(MP, rlist):
     ir=0
     for request in rlist:
         ir+=1
-        if (len(request) > 5 and request[5]):            
-            target=request[5]
-        else:
-            target=None
         cstart = time.time()
         
         if len(request) > 4:
@@ -2140,6 +2141,11 @@ def process_map(MP, rlist):
         else:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET_1')
              
+        if (len(request) > 5 and request[5]):            
+            target=request[5]
+        else:
+            target=None
+
         results = MP.map(ir,request[0],request[3],path,target)
 
         ctime=time.time()-cstart
@@ -2160,20 +2166,22 @@ def process_validate(MP, rlist):
     ir=0
     for request in rlist:
         ir+=1
-        if len(request) > 4:
-            outfile='%s/%s/%s' % (request[2],request[4],'validation.stat')
-        else:
-            outfile='%s/%s/%s' % (request[2],'SET','validation.stat')
-
-        logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
         cstart = time.time()
         
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+request[4])
         else:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
+        outfile='%s/%s' % (path,'validation.stat')
 
-        results = MP.validate(request[0],request[3],path)
+        if (len(request) > 5 and request[5]):            
+            target=request[5]
+        else:
+            target=None
+
+        logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
+
+        results = MP.validate(request[0],request[3],path,target)
 
         ctime=time.time()-cstart
         results['time'] = ctime
