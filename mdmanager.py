@@ -1636,7 +1636,7 @@ class CKAN_CLIENT(object):
         # make json data in conformity with URL standards
         data_string = unicode(urllib.quote(json.dumps(data_dict)), errors='replace')
 
-        logging.debug('\t|-- Action %s\n\t|-- Calling %s ' % (action,action_url))	
+        logging.debug('\t|-- Action %s\n\t|-- Calling %s\n\t|-- Data %s ' % (action,action_url,data_dict))	
         ##HEW-Tlogging.debug('\t|-- Object %s ' % data_dict)	
         try:
             request = urllib2.Request(action_url)
@@ -1847,7 +1847,6 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
-        jsondata["owner_org"]="rda"
    
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
@@ -2056,21 +2055,22 @@ def process(options,pstat):
             UP = UPLOADER(CKAN)
             logging.info('\n|- Uploading started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
             logging.info(' |- Host:  \t%s' % CKAN.ip_host )
-
             # start the process uploading:
-            if mode is 'multi':
-                convert_list='harvest_list'
-                logging.info(' |- Joblist:  \t%s' % convert_list )
-                process_upload(UP, parse_list_file('upload', convert_list or options.list, options.community, options.mdsubset), options)
-            else:
-                process_upload(UP,[[
-                    options.community,
-                    options.source,
-                    options.mdprefix,
-                    options.outdir + '/' + options.mdprefix,
-                    options.mdsubset
-                ]],options)
+            process_upload(UP,reqlist,options)
 
+##HEW-D             if mode is 'multi':
+##HEW-D                 convert_list='harvest_list'
+##HEW-D                 logging.info(' |- Joblist:  \t%s' % convert_list )
+##HEW-D                 process_upload(UP, parse_list_file('upload', convert_list or options.list, options.community, options.mdsubset), options)
+##HEW-D             else:
+##HEW-D                 process_upload(UP,[[
+##HEW-D                     options.community,
+##HEW-D                     options.source,
+##HEW-D                     options.mdprefix,
+##HEW-D                     options.outdir + '/' + options.mdprefix,
+##HEW-D                     options.mdsubset
+##HEW-D                 ]],options)
+ 
 def process_harvest(HV, rlist):
     ## process_harvest (HARVESTER object, rlist) - function
     # Harvests per request.
@@ -2215,7 +2215,8 @@ def process_upload(UP, rlist, options):
                 print ' Key : %s | Value : %s |' % (v['key'],v['value'])
  
 
-    # create credentials and handle cleint if required
+    ###HEW-D disabled for Training create credentials and handle cleint if required
+    options.handle_check=False  ###HEW-D disabled for Training
     if (options.handle_check):
           try:
               cred = PIDClientCredentials.load_from_JSON('credentials_11098')
@@ -2247,29 +2248,37 @@ def process_upload(UP, rlist, options):
     for request in rlist:
         ir+=1
         logging.info('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
-        community, source, dir = request[0:3]
+        community, source = request[0:2]
         mdprefix = request[3]
-        if len(request) > 4:
-            subset = request[4]
-        else:
-            subset = 'SET'
-        dir = dir+'/'+subset
-        
+        print 'mdprefix %s' % mdprefix
+
         results = {
             'count':0,
             'ecount':0,
             'tcount':0,
             'time':0
         }
-        
-        if CKAN.action('group_show',{"id":community}) == None or not (CKAN.action('group_show',{"id":community})['success']) :
-          logging.error(" CKAN group %s does not exist" % community)
-          sys.exit()
 
-        dir=os.path.abspath('oaidata/'+community+'-'+mdprefix+'/'+subset)
+        try:
+            ckangroup=CKAN.action('group_show',{"id":community})
+        except Exception, err:
+            logging.critical("%s : Can not show CKAN group %s" % (err,community))
+            sys.exit()
+            
+        print "ckangroup['success'] %s" % ckangroup['success']
+        if 'success' not in ckangroup and ckangroup['success'] != True :
+            logging.critical(" CKAN group %s does not exist" % community)
+            sys.exit()
 
-        if not os.path.exists(dir):
-            logging.error('[ERROR] The directory "%s" does not exist! No files for uploading are found!\n(Maybe your upload list has old items?)' % (dir))
+        if len(request) > 4:
+            subset=request[4]
+        else:
+            subset='/SET_1'
+
+        path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+subset)
+
+        if not os.path.exists(path):
+            logging.error('[ERROR] The directory "%s" does not exist! No files for uploading are found!\n(Maybe your upload list has old items?)' % path)
             
             # save stats:
             ##UP.OUT.save_stats(community+'-'+mdprefix,subset,'u',results)
@@ -2277,7 +2286,8 @@ def process_upload(UP, rlist, options):
             continue
         
         logging.debug('    |   | %-4s | %-40s |\n    |%s|' % ('#','id',"-" * 53))
-        
+        ##HEW : For Training no ckan_check
+        options.ckan_check = 'False'
         if (last_community != community and options.ckan_check == 'True'):
             last_community = community
             UP.get_packages(community)
@@ -2285,7 +2295,7 @@ def process_upload(UP, rlist, options):
         uploadstart = time.time()
         
         # find all .json files in dir/json:
-        files = filter(lambda x: x.endswith('.json'), os.listdir(dir+'/json'))
+        files = filter(lambda x: x.endswith('.json'), os.listdir(path+'/json'))
         
         results['tcount'] = len(files)
         
@@ -2304,13 +2314,13 @@ def process_upload(UP, rlist, options):
                 sys.stdout.flush()
 
             jsondata = dict()
-            pathfname= dir+'/json/'+filename
+            pathfname= path+'/json/'+filename
             if ( os.path.getsize(pathfname) > 0 ):
                 with open(pathfname, 'r') as f:
                     try:
                         jsondata=json.loads(f.read())
                     except:
-                        logging.error('    | [ERROR] Cannot load the json file %s' % dir+'/json/'+filename)
+                        logging.error('    | [ERROR] Cannot load the json file %s' % path+'/json/'+filename)
                         results['ecount'] += 1
                         continue
             else:
@@ -2323,6 +2333,9 @@ def process_upload(UP, rlist, options):
             logging.info('    | u | %-4d | %-40s |' % (fcount,ds_id))
 
             # get OAI identifier from json data extra field 'oai_identifier':
+            if 'oai_identifier' not in jsondata :
+                jsondata['oai_identifier'] = [ds_id]
+
             oai_id = jsondata['oai_identifier'][0]
             logging.debug("        |-> identifier: %s\n" % (oai_id))
             
@@ -2366,6 +2379,7 @@ def process_upload(UP, rlist, options):
 ##            else:
 ##                jsondata['version'] = checksum
             jsondata['version'] = None
+            jsondata['owner_org'] = options.ckan_organization
                 
             # Set the tag ManagerVersion:
             jsondata['extras'].append({
@@ -2604,6 +2618,7 @@ def options_parser(modes):
         "These options will be required to upload an dataset to a CKAN database.")
     group_upload.add_option('--iphost', '-i', help="IP adress of B2FIND portal (CKAN instance)", metavar='IP')
     group_upload.add_option('--auth', help="Authentification for CKAN APIs (API key, by default taken from file $HOME/.netrc)",metavar='STRING')
+    group_upload.add_option('--ckan_organization', help="CKAN Organization name (by default 'rda')",default='rda',metavar='STRING')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--handle_check', help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credential file", default=None,metavar='FILE')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--ckan_check',help="check existence and checksum against existing datasets in CKAN dattabase",default='False', metavar='BOOLEAN')
 
