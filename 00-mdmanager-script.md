@@ -94,7 +94,7 @@ In this repository we will take you through all these steps along *use cases*, w
 
 ### Operation modes for single and multiple sources
 
-In the following sections the sample use cases will employ both of these operation modes and we will hint at how to set parameters and how they influence the bahaviour in the following sections.
+In the following sections the sample use cases will employ both of these operation modes and we will hint at how to set parameters and how they influence the bahaviour.
 
 #### Single Source
 
@@ -125,7 +125,7 @@ requests specified in the list file.
 ### Processing mode specific options
 Depending on the processing step or mode you want to perform, specific options are used.
 
-#### Generation mode
+#### <a name="modeGeneration></a> Generation mode
 This means using mode option `--mode g` and is linked to the module [ 01.b Generate metadata](01.b-generate-metadata.md)
 ```sh
 ------------------
