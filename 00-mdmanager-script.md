@@ -51,46 +51,46 @@ $ ./mdmanager.py -h
 Usage
 =====
   mdmanager.py [options]
+
+Description
+===========
+Management of metadata, comprising
+- Generation of formated XML records from raw metadata sets
+- Harvesting of XML files from a data provider endpoint
+- Mapping of specially formated XML to a target JSON schema
+- Validation of mapped JSON records as compatible with target schema
+- Uploading of JSON records to B2FIND or another CKAN instance
 ....
 ```
+In the following subsections we discuss the usage of the several options in more detail.
 
-In the following subsections we discuss the usage of the options and modes in more detail.
-
-### Processing modes and general option
-The script *mdmanager.py* can be executed in different modes by using the option `-m | --mode`,
-and provides procedures for the whole ingestion workflow how to come from unstructured metadata to entries in the discovery portal (own CKAN or B2FIND instance).
-
-Please refer to the table below for all possible modes, their meaning and the related training module :
-
-Mode | Explanation | Associated training module |
-------|-------------------|---------------------|
-g | Generation of formated XML records from raw metadata sets | [01 MD Generation ](01.b-generate-metadata.md) |
-h | Harvesting of XML files from a data provider endpoint | [02.b MD Harvester ](02.b-OAI-harvester.md) |
-m | Mapping of specially formated XML to a target JSON schema | [03.a MD Mapping ](03.a-map-metadata.md) |
-v | Validation of mapped JSON records as compatible with target schema | [03.b MD Validation ](03.b-validate-metadata.md) | 
-u | Uploading of JSON records to B2FIND or another CKAN instance |  [04.b MD Uploader ](04.b-upload-metadata.md) |
-
-Beside this processing mode option there are other 'global' options as shown in the top part of the help output:
+### General options
+The 'global' options as shown in the top part of the help output:
 
 ```sh
 Options
 =======
 --help, -h              show this help message and exit
 --verbose, -v           increase output verbosity (e.g., -vv is more than -v)
---mode=PROCESSINGMODE, -m PROCESSINGMODE
-                        This specifies the processing mode. Supported modes
-                        are (g)enerating, (h)arvesting, (m)apping,
-                        (v)alidating, and (u)ploading.
+--outdir=PATH, -d PATH  The relative root directory in which all harvested and
+                        processed files will be saved. The converting and the
+                        uploading processes work with the files from this dir.
+                        (default is 'oaidata')
 --community=STRING, -c STRING
-                        community or project where metadata are originated.
---outdir=PATH, -d PATH  The relative root dir in which all harvested and 
-	       	  	processed files are saved. The converting and the 
-			uploading processes work with the files from this dir. 
-			(default is 'oaidata')
+                        community or project, for which metadata are
+                        harvested, processed, stored and uploaded. This
+                        'label' is used through the whole metadata life cycle.
+--mdsubset=STRING       Subset of metadata to be harvested (by default 'None')
+                        and subdirectory of harvested and processed metadata
+                        (by default 'SET_1'
+--mdprefix=STRING       Metadata schema of harvested meta data (default is the
+                        OAI mdprefix 'oai_dc')
 ```
 
-We want to emphasize here the cross-process option *community* specifying the community or the project which 'owns' the metadata. This parameter is employed by all modes of the script and use used to tie the different steps of preparing and uploading metadata together, which are executed by running the script in its different modes.
+We want to emphasize here the cross-process option *community* specifying the community or the project which 'owns' the metadata. This parameter is employed by all modes of the script and used to tie the different steps of preparing and uploading metadata together, which are executed by running the script in its different [processing modes](#processingModes).
 In this repository we will take you through all these steps along *use cases*, whereby the name of the treated use case will be employed as the parameter *community*. 
+
+The options *mdsubset* and *mdprefix* influence especially the harvesting and mapping procedures. So they determine not only the OAI parameters *set* and *mdprefix*, but as well the path where harvested files are stored and where the mapping and upload process expect the files to be processed. 
 
 ### Operation modes for single and multiple sources
 
@@ -122,8 +122,19 @@ requests specified in the list file.
 ```
 **Exercise** Inspect the file *harvest_list* for the general formatting of such a file.
 
-### Processing mode specific options
-Depending on the processing step or mode you want to perform, specific options are used.
+### <a name="processingModes"></a> Processing modes
+Depending on the processing step you want to perform, the script *mdmanager.py* can be executed in different modes by using the option `-m | --mode`,
+and provides procedures for the whole ingestion workflow how to come from unstructured metadata to entries in the discovery portal (own CKAN or B2FIND instance).
+
+Please refer to the table below for all possible modes, their meaning and the related training module :
+
+Mode | Explanation | Associated training module |
+------|-------------------|---------------------|
+g | Generation of formated XML records from raw metadata sets | [01 MD Generation ](01.b-generate-metadata.md) |
+h | Harvesting of XML files from a data provider endpoint | [02.b MD Harvester ](02.b-OAI-harvester.md) |
+m | Mapping of specially formated XML to a target JSON schema | [03.a MD Mapping ](03.a-map-metadata.md) |
+v | Validation of mapped JSON records as compatible with target schema | [03.b MD Validation ](03.b-validate-metadata.md) | 
+u | Uploading of JSON records to B2FIND or another CKAN instance |  [04.b MD Uploader ](04.b-upload-metadata.md) |
 
 #### <a name="modeGeneration></a> Generation mode
 This means using mode option `--mode g` and is linked to the module [ 01.b Generate metadata](01.b-generate-metadata.md)
@@ -148,9 +159,6 @@ provider (by default via OAI-PMH from the URL given by SOURCE).
 
 --verb=STRING           Verbs or requests defined in OAI-PMH, can be
                         ListRecords (default) or ListIdentifers
---mdsubset=STRING       (Optional) Subset of harvested meta data
---mdprefix=STRING       Metadata format and schema of harvested meta data
-                        (default is the OAI mdprefix 'oai_dc'
 --fromdate=DATE         Filter harvested files by date (Format: YYYY-MM-DD).
 ```
 
@@ -160,15 +168,16 @@ This means using mode option `--mode m` and is linked to the module [ 03.a Map m
 Mapping Options
 ---------------
 These options will be required to map metadata records formatted in a
-supported, but community specific, metadata format to JSON records formatted
-in a common target schema. (by default XML records are mapped onto the B2FIND
-schema, compatable to be uploaded to a CKAN repository.
+supported metadata format to JSON records formatted in a common target schema.
+(by default XML records are mapped onto the B2FIND schema, compatable to be
+uploaded to a CKAN repository.
 
---subset=STRING         (Optional) Subset and subdirectory of meta data
-                        records to be mapped
---mdshema=STRING        Metadata format and schema of hmeta data records to be
-                        mapped (default is the OAI mdprefix 'oai_dc'
-
+--subset=STRING         Subdirectory of meta data records to be mapped. By
+                        default this is the same as the the term given by
+                        option '--mdsubset'.
+--mdschema=STRING       Metadata format and schema of harvested meta data
+                        records to be mapped. By default this is the same as
+                        the term given by option '--mdprefix'.
 ```
 
 #### Upload mode

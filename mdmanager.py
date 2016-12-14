@@ -2582,35 +2582,33 @@ def options_parser(modes):
         
     p.add_option('-v', '--verbose', action="count",
                         help="increase output verbosity (e.g., -vv is more than -v)", default=False)
-    p.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='\nThis specifies the processing mode. Supported modes are (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
-    p.add_option('--community', '-c', help="community or project, where data harvested from and uploaded to. This 'label' is used through the whole metadata life cycle or workflow.", default='', metavar='STRING')
 
+    p.add_option('--outdir', '-d', help="The relative root directory in which all harvested and processed files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH') 
+    p.add_option('--community', '-c', help="community or project, for which metadata are harvested, processed, stored and uploaded. This 'label' is used through the whole metadata life cycle.", default='', metavar='STRING')
     ##HEW-D really needed (for Training) ???  
-    p.add_option('--outdir', '-d', help="The relative root dirictory in which all harvested and processed files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH') 
-
-    group_single = optparse.OptionGroup(p, "Single Source Operation Mode",
-        "Use the source option if you want to ingest from only ONE source.")
-    group_single.add_option('--source', '-s', help="In 'generation mode' a PATH to raw metadata given as spreadsheets or in 'harvest mode' an URL to a data provider you want to harvest metadata records from.",default=None,metavar='URL or PATH')
-        
-    group_multi = optparse.OptionGroup(p, "Multiple Sources Operation Mode",
-        "Use the list option if you want to ingest from multiple sources via the requests specified in the list file.")
+    p.add_option('--mdsubset', help="Subset of metadata to be harvested (by default 'None') and subdirectory of harvested and processed metadata (by default 'SET_1'",default=None, metavar='STRING')
+    p.add_option('--mdprefix', help="Metadata schema of harvested meta data (default is the OAI mdprefix 'oai_dc')",default='oai_dc', metavar='STRING')
+    group_single = optparse.OptionGroup(p, "Single Source Operation Mode","Use the source option if you want to ingest from only ONE source.")
+    group_single.add_option('--source', '-s', help="In 'generation mode' a PATH to raw metadata given as spreadsheets or in 'harvest mode' an URL to a data provider you want to harvest metadata records from.",default=None,metavar='URL or PATH')    
+    group_multi = optparse.OptionGroup(p, "Multiple Sources Operation Mode","Use the list option if you want to ingest from multiple sources via the requests specified in the list file.")
     group_multi.add_option('--list', '-l', help="list of harvest sources and requests (default is ./harvest_list)", default='harvest_list',metavar='FILE')
-         
+
+    group_processmodes = optparse.OptionGroup(p, "Processing modes","The script can be executed in different modes by using the option -m | --mode, and provides procedures for the whole ingestion workflow how to come from unstructured metadata to entries in the discovery portal (own CKAN or B2FIND instance).")
+    group_processmodes.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='\nThis specifies the processing mode. Supported modes are (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
+
     group_generate = optparse.OptionGroup(p, "Generation Options",
         "These options will be required to generate formatted metadata sets (by default DublinCore XML files) from 'raw' spreadsheet data that resides in the PATH given by SOURCE.")
     group_generate.add_option('--delimiter', help="Delimiter, which seperates the fields and associated values in the datasets (lines) of the spreadsheets, can be 'comma' (default) or 'tab'",default='comma', metavar='STRING')
 
     group_harvest = optparse.OptionGroup(p, "Harvest Options",
         "These options will be required to harvest metadata records from a data provider (by default via OAI-PMH from the URL given by SOURCE).")
-    group_harvest.add_option('--verb', help="Verbs or requests defined in OAI-PMH, can be ListRecords (default) or ListIdentifers",default='ListRecords', metavar='STRING')
-    group_harvest.add_option('--mdsubset', help="(Optional) Subset of harvested meta data",default=None, metavar='STRING')
-    group_harvest.add_option('--mdprefix', help="Metadata format and schema of harvested meta data (default is the OAI mdprefix 'oai_dc'",default='oai_dc', metavar='STRING')
+    group_harvest.add_option('--verb', help="Verbs or requests defining the mode of harvesting, can be ListRecords(default) or ListIdentifers if OAI-PMH used or e.g. 'works' if JSON-API is used",default='ListRecords', metavar='STRING')
     group_harvest.add_option('--fromdate', help="Filter harvested files by date (Format: YYYY-MM-DD).", default=None, metavar='DATE')
 
     group_map = optparse.OptionGroup(p, "Mapping Options",
-        "These options will be required to map metadata records formatted in a supported, but community specific, metadata format to JSON records formatted in a common target schema. (by default XML records are mapped onto the B2FIND schema, compatable to be uploaded to a CKAN repository.")
-    group_map.add_option('--subset', help="(Optional) Subset and subdirectory of meta data records to be mapped",default=None, metavar='STRING')
-    group_map.add_option('--mdshema', help="Metadata format and schema of hmeta data records to be mapped (default is the OAI mdprefix 'oai_dc'",default=None, metavar='STRING')
+        "These options will be required to map metadata records formatted in a supported metadata format to JSON records formatted in a common target schema. (by default XML records are mapped onto the B2FIND schema, compatable to be uploaded to a CKAN repository.")
+    group_map.add_option('--subset', help="Subdirectory of meta data records to be mapped. By default this is the same as the the term given by option '--mdsubset'.",default=None, metavar='STRING')
+    group_map.add_option('--mdschema', help="Metadata format and schema of harvested meta data records to be mapped. By default this is the same as the term given by option '--mdprefix'.",default=None, metavar='STRING')
 
     ##HEW-D : Not used in Training (yet) !!! group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
     
@@ -2624,6 +2622,7 @@ def options_parser(modes):
 
     p.add_option_group(group_single)
     p.add_option_group(group_multi)
+    p.add_option_group(group_processmodes)
     p.add_option_group(group_generate)
     p.add_option_group(group_harvest)
     p.add_option_group(group_map)
