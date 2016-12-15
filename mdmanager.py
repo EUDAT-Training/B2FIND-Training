@@ -155,6 +155,7 @@ class GENERATOR(object):
 
         ## mapfile
         mapfile="mapfiles/%s-%s.csv" % (community,mdprefix)
+        print ' |- From %s-separated spreadsheet\n\t%s' % (request[2],inpath)
 
         """ Parse a CSV or TSV file """
 	mapdc=dict()
@@ -162,15 +163,15 @@ class GENERATOR(object):
 	try:
 		fp = open(fn)
 		ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
-                print ' |- Original fields:\n\t%s' % ofields
+                print ' |- with original fields (headline)\n\t%s' % ofields
 
 		if os.path.isfile(mapfile) :
-                    print ' |- Use existing mapfile\t%s' % mapfile
+                    print ' |- using existing mapfile\t%s' % mapfile
                     r = csv.reader(open(mapfile, "r"),delimiter='>')
                     for row in r:
                         fields.append(row[1].strip())
 		else : 
-                    print ' |- Generate mapfile\t%s' % mapfile
+                    print ' |- create mapfile\n\t%s and' % mapfile
                     w = csv.writer(open(mapfile, "w"),delimiter='>')
                     for of in ofields:
                         mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
@@ -182,11 +183,11 @@ class GENERATOR(object):
 		else:
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
 		
-                print ' |- Generate XML files in %s' % outpath
+                print ' |- generate XML files in %s' % outpath
 		for row in tsv:
 			dc = self.makedc(row)
 			if 'dc:identifier' in row:
-                            outfile="".join(row['dc:identifier'].split())+'.xml'
+                            outfile=re.sub('[\(\)]','',"".join(row['dc:identifier'].split()).replace(',','-').replace('/','-'))+'.xml'
                             print '  |--> %s' % outfile
                             self.writefile(outpath+'/'+outfile, dc)
 			else:
@@ -2607,7 +2608,7 @@ def options_parser(modes):
 
     group_map = optparse.OptionGroup(p, "Mapping Options",
         "These options will be required to map metadata records formatted in a supported metadata format to JSON records formatted in a common target schema. (by default XML records are mapped onto the B2FIND schema, compatable to be uploaded to a CKAN repository.")
-    group_map.add_option('--subset', help="Subdirectory of meta data records to be mapped. By default this is the same as the the term given by option '--mdsubset'.",default=None, metavar='STRING')
+    group_map.add_option('--subset', help="Subdirectory of harvested meta data records to be mapped. By default this is the same as the the term given by option '--mdsubset'.",default=None, metavar='STRING')
     group_map.add_option('--mdschema', help="Metadata format and schema of harvested meta data records to be mapped. By default this is the same as the term given by option '--mdprefix'.",default=None, metavar='STRING')
 
     ##HEW-D : Not used in Training (yet) !!! group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
