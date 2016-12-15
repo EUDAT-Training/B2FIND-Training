@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator>Deutsches GeoForschungsZentrum GFZ</dc:creator>
+	<dc:identifier>Temporary seismological network in Longmenshan, LONGMEN (2012/2013)   Qian, Hui</dc:identifier>
+	<dc:publisher> Broadband seismological waveforms, Continental tectonics: compressional, Asia 2015-07-09 32.5 104.9 30.2 102.7 China</dc:publisher>
+</metadata>

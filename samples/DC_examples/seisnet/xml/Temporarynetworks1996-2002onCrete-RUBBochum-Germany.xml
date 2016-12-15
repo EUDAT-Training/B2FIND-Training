@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:coverage>None</dc:coverage>
+	<dc:identifier>Temporary networks 1996-2002 on Crete, RUB Bochum, Germany</dc:identifier>
+	<dc:publisher>    Harjes, H.-P.</dc:publisher>
+	<dc:subject>Deutsches GeoForschungsZentrum GFZ </dc:subject>
+	<dcterms:created>Seismic waveforms</dcterms:created>
+	<dcterms:spatial>Crete</dcterms:spatial>
+</metadata>

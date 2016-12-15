@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator> Asch, G&amp;#252;nter</dc:creator>
+	<dc:identifier>The ReFuCA project: Receiver Functions Central Andes</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ     Seismic waveforms       2013-09-16 -25.8 -70.1 -20.9 -64.8 Central Andes</dc:publisher>
+</metadata>

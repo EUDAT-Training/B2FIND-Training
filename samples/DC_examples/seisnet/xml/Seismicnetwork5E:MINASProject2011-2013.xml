@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator>Asch, Guenter</dc:creator>
+	<dc:identifier>Seismic network 5E: MINAS Project (2011/2013)</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ</dc:publisher>
+	<dc:subject>  MINAS, temporary MINi ArrayS wthin the frame of IPOC</dc:subject>
+	<dcterms:created>      2015-07-08 -24.0 -70.0 -21.0 -69.0 Chile</dcterms:created>
+</metadata>

@@ -120,7 +120,8 @@ requests specified in the list file.
 --list=FILE, -l FILE    list of harvest sources and requests (default is
                         ./harvest_list)
 ```
-**Exercise** Inspect the file *harvest_list* for the general formatting of such a file.
+
+**Excercise** Inspect the file *harvest_list* for the general formatting of such a file.
 
 ### <a name="processingModes"></a> Processing modes
 Depending on the processing step you want to perform, the script *mdmanager.py* can be executed in different modes by using the option `-m | --mode`,
