@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:coverage>33.7 24.4 37.5 26.8</dc:coverage>
+	<dc:creator>RUB Bochum, Germany</dc:creator>
+	<dc:identifier>Cyclades project 2002-2005 and Libyan Sea offshore project 2003-2004,</dc:identifier>
+	<dc:publisher>Meier, T.</dc:publisher>
+	<dc:subject>Deutsches GeoForschungsZentrum GFZ</dc:subject>
+	<dcterms:created>Seismic waveforms Cyclades </dcterms:created>
+	<dcterms:spatial>2015-07-09</dcterms:spatial>
+</metadata>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:coverage>Tajikistan</dc:coverage>
+	<dc:creator>GEOFON Data Centre</dc:creator>
+	<dc:identifier>GEOFON Seismic Network</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ</dc:publisher>
+	<dc:subject>Seismic monitoring</dc:subject>
+	<dcterms:created>2015-07-08</dcterms:created>
+	<dcterms:spatial>36.7 39.4 68.6 72.2</dcterms:spatial>
+</metadata>

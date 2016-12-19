@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator>Wilde-Pi&amp;#243;rko, Monika</dc:creator>
+	<dc:identifier>PASSEQ 2006-2008: Passive Seismic Experiment in Trans-European Suture Zone</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ Broadband seismic waveforms 2016-05-23 48.4 8.8 56.1 25.9 Poland</dc:publisher>
+</metadata>

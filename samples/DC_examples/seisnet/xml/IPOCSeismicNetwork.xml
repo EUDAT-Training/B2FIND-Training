@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:coverage>Northern Chile</dc:coverage>
+	<dc:creator>GFZ German Research Centre for Geosciences</dc:creator>
+	<dc:identifier>IPOC Seismic Network</dc:identifier>
+	<dc:publisher>    Integrated Plate boundary Observatory Chile - IPOC</dc:publisher>
+	<dc:subject>Seismic waveforms</dc:subject>
+	<dcterms:created>2014-11-10</dcterms:created>
+	<dcterms:spatial>-25 -71 -17 -68</dcterms:spatial>
+</metadata>

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator>Yuan, Xiaohui</dc:creator>
+	<dc:identifier>Tienshan Pamir Geodynamics Project (TIPAGE)</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ</dc:publisher>
+	<dc:subject>Seismic waveforms</dc:subject>
+	<dcterms:created>2015-12-14</dcterms:created>
+	<dcterms:spatial>36.6 69.3 40.6 74.8 Kyrgystan/Tajikistan</dcterms:spatial>
+</metadata>

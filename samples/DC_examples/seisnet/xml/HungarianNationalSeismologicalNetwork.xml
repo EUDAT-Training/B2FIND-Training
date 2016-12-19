@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator>K&amp;#246;vesligethy Rad&amp;#243; Seismological Observatory (Geodetic and Geophysical Institute, Research Centre for Astronomy and Earth Sciences, Hungarian Academy of Sciences (MTA CSFK GGI KRSZO))</dc:creator>
+	<dc:identifier>Hungarian National Seismological Network</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZSeismic monitoring</dc:publisher>
+	<dc:subject>2016-05-03</dc:subject>
+	<dcterms:created>46.1 16.6 48.1 22.5</dcterms:created>
+	<dcterms:spatial>Hungary</dcterms:spatial>
+</metadata>
