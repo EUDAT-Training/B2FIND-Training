@@ -1,5 +1,5 @@
-<img align="left" src="img/UnderConstruction.jpg" width="100px">
-**`UNDER CONSTRUCTION`** **`This training material is under construction, please use with care`** **`UNDER CONSTRUCTION`**
+##<img align="left" src="img/UnderConstruction.jpg" width="100px">
+##**`UNDER CONSTRUCTION`** **`This training material is under construction, please use with care`** **`UNDER CONSTRUCTION`**
 
 
 # B2FIND-Training
