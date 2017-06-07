@@ -1138,6 +1138,7 @@ class MAPPER():
                         logging.error('    | [ERROR] %s : Cannot load or parse %s-file %s' % (e,infformat,infilepath))
                         results['ecount'] += 1
                         continue
+
                 ## XPATH rsp. JPATH converter
                 if  mdprefix == 'json':
                     try:
@@ -2597,6 +2598,9 @@ def options_parser(modes):
     group_processmodes = optparse.OptionGroup(p, "Processing modes","The script can be executed in different modes by using the option -m | --mode, and provides procedures for the whole ingestion workflow how to come from unstructured metadata to entries in the discovery portal (own CKAN or B2FIND instance).")
     group_processmodes.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='\nThis specifies the processing mode. Supported modes are (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
 
+    p.add_option('--community', '-c', help="community or project, for which metadata are harvested, processed, stored and uploaded. This 'label' is used through the whole metadata life cycle.", default='', metavar='STRING')
+    ##HEW-D really needed (for Training) ???  
+    p.add_option('--mdsubset', help="Subset of metadata to be harvested (by default 'None') and subdirectory of harvested and processed metadata (by default 'SET_1'",default=None, metavar='STRING')
     group_generate = optparse.OptionGroup(p, "Generation Options",
         "These options will be required to generate formatted metadata sets (by default DublinCore XML files) from 'raw' spreadsheet data that resides in the PATH given by SOURCE.")
     group_generate.add_option('--delimiter', help="Delimiter, which seperates the fields and associated values in the datasets (lines) of the spreadsheets, can be 'comma' (default) or 'tab'",default='comma', metavar='STRING')
