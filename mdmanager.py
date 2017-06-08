@@ -1347,6 +1347,8 @@ class MAPPER():
             mapext='conf' ##!!!HEW --> json
         else:
             mapext='xml'
+        ## mapfile
+        mapfile="%s/mapfiles/%s-%s.%s" % (os.getcwd(),community,mdprefix,mapext)
         if not os.path.isfile(mapfile):
            mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
            if not os.path.isfile(mapfile):
@@ -1823,7 +1825,7 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
-        jsondata["owner_org"]="rda"
+        jsondata["owner_org"]="eudat"
    
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
@@ -2230,11 +2232,15 @@ def process_upload(UP, rlist, options):
             'tcount':0,
             'time':0
         }
-        
-        if CKAN.action('group_show',{"id":community}) == None or not (CKAN.action('group_show',{"id":community})['success']) :
-          logging.error(" CKAN group %s does not exist" % community)
-          sys.exit()
 
+        try:
+            ckangroup=CKAN.action('group_list') ## ,{"id":community})
+            if community not in ckangroup['result'] :
+                logger.critical('Can not found community %s' % community)
+                sys.exit(-1)
+        except Exception :
+            logging.critical("Can not list CKAN groups")
+  
         dir=os.path.abspath('oaidata/'+community+'-'+mdprefix+'/'+subset)
 
         if not os.path.exists(dir):
