@@ -1,0 +1,10 @@
+sickle
+lxml
+simplejson
+python-Levenshtein
+git+https://github.com/noumar/iso639.git
+dublincore
+ckanapi
+b2handle
+babel
+pyparsing
