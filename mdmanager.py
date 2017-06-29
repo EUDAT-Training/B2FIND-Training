@@ -157,19 +157,19 @@ class GENERATOR(object):
         mapfile="mapfiles/%s-%s.csv" % (community,mdprefix)
 
         """ Parse a CSV or TSV file """
-	mapdc=dict()
-	fields=list()
-	try:
-		fp = open(fn)
-		ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
+        mapdc=dict()
+        fields=list()
+        try:
+                fp = open(fn)
+                ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
                 print ' |- Original fields:\n\t%s' % ofields
 
-		if os.path.isfile(mapfile) :
+                if os.path.isfile(mapfile) :
                     print ' |- Use existing mapfile\t%s' % mapfile
                     r = csv.reader(open(mapfile, "r"),delimiter='>')
                     for row in r:
                         fields.append(row[1].strip())
-		else : 
+                else : 
                     print ' |- Generate mapfile\t%s' % mapfile
                     w = csv.writer(open(mapfile, "w"),delimiter='>')
                     for of in ofields:
@@ -177,50 +177,50 @@ class GENERATOR(object):
                         fields.append(mapdc[of].strip())
                         w.writerow([of, mapdc[of]])
 
-		if not delimiter == ',' :
+                if not delimiter == ',' :
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
-		else:
+                else:
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
-		
+                
                 print ' |- Generate XML files in %s' % outpath
-		for row in tsv:
-			dc = self.makedc(row)
-			if 'dc:identifier' in row:
+                for row in tsv:
+                        dc = self.makedc(row)
+                        if 'dc:identifier' in row:
                             outfile="".join(row['dc:identifier'].split())+'.xml'
                             print '  |--> %s' % outfile
                             self.writefile(outpath+'/'+outfile, dc)
-			else:
+                        else:
                             print ' ERROR : At least target field dc:identifier must be specified' 
-			    sys.exit()
+                            sys.exit()
 
-	except IOError as (errno, strerror):
-		print "Error ({0}): {1}".format(errno, strerror)
-		raise SystemExit
-	fp.close()
+        except IOError as (errno, strerror):
+                print "Error ({0}): {1}".format(errno, strerror)
+                raise SystemExit
+        fp.close()
 
         return -1
 
     def makedc(self,row):
-	""" Generate a Dublin Core XML file from a TSV """
-	metadata = DublinCore()
-	with open('mapfiles/dcelements.txt','r') as f:
-		dcelements = f.read().splitlines()
-	for dcelem in dcelements :
-		setattr(metadata,dcelem.capitalize(),row.get('dc:'+dcelem,''))
+        """ Generate a Dublin Core XML file from a TSV """
+        metadata = DublinCore()
+        with open('mapfiles/dcelements.txt','r') as f:
+                dcelements = f.read().splitlines()
+        for dcelem in dcelements :
+                setattr(metadata,dcelem.capitalize(),row.get('dc:'+dcelem,''))
 
-	with open('mapfiles/dcterms.txt','r') as f:
-		dcterms = f.read().splitlines()
-	for dcterm in dcterms :
-		setattr(metadata,dcterm.capitalize(),row.get('dcterms:'+dcterm,''))
+        with open('mapfiles/dcterms.txt','r') as f:
+                dcterms = f.read().splitlines()
+        for dcterm in dcterms :
+                setattr(metadata,dcterm.capitalize(),row.get('dcterms:'+dcterm,''))
 
-	return metadata
+        return metadata
 
     def writefile(self,name, obj):
-	""" Writes Dublin Core or Macrepo XML object to a file """
-	if isinstance(obj, DublinCore):
-		fp = open(name, 'w')
-		fp.write(obj.makeXML(self.DC_NS))
-	fp.close()
+        """ Writes Dublin Core or Macrepo XML object to a file """
+        if isinstance(obj, DublinCore):
+                fp = open(name, 'w')
+                fp.write(obj.makeXML(self.DC_NS))
+        fp.close()
 
 class HARVESTER(object):
     
@@ -365,11 +365,11 @@ class HARVESTER(object):
                        oai_id = record.identifier
                        record = sickle.GetRecord(**{'metadataPrefix':req['mdprefix'],'identifier':record.identifier})
             elif req["lverb"] == 'ListRecords' :
-            	    if (record.header.deleted):
-                       stats['totdcount'] += 1
-            	       continue
-                    else:
-                       oai_id = record.header.identifier
+                if (record.header.deleted):
+                    stats['totdcount'] += 1
+                    continue
+                else:
+                    oai_id = record.header.identifier
 
             # generate a uniquely identifier for this dataset:
             uid = str(uuid.uuid5(uuid.NAMESPACE_DNS, oai_id.encode('ascii','replace')))
@@ -487,7 +487,7 @@ class MAPPER():
         self.enclosed = Forward()
         value = Combine(OneOrMore(Word(nonBracePrintables) ^ White(' ')))
         nestedParens = nestedExpr('(', ')', content=self.enclosed) 
-	nestedBrackets = nestedExpr('[', ']', content=self.enclosed) 
+        nestedBrackets = nestedExpr('[', ']', content=self.enclosed) 
         nestedCurlies = nestedExpr('{', '}', content=self.enclosed) 
         self.enclosed << OneOrMore(value | nestedParens | nestedBrackets | nestedCurlies)
 
@@ -555,6 +555,8 @@ class MAPPER():
            return ''
         else:
            return new_date
+
+
 
 
     def map_identifiers(self, invalue):
@@ -754,6 +756,7 @@ class MAPPER():
         except Exception, e:
            logging.error('[ERROR] : %s - in map_spatial invalue %s can not converted !' % (e,invalue))
            return (None,None,None,None,None) 
+
     def map_discipl(self,invalue,disctab):
         """
         Convert disciplines along B2FIND disciplinary list
@@ -1525,33 +1528,33 @@ class CKAN_CLIENT(object):
     """
 
     def __init__ (self, ip_host, api_key):
-	    self.ip_host = ip_host
-	    self.api_key = api_key
-	    self.logger = logging.getLogger()
-	
+            self.ip_host = ip_host
+            self.api_key = api_key
+            self.logger = logging.getLogger()
+        
     def validate_actionname(self,action):
         return True
-	
-	
+        
+        
     def action(self, action, data={}):
         ## action (action, jsondata) - method
-	    # Call the api action <action> with the <jsondata> on the CKAN instance which was defined by iphost
-	    # parameter of CKAN_CLIENT.
-	    #
-	    # Parameters:
-	    # -----------
-	    # (string)  action  - Action name of the API v3 of CKAN
-	    # (dict)    data    - Dictionary with json data
-	    #
-	    # Return Values:
-	    # --------------
-	    # (dict)    response dictionary of CKAN
-	    
-	    if (not self.validate_actionname(action)):
-		    print '[ERROR] Action name '+ str(action) +' is not defined in CKAN_CLIENT!'
-	    else:
-		    return self.__action_api(action, data)
-		
+            # Call the api action <action> with the <jsondata> on the CKAN instance which was defined by iphost
+            # parameter of CKAN_CLIENT.
+            #
+            # Parameters:
+            # -----------
+            # (string)  action  - Action name of the API v3 of CKAN
+            # (dict)    data    - Dictionary with json data
+            #
+            # Return Values:
+            # --------------
+            # (dict)    response dictionary of CKAN
+            
+            if (not self.validate_actionname(action)):
+                    print '[ERROR] Action name '+ str(action) +' is not defined in CKAN_CLIENT!'
+            else:
+                    return self.__action_api(action, data)
+                
     def __action_api (self, action, data_dict):
         # Make the HTTP request for data set generation.
         response=''
@@ -1564,14 +1567,14 @@ class CKAN_CLIENT(object):
         # special cases:
         if (action == "package_activate_all"):
             if data_dict['group']:
-	            data = self.action('member_list',{"id" : data_dict['group'], "object_type":"package"})
+                    data = self.action('member_list',{"id" : data_dict['group'], "object_type":"package"})
             else:
-	            data = self.action('package_list',{})
+                    data = self.action('package_list',{})
 
             print 'Total number of datasets: ' + str(len(data['result']))
             for dataset in data['result']:
-	            logging.info('\tTry to activate object: ' + str(dataset))
-	            self.action('package_update',{"name" : dataset[0], "state":"active"})
+                    logging.info('\tTry to activate object: ' + str(dataset))
+                    self.action('package_update',{"name" : dataset[0], "state":"active"})
 
             return True
         elif (action == "package_delete_all"):
@@ -1600,10 +1603,10 @@ class CKAN_CLIENT(object):
                             ds_id = (self.action('package_show',{"id" : data_dict['name']}))['id']
 
             member_dict = {
-	            "id": data_dict['group'],
-	            "object": ds_id,
-	            "object_type": "package", 
-	            "capacity" : "public"
+                    "id": data_dict['group'],
+                    "object": ds_id,
+                    "object_type": "package", 
+                    "capacity" : "public"
             }
 
             data_dict	= member_dict
@@ -1826,6 +1829,9 @@ class UPLOADER (object):
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
         jsondata["owner_org"]="eudat"
+
+
+        write 
    
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
