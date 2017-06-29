@@ -24,9 +24,20 @@ logger = logging.getLogger()
 import traceback
 
 # 
-import urllib2
-import urllib, urllib2, socket
+PY2 = sys.version_info[0] == 2
+if PY2:
+    from urllib import quote
+    from urllib2 import urlopen, Request
+    from urllib2 import HTTPError,URLError
+else:
+    from urllib import parse
+    from urllib.request import urlopen, Request
+    from urllib.error import HTTPError,URLError
+
+
+import socket
 from itertools import tee 
+
 
 # needed for GENERATOR
 import csv
@@ -162,15 +173,15 @@ class GENERATOR(object):
         try:
                 fp = open(fn)
                 ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
-                print ' |- Original fields:\n\t%s' % ofields
+                print(' |- Original fields:\n\t%s' % ofields)
 
                 if os.path.isfile(mapfile) :
-                    print ' |- Use existing mapfile\t%s' % mapfile
+                    print(' |- Use existing mapfile\t%s' % mapfile)
                     r = csv.reader(open(mapfile, "r"),delimiter='>')
                     for row in r:
                         fields.append(row[1].strip())
                 else : 
-                    print ' |- Generate mapfile\t%s' % mapfile
+                    print(' |- Generate mapfile\t%s' % mapfile)
                     w = csv.writer(open(mapfile, "w"),delimiter='>')
                     for of in ofields:
                         mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
@@ -182,19 +193,19 @@ class GENERATOR(object):
                 else:
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
                 
-                print ' |- Generate XML files in %s' % outpath
+                print(' |- Generate XML files in %s' % outpath)
                 for row in tsv:
                         dc = self.makedc(row)
                         if 'dc:identifier' in row:
                             outfile="".join(row['dc:identifier'].split())+'.xml'
-                            print '  |--> %s' % outfile
+                            print('  |--> %s' % outfile)
                             self.writefile(outpath+'/'+outfile, dc)
                         else:
-                            print ' ERROR : At least target field dc:identifier must be specified' 
+                            print(' ERROR : At least target field dc:identifier must be specified') 
                             sys.exit()
 
-        except IOError as (errno, strerror):
-                print "Error ({0}): {1}".format(errno, strerror)
+        except IOError as err :
+                print ("Error %s" % err)
                 raise SystemExit
         fp.close()
 
@@ -318,13 +329,13 @@ class HARVESTER(object):
         except etree.XMLSyntaxError as e:
             logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
             return -1
-        except Exception, e:
+        except Exception as e:
             logging.error("[ERROR %s ] : %s" % (e,traceback.format_exc()))
             return -1
 
         ntotrecs=sum(1 for _ in rc)
 
-        print "\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start)
+        print ("\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start))
         
         logging.debug('    |   | %-4s | %-45s | %-45s |\n    |%s|' % ('#','OAI Identifier','DS Identifier',"-" * 106))
 
@@ -352,7 +363,7 @@ class HARVESTER(object):
             bartags=perc/5 #HEW-D fcount/100
             if perc%10 == 0 and perc != oldperc :
                 oldperc=perc
-                print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 )
+                print ("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 ))
                 sys.stdout.flush()
 
 
@@ -392,7 +403,7 @@ class HARVESTER(object):
                             f = open(xmlfile, 'w')
                             f.write(metadata)
                             f.close
-                        except IOError, e:
+                        except IOError as e:
                             logging.error("[ERROR] Cannot write metadata in xml file '%s': %s\n" % (xmlfile,e))
                             stats['ecount'] +=1
                             continue
@@ -550,7 +561,7 @@ class MAPPER():
                 return new_date
             else:
                 return '' # if converting cannot be done, make date empty
-        except Exception, e:
+        except Exception as e:
            logging.error('[ERROR] : %s - in date2UTC replace old date %s by new date %s' % (e,old_date,new_date))
            return ''
         else:
@@ -597,7 +608,7 @@ class MAPPER():
 
             if 'url' not in iddict :
                 iddict['url']=favurl
-        except Exception, e:
+        except Exception as e:
             logging.error('[ERROR] : %s - in map_identifiers %s can not converted !' % (e,invalue))
             return None
         else:
@@ -701,7 +712,7 @@ class MAPPER():
                     return (desc,None,None)
             else:
                 return (desc,None,None)
-        except Exception, e:
+        except Exception as e:
            logging.debug('[ERROR] : %s - in map_temporal %s can not converted !' % (e,invalue))
            return (None,None,None)
         else:
@@ -753,7 +764,7 @@ class MAPPER():
           elif len(coordarr)==4 :
               desc+=' boundingBox : [ %s , %s , %s, %s ]' % (coordarr[0],coordarr[1],coordarr[2],coordarr[3])
               return(desc,coordarr[0],coordarr[1],coordarr[2],coordarr[3])
-        except Exception, e:
+        except Exception as e:
            logging.error('[ERROR] : %s - in map_spatial invalue %s can not converted !' % (e,invalue))
            return (None,None,None,None,None) 
 
@@ -783,13 +794,13 @@ class MAPPER():
              try:
                disc=line[2].strip()
                r=lvs.ratio(indisc,disc)
-             except Exception, e:
+             except Exception as e:
                  logging.error('[ERROR] %s in map_discipl : %s can not compared to %s !' % (e,indisc,disc))
                  continue
              if r > maxr  :
                  maxdisc=disc
                  maxr=r
-                 ##HEW-T                   print '--- %s \n|%s|%s| %f | %f' % (line,indisc,disc,r,maxr)
+                 ##HEW-T                   print('--- %s \n|%s|%s| %f | %f' % (line,indisc,disc,r,maxr)
            if maxr == 1 and indisc == maxdisc :
                logging.debug('  | Perfect match of %s : nothing to do' % indisc)
                retval.append(indisc.strip())
@@ -868,10 +879,10 @@ class MAPPER():
                     if isinstance(entry,int) or len(entry) < 2 : continue
                     entry=entry.encode('utf-8').strip()
                     dictlist.append({ "name": entry.replace('/','-') })
-            except AttributeError, err :
+            except AttributeError as err :
                 log.error('[ERROR] %s in list2dictlist of lentry %s , entry %s' % (err,lentry,entry))
                 continue
-            except Exception, e:
+            except Exception as e:
                 log.error('[ERROR] %s in list2dictlist of lentry %s, entry %s ' % (e,lentry,entry))
                 continue
         return dictlist[:12]
@@ -906,7 +917,7 @@ class MAPPER():
         utc=self.date2UTC(dt)
         try:
            ##utctime=datetime.datetime(utc).isoformat()
-           ##print 'utctime %s' % utctime
+           ##print('utctime %s' % utctime
            utctime = datetime.datetime.strptime(utc, "%Y-%m-%dT%H:%M:%SZ") ##HEW-?? .isoformat()
            diff = utc1900 - utctime
            diffsec= int(diff.days) * 24 * 60 *60
@@ -914,7 +925,7 @@ class MAPPER():
               sec=int(time.mktime((utc1900).timetuple()))-diffsec+year1epochsec
            else:
               sec=int(time.mktime(utctime.timetuple()))+year1epochsec
-        except Exception, e:
+        except Exception as e:
            logging.error('[ERROR] : %s - in utc2seconds date-time %s can not converted !' % (e,utc))
            return None
 
@@ -933,14 +944,14 @@ class MAPPER():
                         if elem.text :
                             retlist.append(elem.text)
                 except Exception as e:
-                    print 'ERROR %s : during xpath extraction of %s' % (e,fxpath)
+                    print('ERROR %s : during xpath extraction of %s' % (e,fxpath))
                     return []
             elif func == '/':
                 try:
                     for elem in obj.findall('.//',ns):
                         retlist.append(elem.text)
                 except Exception as e:
-                    print 'ERROR %s : during xpath extraction of %s' % (e,'./')
+                    print('ERROR %s : during xpath extraction of %s' % (e,'./'))
                     return []
 
         return retlist
@@ -1102,7 +1113,7 @@ class MAPPER():
 
             if perc%10 == 0 and perc != oldperc:
                 oldperc=perc
-                print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start )
+                print ("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start ))
                 sys.stdout.flush()
 
             jsondata = dict()
@@ -1234,7 +1245,7 @@ class MAPPER():
                     try:
                         logging.debug('   | [INFO] save json file')
                         json_file.write(data)
-                    except TypeError, err :
+                    except TypeError as err :
                         logging.error('    | [ERROR] Cannot write json file %s : %s' % (outpath+'/'+filename,err))
                     except Exception as e:
                         logging.error('    | [ERROR] %s : Cannot write json file %s' % (e,outpath+'/'+filename))
@@ -1319,7 +1330,7 @@ class MAPPER():
             # to be continued for every other facet
 
             ##if errlist != '':
-            ##    print ' Following key-value errors fails validation:\n' + errlist 
+            ##    print(' Following key-value errors fails validation:\n' + errlist 
             return vall
 
     def validate(self,community,mdprefix,path):
@@ -1446,12 +1457,12 @@ class MAPPER():
                     else:
                         if facet == 'title':
                            logging.debug('    | [ERROR] Facet %s is mandatory, but value is empty' % facet)
-            except IOError, e:
+            except IOError as e:
                 logging.error("[ERROR] %s in validation of facet '%s' and value '%s' \n" % (e,facet, value))
                 exit()
 
         outfile='%s/%s' % (path,'validation.stat')
-        print '\n Statistics of\n\tcommunity\t%s\n\tsubset\t\t%s\n\t# of records\t%d\n  see in %s\n\n' % (community,oaiset,fcount,outfile)  
+        print('\n Statistics of\n\tcommunity\t%s\n\tsubset\t\t%s\n\t# of records\t%d\n  see in %s\n\n' % (community,oaiset,fcount,outfile))  
         printstats='\n Statistics of\n\tcommunity\t%s\n\tsubset\t\t%s\n\t# of records\t%d\n  see as well %s\n\n' % (community,oaiset,fcount,outfile)  
         printstats+=" |-> {:<16} <-- {:<20} \n  |- {:<10} | {:<9} | \n".format('Facet name','XPATH','Mapped','Validated')
         printstats+="  |-- {:>5} | {:>4} | {:>5} | {:>4} |\n".format('#','%','#','%')
@@ -1551,7 +1562,7 @@ class CKAN_CLIENT(object):
             # (dict)    response dictionary of CKAN
             
             if (not self.validate_actionname(action)):
-                    print '[ERROR] Action name '+ str(action) +' is not defined in CKAN_CLIENT!'
+                    print('[ERROR] Action name '+ str(action) +' is not defined in CKAN_CLIENT!')
             else:
                     return self.__action_api(action, data)
                 
@@ -1571,7 +1582,7 @@ class CKAN_CLIENT(object):
             else:
                     data = self.action('package_list',{})
 
-            print 'Total number of datasets: ' + str(len(data['result']))
+            print('Total number of datasets: ' + str(len(data['result'])))
             for dataset in data['result']:
                     logging.info('\tTry to activate object: ' + str(dataset))
                     self.action('package_update',{"name" : dataset[0], "state":"active"})
@@ -1585,12 +1596,12 @@ class CKAN_CLIENT(object):
             else:
                 data = self.action('package_list',{})
             pcount = 0
-            print 'Total number of datasets: ' + str(len(data['result']))
+            print('Total number of datasets: ' + str(len(data['result'])))
             #self.action('bulk_update_delete',{"datasets" : data['result'], "id":"enes"})
             for dataset in data['result']:
                 pcount += 1
                 print('\tTry to delete object (' + str(pcount) + ' of ' + str(len(data['result'])) + '): ' + str(dataset))
-                print '\t', (self.action('package_update',{"name" : dataset[0], "state":"delete"}))['success']
+                print('\t', (self.action('package_update',{"name" : dataset[0], "state":"delete"}))['success'])
 
             return True
         elif (action == "member_create" or action == "organization_member_create"):
@@ -1686,11 +1697,11 @@ class UPLOADER (object):
     # UPLOAD DATASET TO CKAN
     upload = UP.upload(dsname,ckanstatus,community,jsondata)
     if (upload == 1):
-        print 'Creation of record succeed'
+        print('Creation of record succeed')
     elif (upload == 2):
-        print 'Update of record succeed'
+        print('Update of record succeed')
     else:
-        print 'Upload of record failed'
+        print('Upload of record failed')
     """
     
     def __init__(self, CKAN):
@@ -1890,8 +1901,8 @@ def main():
     logger = setup_custom_logger('root',options.verbose)
 
     # print out general info:
-    print '\nVersion:  \t%s' % ManagerVersion
-    print 'Run mode:   \t%s' % pstat['short'][mode]
+    print('\nVersion:  \t%s' % ManagerVersion)
+    print('Run mode:   \t%s' % pstat['short'][mode])
     logging.debug('Process ID:\t%s' % str(jid))
     logging.debug('Processing status:\t')
     for key in pstat['status']:
@@ -1931,7 +1942,7 @@ def main():
             sys.exit(-1)
             
     ## START PROCESSING:
-    print "Start : \t%s\n" % now
+    print ("Start : \t%s\n" % now)
     logging.info("Loop over processes and related requests :\n")
     logging.info('|- <Process> started : %s' % "<Time>")
     logging.info(' |- Joblist: %s' % "<Filename of request list>")
@@ -1943,7 +1954,7 @@ def main():
         # start the process:
         process(options,pstat)
         exit()
-    except Exception, e:
+    except Exception as e:
         logging.critical("[CRITICAL] Program is aborted because of a critical error! Description:")
         logging.critical("%s" % traceback.format_exc())
         exit()
@@ -1995,19 +2006,19 @@ def process(options,pstat):
 
     ## GENERATION mode:    
     if (pstat['status']['g'] == 'tbd'):
-        print '\n|- Generation started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        print('\n|- Generation started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
         GEN = GENERATOR(pstat,options.outdir)
         process_generate(GEN,reqlist)
         
     ## HARVESTING mode:    
     if (pstat['status']['h'] == 'tbd'):
-        print '\n|- Harvesting started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        print('\n|- Harvesting started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
         HV = HARVESTER(pstat,options.outdir,options.fromdate)
         process_harvest(HV,reqlist)
         
     ## MAPPINING - Mode:  
     if (pstat['status']['m'] == 'tbd'):
-        print '\n|- Mapping started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        print('\n|- Mapping started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
         MP = MAPPER()
         process_map(MP,reqlist)
 
@@ -2189,14 +2200,14 @@ def process_upload(UP, rlist, options):
     def print_extra(key,jsondata):
         for v in jsondata['extras']:
             if v['key'] == key:
-                print ' Key : %s | Value : %s |' % (v['key'],v['value'])
+                print(' Key : %s | Value : %s |' % (v['key'],v['value']))
  
 
     # create credentials and handle cleint if required
     if (options.handle_check):
           try:
               cred = PIDClientCredentials.load_from_JSON('credentials_11098')
-          except Exception, err:
+          except Exception as err:
               logging.critical("[CRITICAL %s ] : Could not create credentials from credstore %s" % (err,options.handle_check))
               ##p.print_help()
               sys.exit(-1)
@@ -2341,7 +2352,7 @@ def process_upload(UP, rlist, options):
 ##            except UnicodeEncodeError:
 ##                logging.error('        |-> [ERROR] Unicode encoding failed during md checksum determination')
 ##                checksum=None
-##            except Exception, err:
+##            except Exception as err:
 ##                logging.error('        |-> [ERROR] %s' % err)
 ##                checksum=None
 ##            else:
@@ -2369,7 +2380,7 @@ def process_upload(UP, rlist, options):
                     checksum2 = client.get_value_from_handle(pid, "CHECKSUM",rec)
                     ManagerVersion2 = client.get_value_from_handle(pid, "JMDVERSION",rec)
                     B2findHost = client.get_value_from_handle(pid,"B2FINDHOST",rec)
-                except Exception, err:
+                except Exception as err:
                     logging.error("[CRITICAL : %s] in client.get_value_from_handle" % err )
                 else:
                     logging.debug("Got checksum2 %s, ManagerVersion2 %s and B2findHost %s from PID %s" % (checksum2,ManagerVersion2,B2findHost,pid))
@@ -2421,7 +2432,7 @@ def process_upload(UP, rlist, options):
                                 npid = client.register_handle(pid, ckands, checksum, None, True ) ## , additional_URLs=None, overwrite=False, **extratypes)
                             except (HandleAuthenticationError,HandleSyntaxError) as err :
                                 logging.critical("[CRITICAL : %s] in client.register_handle" % err )
-                            except Exception, err:
+                            except Exception as err:
                                 logging.critical("[CRITICAL : %s] in client.register_handle" % err )
                                 sys.exit()
                             else:
@@ -2433,7 +2444,7 @@ def process_upload(UP, rlist, options):
                                 client.modify_handle_value(pid,CHECKSUM=checksum)
                             except (HandleAuthenticationError,HandleNotFoundException,HandleSyntaxError) as err :
                                 logging.critical("[CRITICAL : %s] client.modify_handle_value %s" % (err,pid))
-                            except Exception, err:
+                            except Exception as err:
                                 logging.critical("[CRITICAL : %s]  client.modify_handle_value %s" % (err,pid))
                                 sys.exit()
                             else:
@@ -2449,7 +2460,7 @@ def process_upload(UP, rlist, options):
                         client.modify_handle_value(pid, MD_STATUS='B2FIND_uploaded')
                     except (HandleAuthenticationError,HandleNotFoundException,HandleSyntaxError) as err :
                         logging.critical("[CRITICAL : %s] in client.modify_handle_value of pid %s" % (err,pid))
-                    except Exception, err:
+                    except Exception as err:
                         logging.critical("[CRITICAL : %s] in client.modify_handle_value of %s" % (err,pid))
                         sys.exit()
                     else:
