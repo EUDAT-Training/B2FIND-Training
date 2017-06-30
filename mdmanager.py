@@ -202,6 +202,7 @@ class GENERATOR(object):
                             self.writefile(outpath+'/'+outfile, dc)
                         else:
                             print(' ERROR : At least target field dc:identifier must be specified') 
+                            os.remove(mapfile)
                             sys.exit()
 
         except IOError as err :
@@ -314,6 +315,13 @@ class HARVESTER(object):
         
         start=time.time()
 
+        if (not req["mdsubset"]):
+            logging.critical(' Option mdsubset is mandatory for harvesting')
+            return -1
+            subset = 'SET'
+        else:
+            subset = req["mdsubset"]
+
         sickle = SickleClass.Sickle(req['url'], max_retries=3, timeout=300)
         outtypedir='xml'
         outtypeext='xml'
@@ -340,11 +348,6 @@ class HARVESTER(object):
         logging.debug('    |   | %-4s | %-45s | %-45s |\n    |%s|' % ('#','OAI Identifier','DS Identifier',"-" * 106))
 
         # set subset:
-        if (not req["mdsubset"]):
-            subset = 'SET'
-        else:
-            subset = req["mdsubset"]
-
         # make subset dir:
         subsetdir = '/'.join([self.base_outdir,req['community']+'-'+req['mdprefix'],subset])
 
@@ -1891,7 +1894,7 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
-        jsondata["owner_org"]="eudat"
+        jsondata["owner_org"]="crete" ##HEW!!! "eudat"
 
 
         ####??? write 
@@ -1953,8 +1956,8 @@ def main():
     logger = setup_custom_logger('root',options.verbose)
 
     # print out general info:
-    print('\nVersion:  \t%s' % ManagerVersion)
-    print('Run mode:   \t%s' % pstat['short'][mode])
+    ##HEW-Dprint('\n|- Version:  \t%s' % ManagerVersion)
+    print('|- Run mode:   \t%s' % pstat['short'][mode])
     logging.debug('Process ID:\t%s' % str(jid))
     logging.debug('Processing status:\t')
     for key in pstat['status']:
@@ -1994,7 +1997,7 @@ def main():
             sys.exit(-1)
             
     ## START PROCESSING:
-    print ("Start : \t%s\n" % now)
+    print ("|- Start : \t%s\n" % now)
     logging.info("Loop over processes and related requests :\n")
     logging.info('|- <Process> started : %s' % "<Time>")
     logging.info(' |- Joblist: %s' % "<Filename of request list>")
@@ -2058,13 +2061,12 @@ def process(options,pstat):
 
     ## GENERATION mode:    
     if (pstat['status']['g'] == 'tbd'):
-        print('\n|- Generation started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
         GEN = GENERATOR(pstat,options.outdir)
         process_generate(GEN,reqlist)
         
     ## HARVESTING mode:    
     if (pstat['status']['h'] == 'tbd'):
-        print('\n|- Harvesting started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
+        ### print('\n|- Harvesting started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
         HV = HARVESTER(pstat,options.outdir,options.fromdate)
         process_harvest(HV,reqlist)
         
@@ -2219,9 +2221,9 @@ def process_validate(MP, rlist):
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/'+request[4])
         else:
-            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
+            path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/SET')
 
-        results = MP.validate(request[0],request[3],path)
+        results = MP.validate(request[0],os.path.basename(request[3]),path)
 
         ctime=time.time()-cstart
         results['time'] = ctime
