@@ -320,7 +320,7 @@ class HARVESTER(object):
         oaireq=getattr(sickle,req["lverb"], None)
         try:
             records,rc=tee(oaireq(**{'metadataPrefix':req['mdprefix'],'set':req['mdsubset'],'ignore_deleted':True,'from':self.fromdate}))
-        except urllib2.HTTPError as e:
+        except HTTPError as e:
             logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
             return -1
         except ConnectionError as e:
@@ -383,7 +383,7 @@ class HARVESTER(object):
                     oai_id = record.header.identifier
 
             # generate a uniquely identifier for this dataset:
-            uid = str(uuid.uuid5(uuid.NAMESPACE_DNS, oai_id.encode('ascii','replace')))
+            uid = str(uuid.uuid5(uuid.NAMESPACE_DNS, req['community']+oai_id.encode('ascii','replace')))
                 
             xmlfile = subsetdir + '/xml/' + os.path.basename(uid) + '.xml'
             try:
@@ -1362,12 +1362,20 @@ class MAPPER():
         else:
             mapext='xml'
         ## mapfile
-        mapfile="%s/mapfiles/%s-%s.%s" % (os.getcwd(),community,mdprefix,mapext)
+        # check and read rules from mapfile
+##        if (target_mdschema != None and not target_mdschema.startswith('#')):
+##            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
+##        else:
+        mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,os.path.basename(mdprefix),mapext)
+
         if not os.path.isfile(mapfile):
-           mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
-           if not os.path.isfile(mapfile):
-              logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
-              return results
+            logging.debug('[WARNING] Community specific mapfile %s does not exist !' % mapfile)
+            mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
+            if not os.path.isfile(mapfile):
+                logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
+                return results
+        logging.debug('  |- Mapfile\t%s' % os.path.basename(mapfile))
+
         mf=open(mapfile) 
 
         # check paths
@@ -1626,36 +1634,80 @@ class CKAN_CLIENT(object):
             action_url = "http://{host}/api/3/action/{action}".format(host=self.ip_host,action=action)
 
         # make json data in conformity with URL standards
-        data_string = unicode(urllib.quote(json.dumps(data_dict)), errors='replace')
+        try:
+            if PY2 :
+                data_string = quote(json.dumps(data_dict))##.encode("utf-8") ## HEW-D 160810 , encoding="latin-1" ))##HEW-D .decode(encoding)
+            else :
+                data_string = parse.quote(json.dumps(data_dict)).encode(encoding) ## HEW-D 160810 , encoding="latin-1" ))##HEW-D .decode(encoding)
+        except Exception as err :
+            logging.critical('%s while building url data' % err)
+
+        ###HEW-D data_string = unicode(urllib.quote(json.dumps(data_dict)), errors='replace')
 
         logging.debug('\t|-- Action %s\n\t|-- Calling %s ' % (action,action_url))	
         ##HEW-Tlogging.debug('\t|-- Object %s ' % data_dict)	
         try:
-            request = urllib2.Request(action_url)
+            request = Request(action_url,data_string)
+            self.logger.debug('request %s' % request)            
             if (self.api_key): request.add_header('Authorization', self.api_key)
-            response = urllib2.urlopen(request,data_string)
-        except urllib2.HTTPError as e:
-            logging.debug('\tHTTPError %s : The server %s couldn\'t fulfill the action %s.' % (e.code,self.ip_host,action))
+            self.logger.debug('api_key %s....' % self.api_key)
+            if PY2 :
+                response = urlopen(request)
+            else :
+                response = urlopen(request)                
+            self.logger.debug('response %s' % response)            
+        except HTTPError as e:
+            self.logger.warning('%s : The server %s couldn\'t fulfill the action %s.' % (e,self.ip_host,action))
             if ( e.code == 403 ):
-                logging.error('\tAccess forbidden, maybe the API key is not valid?')
-                exit(e.code)
+                logging.error('Access forbidden, maybe the API key is not valid?')
+                ## exit(e.code)
             elif ( e.code == 409 and action == 'package_create'):
-                logging.debug('\tMaybe the dataset already exists => try to update the package')
+                self.logger.info('\tMaybe the dataset already exists => try to update the package')
                 self.action('package_update',data_dict)
-                ##HEW-D return {"success" : False}
             elif ( e.code == 409):
-                logging.debug('\tMaybe you have a parameter error?')
+                self.logger.debug('\tMaybe you have a parameter error?')
                 return {"success" : False}
             elif ( e.code == 500):
-                logging.error('\tInternal server error')
-                exit(e.code)
-        except urllib2.URLError as e:
-            logging.error('\tURLError %s : %s' % (e,e.reason))
-            exit('%s' % e.reason)
+                self.logger.critical('\tInternal server error')
+                return {"success" : False}
+        except URLError as e:
+            self.logger.critical('\tURLError %s : %s' % (e,e.reason))
+            return {"success" : False}
+        except Exception as e:
+            self.logger.critical('\t%s' % e)
+            return {"success" : False}
         else :
             out = json.loads(response.read())
+            self.logger.debug('out %s' % out)
             assert response.code >= 200
             return out
+
+##HEW-D        try:
+##HEW-D            request = urllib2.Request(action_url)
+##HEW-D            if (self.api_key): request.add_header('Authorization', self.api_key)
+##HEW-D            response = urllib2.urlopen(request,data_string)
+##HEW-D        except HTTPError as e:
+##HEW-D            logging.debug('\tHTTPError %s : The server %s couldn\'t fulfill the action %s.' % (e.code,self.ip_host,action))
+##HEW-D            if ( e.code == 403 ):
+##HEW-D                logging.error('\tAccess forbidden, maybe the API key is not valid?')
+##HEW-D                exit(e.code)
+##HEW-D            elif ( e.code == 409 and action == 'package_create'):
+##HEW-D                logging.debug('\tMaybe the dataset already exists => try to update the package')
+##HEW-D                self.action('package_update',data_dict)
+##HEW-D                ##HEW-D return {"success" : False}
+##HEW-D            elif ( e.code == 409):
+##HEW-D                logging.debug('\tMaybe you have a parameter error?')
+##HEW-D                return {"success" : False}
+##HEW-D            elif ( e.code == 500):
+##HEW-D                logging.error('\tInternal server error')
+##HEW-D                exit(e.code)
+##HEW-D        except URLError as e:
+##HEW-D            logging.error('\tURLError %s : %s' % (e,e.reason))
+##HEW-D            exit('%s' % e.reason)
+##HEW-D        else :
+##HEW-D            out = json.loads(response.read())
+##HEW-D            assert response.code >= 200
+##HEW-D            return out
 
 class UPLOADER (object):
 
@@ -1842,7 +1894,7 @@ class UPLOADER (object):
         jsondata["owner_org"]="eudat"
 
 
-        write 
+        ####??? write 
    
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
@@ -2165,7 +2217,7 @@ def process_validate(MP, rlist):
         cstart = time.time()
         
         if len(request) > 4:
-            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+request[4])
+            path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/'+request[4])
         else:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
 
@@ -2236,7 +2288,8 @@ def process_upload(UP, rlist, options):
         ir+=1
         logging.info('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
         community, source, dir = request[0:3]
-        mdprefix = request[3]
+        ckan_community=community.lower()
+        mdprefix = os.path.basename(request[3])
         if len(request) > 4:
             subset = request[4]
         else:
@@ -2250,9 +2303,11 @@ def process_upload(UP, rlist, options):
             'time':0
         }
 
+        print ('community %s\n mdprefix %s\n subset %s\n' % (community,mdprefix,subset))
+
         try:
             ckangroup=CKAN.action('group_list') ## ,{"id":community})
-            if community not in ckangroup['result'] :
+            if ckan_community not in ckangroup['result'] :
                 logger.critical('Can not found community %s' % community)
                 sys.exit(-1)
         except Exception :
