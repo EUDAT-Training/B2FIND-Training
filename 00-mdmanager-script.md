@@ -27,8 +27,10 @@ Additionally the script requires several modules listed in the file `requirement
 
 ```sh
 cd B2FIND-Training
-pip install -r requirments.txt
+pip install -r requirements.txt
 ```
+Maybe you need sudo rights to install all needed packages.
+
 Check with
 ```sh
 pip freeze 
