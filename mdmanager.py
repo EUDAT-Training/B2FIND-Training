@@ -1894,6 +1894,7 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
+##HEW!!!!
         jsondata["owner_org"]="crete" ##HEW!!! "eudat"
 
 
@@ -2305,7 +2306,7 @@ def process_upload(UP, rlist, options):
             'time':0
         }
 
-        print ('community %s\n mdprefix %s\n subset %s\n' % (community,mdprefix,subset))
+        print ('|- Community %s\n |- MD prefix %s\n |- Subset %s\n' % (community,mdprefix,subset))
 
         try:
             ckangroup=CKAN.action('group_list') ## ,{"id":community})
@@ -2349,7 +2350,7 @@ def process_upload(UP, rlist, options):
             bartags=perc/5
             if perc%10 == 0 and perc != oldperc :
                 oldperc=perc
-                logging.info("\t[%-20s] %d / %d%%\r" % ('='*bartags, fcount, perc ))
+                print("\t[%-20s] %d / %d%%\r" % ('='*bartags, fcount, perc ))
                 sys.stdout.flush()
 
             jsondata = dict()
