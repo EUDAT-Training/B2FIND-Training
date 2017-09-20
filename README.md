@@ -7,26 +7,26 @@
 
 ## Content
 
-This training module provides detailed instructions for integration in and usage of the [ EUDAT metadata service B2FIND ](http:/b2find.eudat.eu). Please consult the user [documentation on the services](https://eudat.eu/services/userdoc) for more general introduction in B2FIND.
+This training module provides detailed instructions for integration in and usage of the [ EUDAT metadata service B2FIND ](http:/b2find.eudat.eu). Please consult the user [documentation on the services](https://eudat.eu/services/userdoc) for a more general introduction to B2FIND.
 
-Additionally we provide hands-on material for the whole metadata management workflow from metadata generation and formating, over providing and harvesting (using OAI-PMH ), to mapping and validation and finally uploading to a metadata catalogue and portal (based on CKAN). This workflow is shown together with the training modules in the figure below.
+Additionally, we provide hands-on material for the whole metadata management workflow, from metadata generation and formating,  providing and harvesting (using OAI-PMH ), to mapping and validation, and finally uploading to a metadata catalogue and portal (based on CKAN). This workflow is shown, together with the training modules, in the figure below.
 
 <img align="centre" src="img/MD_workflow.png" width="800px">
 
-We provide step by step installation instructions which indicate how the training services and tools are setup and which will give the users an idea how to install the software stack temselves. 
+We provide step by step installation instructions which indicate how the training services and tools are set up and that will give the users an idea of how to install the software stack temselves. 
 
 ## Target audience
 
 This training material foresees three types of trainees: 
-* those who want to learn how to **integrate** the B2FIND service, i.e. data managers who want to publish their metadata within EUDAT,
-* those who want to **set up the whole metadata workflow**, including an OAI harvester service and an own CKAN portal, locally at their site. This may be geared more to data manageres and site admins. 
-* those who want to **use** the EUDAT B2FIND service, i.e. scientists who want to search and access research data.
+* Those who want to learn how to **integrate** the B2FIND service, i.e. data managers who want to publish their metadata within EUDAT.
+* Those who want to **set up the whole metadata workflow**, including an OAI harvester service and an own CKAN portal, locally at their site. This may be geared more towards data manageres and site admins. 
+* Those who want to **use** the EUDAT B2FIND service, i.e. scientists who want to search and access research data.
 
-Following the full, in-depth tutorial will allow you to understand how the components of the whole metadata management workflow are combined and thus enables you to also extend the integration of the service B2FIND at the low-level (technology-level rather than API level). Following just the "use" part of the training will familiarise you with the query and search APIs of the services, but not with the underlying technology and its wiring.
+Following the full, in-depth tutorial will allow you to understand how the components of the whole metadata management workflow are combined. Thus, it enables you to also extend the integration of the B2FIND service at the low-level (technology-level rather than API level). Following just the "use" part of the training will familiarise you with the query and search APIs of the services, but not with the underlying technology and its wiring.
 
 ## Submodules
 
-The order and numbering of the submodules in the table below follow the curriculum of the training as shown in the figure above. Beside the *Target audience* we assign in the column *Required for B2FIND* if a submodule is needed w.r.t. B2FIND usage or integration. Each component takes about 0.5 to 1.0 hours.
+The order and numbering of the submodules in the table below follow the curriculum of the training as shown in the figure above. Next to the *Target audience* column, in the *Required for B2FIND* column, we specify if a submodule is needed w.r.t. B2FIND usage or integration. Each component takes about 0.5 to 1.0 hours.
 
 | #    | Submodule            | Target audience           | Required for B2FIND |
 |-----|----------------------|---------------------------|---------------------|
@@ -46,7 +46,7 @@ The order and numbering of the submodules in the table below follow the curricul
 | 05.c | [Data access](05.c-data-access.md) |  researchers | B2FIND usage |
 
 ## Use cases
-Because it's easier to follow and understand the training on the base of concrete use cases we provide some simple examples and the according data samples.
+Because it's easier to follow and understand the training on the base of concrete use cases, we provide some simple examples and the corresponding data samples.
 
 | Project name | Usecase description | Related submodules | Sample data  |
 |--------------|---------------------|--------------------|------------------|
