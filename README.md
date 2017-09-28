@@ -1,5 +1,5 @@
-##<img align="left" src="img/UnderConstruction.jpg" width="100px">
-##**`UNDER CONSTRUCTION`** **`This training material is under construction, please use with care`** **`UNDER CONSTRUCTION`**
+<img align="left" src="img/UnderConstruction.jpg" width="100px">
+**`UNDER CONSTRUCTION`** **`This training material is under construction, please use with care`** **`UNDER CONSTRUCTION`**
 
 
 # B2FIND-Training
@@ -13,11 +13,7 @@ Additionally, we provide hands-on material for the whole metadata management wor
 
 <img align="centre" src="img/MD_workflow.png" width="800px">
 
-<<<<<<< HEAD
 We provide step by step installation instructions which indicate how the training services and tools are set up and that will give the users an idea of how to install the software stack temselves. 
-=======
-We provide step by step installation instructions which indicate how the training services and tools are setup and which will give the users an idea how to install the software stack temselves. 
->>>>>>> master
 
 ## Target audience
 
