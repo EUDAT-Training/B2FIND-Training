@@ -1,10 +1,20 @@
+<<<<<<< HEAD
 dublincore
+=======
+>>>>>>> master
 sickle
 lxml
 simplejson
 python-Levenshtein
 git+https://github.com/noumar/iso639.git
+<<<<<<< HEAD
 ckanapi
 babel
 pyenchant
+=======
+dublincore
+ckanapi
+b2handle
+babel
+>>>>>>> master
 pyparsing

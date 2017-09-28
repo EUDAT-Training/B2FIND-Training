@@ -1,7 +1,7 @@
-# Installation of jOAI
-The modules 2 and 3 will show you how to install and configure the underlying software and technology which is used by B2FIND.
+# Installation of an OAI server
+This document describes how to install and set up a full implementation of an OAI server based on the open source software *jOAI*. 
 
-This document describes how to install the jOAI software with which you can harvest OAI-PMH endpoints and with which you can offer an OAI-PMH endpoint. In the following two modules 02.a and 02.b we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. jOAI will run within Apache Tomcat and we will use an Ubuntu machine to guide you through the examples. 
+This server allows not only to harvest from OAI-PMH endpoints but as well to provide metadata records via *OAI-PMH*. In the following two modules 02.a and 02.b we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. jOAI will run within Apache Tomcat and we will use an Ubuntu machine to guide you through the examples. 
 
 ## Environment
 Ubuntu 14.04 server
@@ -182,9 +182,13 @@ For now we click on the link **Repository information**. Here you can add inform
 
 <img align="centre" src="img/jOAI_EditRepositoryInfo.png" width="800px">
 
+<<<<<<< HEAD
 Note : For now we don't specify the optional `Namespace identifier`.
 
 ## 8. <a name="reposSecurity"></a> (Optional) Repository security
 After this installation anyone has access to all ionformation on the server. To restrict access to sensitive data such as harvesting information follow:
 http://www.dlese.org/oai/docs/configuring_joai.jsp#accessControl
 This is optional and not required to follow the tutorial. However on a production system we strongly recommend to restrict access.
+=======
+Note : For now we don't specify the optional parameter `Namespace identifier`.
+>>>>>>> master

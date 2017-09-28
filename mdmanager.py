@@ -24,9 +24,20 @@ logger = logging.getLogger()
 import traceback
 
 # 
-import urllib2
-import urllib, urllib2, socket
+PY2 = sys.version_info[0] == 2
+if PY2:
+    from urllib import quote
+    from urllib2 import urlopen, Request
+    from urllib2 import HTTPError,URLError
+else:
+    from urllib import parse
+    from urllib.request import urlopen, Request
+    from urllib.error import HTTPError,URLError
+
+
+import socket
 from itertools import tee 
+
 
 # needed for GENERATOR
 import csv
@@ -158,6 +169,7 @@ class GENERATOR(object):
         print ' |- From %s-separated spreadsheet\n\t%s' % (request[2],inpath)
 
         """ Parse a CSV or TSV file """
+<<<<<<< HEAD
 	mapdc=dict()
 	fields=list()
 	try:
@@ -172,12 +184,29 @@ class GENERATOR(object):
                         fields.append(row[1].strip())
 		else : 
                     print ' |- create mapfile\n\t%s and' % mapfile
+=======
+        mapdc=dict()
+        fields=list()
+        try:
+                fp = open(fn)
+                ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
+                print(' |- Original fields:\n\t%s' % ofields)
+
+                if os.path.isfile(mapfile) :
+                    print(' |- Use existing mapfile\t%s' % mapfile)
+                    r = csv.reader(open(mapfile, "r"),delimiter='>')
+                    for row in r:
+                        fields.append(row[1].strip())
+                else : 
+                    print(' |- Generate mapfile\t%s' % mapfile)
+>>>>>>> master
                     w = csv.writer(open(mapfile, "w"),delimiter='>')
                     for of in ofields:
                         mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
                         fields.append(mapdc[of].strip())
                         w.writerow([of, mapdc[of]])
 
+<<<<<<< HEAD
 		if not delimiter == ',' :
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
 		else:
@@ -198,30 +227,61 @@ class GENERATOR(object):
 		print "Error ({0}): {1}".format(errno, strerror)
 		raise SystemExit
 	fp.close()
+=======
+                if not delimiter == ',' :
+                    tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
+                else:
+                    tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
+                
+                print(' |- Generate XML files in %s' % outpath)
+                for row in tsv:
+                        dc = self.makedc(row)
+                        if 'dc:identifier' in row:
+                            outfile="".join(row['dc:identifier'].split())+'.xml'
+                            print('  |--> %s' % outfile)
+                            self.writefile(outpath+'/'+outfile, dc)
+                        else:
+                            print(' ERROR : At least target field dc:identifier must be specified') 
+                            os.remove(mapfile)
+                            sys.exit()
+
+        except IOError as err :
+                print ("Error %s" % err)
+                raise SystemExit
+        fp.close()
+>>>>>>> master
 
         return -1
 
     def makedc(self,row):
-	""" Generate a Dublin Core XML file from a TSV """
-	metadata = DublinCore()
-	with open('mapfiles/dcelements.txt','r') as f:
-		dcelements = f.read().splitlines()
-	for dcelem in dcelements :
-		setattr(metadata,dcelem.capitalize(),row.get('dc:'+dcelem,''))
+        """ Generate a Dublin Core XML file from a TSV """
+        metadata = DublinCore()
+        with open('mapfiles/dcelements.txt','r') as f:
+                dcelements = f.read().splitlines()
+        for dcelem in dcelements :
+                setattr(metadata,dcelem.capitalize(),row.get('dc:'+dcelem,''))
 
-	with open('mapfiles/dcterms.txt','r') as f:
-		dcterms = f.read().splitlines()
-	for dcterm in dcterms :
-		setattr(metadata,dcterm.capitalize(),row.get('dcterms:'+dcterm,''))
+        with open('mapfiles/dcterms.txt','r') as f:
+                dcterms = f.read().splitlines()
+        for dcterm in dcterms :
+                setattr(metadata,dcterm.capitalize(),row.get('dcterms:'+dcterm,''))
 
-	return metadata
+        return metadata
 
     def writefile(self,name, obj):
+<<<<<<< HEAD
 	""" Writes Dublin Core or Macrepo XML object to a file """
 	if isinstance(obj, DublinCore):
 		fp = open(name, 'w')
 		fp.write(obj.makeXML(self.DC_NS))
 	fp.close()
+=======
+        """ Writes Dublin Core or Macrepo XML object to a file """
+        if isinstance(obj, DublinCore):
+                fp = open(name, 'w')
+                fp.write(obj.makeXML(self.DC_NS))
+        fp.close()
+>>>>>>> master
 
 class HARVESTER(object):
     
@@ -305,13 +365,20 @@ class HARVESTER(object):
         start=time.time()
         ntotrecs=0
 
+        if (not req["mdsubset"]):
+            logging.critical(' Option mdsubset is mandatory for harvesting')
+            return -1
+            subset = 'SET'
+        else:
+            subset = req["mdsubset"]
+
         sickle = SickleClass.Sickle(req['url'], max_retries=3, timeout=300)
         outtypedir='xml'
         outtypeext='xml'
         oaireq=getattr(sickle,req["lverb"], None)
         try:
             records,rc=tee(oaireq(**{'metadataPrefix':req['mdprefix'],'set':req['mdsubset'],'ignore_deleted':True,'from':self.fromdate}))
-        except urllib2.HTTPError as e:
+        except HTTPError as e:
             logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
             return -1
         except ConnectionError as e:
@@ -320,7 +387,7 @@ class HARVESTER(object):
         except etree.XMLSyntaxError as e:
             logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
             return -1
-        except Exception, e:
+        except Exception as e:
             logging.error("[ERROR %s ] : %s" % (e,traceback.format_exc()))
             return -1
 
@@ -336,14 +403,14 @@ class HARVESTER(object):
         else:
             print "\t|- Iterate through records in %d sec" % (time.time()-start)
 
+<<<<<<< HEAD
+=======
+        print ("\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start))
+        
+>>>>>>> master
         logging.debug('    |   | %-4s | %-45s | %-45s |\n    |%s|' % ('#','OAI Identifier','DS Identifier',"-" * 106))
 
         # set subset:
-        if (not req["mdsubset"]):
-            subset = 'SET'
-        else:
-            subset = req["mdsubset"]
-
         # make subset dir:
         subsetdir = '/'.join([self.base_outdir,req['community']+'-'+req['mdprefix'],subset])
 
@@ -358,6 +425,7 @@ class HARVESTER(object):
             ## counter and progress bar
             fcount+=1
             if fcount <= noffs : continue
+<<<<<<< HEAD
             if ntotrecs > 0 :
                 perc=int(fcount*100/ntotrecs)
                 bartags=perc/5 #HEW-D fcount/100
@@ -365,6 +433,15 @@ class HARVESTER(object):
                     oldperc=perc
                     print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 )
                     sys.stdout.flush()
+=======
+            perc=int(fcount*100/ntotrecs)
+            bartags=perc/5 #HEW-D fcount/100
+            if perc%10 == 0 and perc != oldperc :
+                oldperc=perc
+                print ("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 ))
+                sys.stdout.flush()
+
+>>>>>>> master
 
             if req["lverb"] == 'ListIdentifiers' :
                     if (record.deleted):
@@ -375,14 +452,14 @@ class HARVESTER(object):
                        oai_id = record.identifier
                        record = sickle.GetRecord(**{'metadataPrefix':req['mdprefix'],'identifier':record.identifier})
             elif req["lverb"] == 'ListRecords' :
-            	    if (record.header.deleted):
-                       stats['totdcount'] += 1
-            	       continue
-                    else:
-                       oai_id = record.header.identifier
+                if (record.header.deleted):
+                    stats['totdcount'] += 1
+                    continue
+                else:
+                    oai_id = record.header.identifier
 
             # generate a uniquely identifier for this dataset:
-            uid = str(uuid.uuid5(uuid.NAMESPACE_DNS, oai_id.encode('ascii','replace')))
+            uid = str(uuid.uuid5(uuid.NAMESPACE_DNS, req['community']+oai_id.encode('ascii','replace')))
                 
             xmlfile = subsetdir + '/xml/' + os.path.basename(uid) + '.xml'
             try:
@@ -402,7 +479,7 @@ class HARVESTER(object):
                             f = open(xmlfile, 'w')
                             f.write(metadata)
                             f.close
-                        except IOError, e:
+                        except IOError as e:
                             logging.error("[ERROR] Cannot write metadata in xml file '%s': %s\n" % (xmlfile,e))
                             stats['ecount'] +=1
                             continue
@@ -509,7 +586,7 @@ class MAPPER():
         self.enclosed = Forward()
         value = Combine(OneOrMore(Word(nonBracePrintables) ^ White(' ')))
         nestedParens = nestedExpr('(', ')', content=self.enclosed) 
-	nestedBrackets = nestedExpr('[', ']', content=self.enclosed) 
+        nestedBrackets = nestedExpr('[', ']', content=self.enclosed) 
         nestedCurlies = nestedExpr('{', '}', content=self.enclosed) 
         self.enclosed << OneOrMore(value | nestedParens | nestedBrackets | nestedCurlies)
 
@@ -572,11 +649,13 @@ class MAPPER():
                 return new_date
             else:
                 return '' # if converting cannot be done, make date empty
-        except Exception, e:
+        except Exception as e:
            logging.error('[ERROR] : %s - in date2UTC replace old date %s by new date %s' % (e,old_date,new_date))
            return ''
         else:
            return new_date
+
+
 
 
     def map_identifiers(self, invalue):
@@ -617,7 +696,7 @@ class MAPPER():
 
             if 'url' not in iddict :
                 iddict['url']=favurl
-        except Exception, e:
+        except Exception as e:
             logging.error('[ERROR] : %s - in map_identifiers %s can not converted !' % (e,invalue))
             return None
         else:
@@ -721,7 +800,7 @@ class MAPPER():
                     return (desc,None,None)
             else:
                 return (desc,None,None)
-        except Exception, e:
+        except Exception as e:
            logging.debug('[ERROR] : %s - in map_temporal %s can not converted !' % (e,invalue))
            return (None,None,None)
         else:
@@ -773,9 +852,10 @@ class MAPPER():
           elif len(coordarr)==4 :
               desc+=' boundingBox : [ %s , %s , %s, %s ]' % (coordarr[0],coordarr[1],coordarr[2],coordarr[3])
               return(desc,coordarr[0],coordarr[1],coordarr[2],coordarr[3])
-        except Exception, e:
+        except Exception as e:
            logging.error('[ERROR] : %s - in map_spatial invalue %s can not converted !' % (e,invalue))
            return (None,None,None,None,None) 
+
     def map_discipl(self,invalue,disctab):
         """
         Convert disciplines along B2FIND disciplinary list
@@ -802,13 +882,13 @@ class MAPPER():
              try:
                disc=line[2].strip()
                r=lvs.ratio(indisc,disc)
-             except Exception, e:
+             except Exception as e:
                  logging.error('[ERROR] %s in map_discipl : %s can not compared to %s !' % (e,indisc,disc))
                  continue
              if r > maxr  :
                  maxdisc=disc
                  maxr=r
-                 ##HEW-T                   print '--- %s \n|%s|%s| %f | %f' % (line,indisc,disc,r,maxr)
+                 ##HEW-T                   print('--- %s \n|%s|%s| %f | %f' % (line,indisc,disc,r,maxr)
            if maxr == 1 and indisc == maxdisc :
                logging.debug('  | Perfect match of %s : nothing to do' % indisc)
                retval.append(indisc.strip())
@@ -887,10 +967,10 @@ class MAPPER():
                     if isinstance(entry,int) or len(entry) < 2 : continue
                     entry=entry.encode('utf-8').strip()
                     dictlist.append({ "name": entry.replace('/','-') })
-            except AttributeError, err :
+            except AttributeError as err :
                 log.error('[ERROR] %s in list2dictlist of lentry %s , entry %s' % (err,lentry,entry))
                 continue
-            except Exception, e:
+            except Exception as e:
                 log.error('[ERROR] %s in list2dictlist of lentry %s, entry %s ' % (e,lentry,entry))
                 continue
         return dictlist[:12]
@@ -925,7 +1005,7 @@ class MAPPER():
         utc=self.date2UTC(dt)
         try:
            ##utctime=datetime.datetime(utc).isoformat()
-           ##print 'utctime %s' % utctime
+           ##print('utctime %s' % utctime
            utctime = datetime.datetime.strptime(utc, "%Y-%m-%dT%H:%M:%SZ") ##HEW-?? .isoformat()
            diff = utc1900 - utctime
            diffsec= int(diff.days) * 24 * 60 *60
@@ -933,7 +1013,7 @@ class MAPPER():
               sec=int(time.mktime((utc1900).timetuple()))-diffsec+year1epochsec
            else:
               sec=int(time.mktime(utctime.timetuple()))+year1epochsec
-        except Exception, e:
+        except Exception as e:
            logging.error('[ERROR] : %s - in utc2seconds date-time %s can not converted !' % (e,utc))
            return None
 
@@ -952,14 +1032,14 @@ class MAPPER():
                         if elem.text :
                             retlist.append(elem.text)
                 except Exception as e:
-                    print 'ERROR %s : during xpath extraction of %s' % (e,fxpath)
+                    print('ERROR %s : during xpath extraction of %s' % (e,fxpath))
                     return []
             elif func == '/':
                 try:
                     for elem in obj.findall('.//',ns):
                         retlist.append(elem.text)
                 except Exception as e:
-                    print 'ERROR %s : during xpath extraction of %s' % (e,'./')
+                    print('ERROR %s : during xpath extraction of %s' % (e,'./'))
                     return []
 
         return retlist
@@ -1119,7 +1199,7 @@ class MAPPER():
             bartags=perc/5
             if perc%10 == 0 and perc != oldperc:
                 oldperc=perc
-                print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start )
+                print ("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start ))
                 sys.stdout.flush()
 
             jsondata = dict()
@@ -1252,7 +1332,7 @@ class MAPPER():
                     try:
                         logging.debug('   | [INFO] save json file')
                         json_file.write(data)
-                    except TypeError, err :
+                    except TypeError as err :
                         logging.error('    | [ERROR] Cannot write json file %s : %s' % (outpath+'/'+filename,err))
                     except Exception as e:
                         logging.error('    | [ERROR] %s : Cannot write json file %s' % (e,outpath+'/'+filename))
@@ -1335,7 +1415,7 @@ class MAPPER():
             # to be continued for every other facet
 
             ##if errlist != '':
-            ##    print ' Following key-value errors fails validation:\n' + errlist 
+            ##    print(' Following key-value errors fails validation:\n' + errlist 
             return vall
 
     def validate(self,community,mdprefix,path,target_mdschema):
@@ -1366,18 +1446,30 @@ class MAPPER():
             mapext='conf' ##!!!HEW --> json
         else:
             mapext='xml'
+<<<<<<< HEAD
 
         # check and read rules from mapfile
         if (target_mdschema != None and not target_mdschema.startswith('#')):
             mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
         else:
             mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,mdprefix,mapext)
+=======
+        ## mapfile
+        # check and read rules from mapfile
+##        if (target_mdschema != None and not target_mdschema.startswith('#')):
+##            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
+##        else:
+        mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,os.path.basename(mdprefix),mapext)
+>>>>>>> master
 
         if not os.path.isfile(mapfile):
-           mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
-           if not os.path.isfile(mapfile):
-              logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
-              return results
+            logging.debug('[WARNING] Community specific mapfile %s does not exist !' % mapfile)
+            mapfile='%s/mapfiles/%s.%s' % (os.getcwd(),mdprefix,mapext)
+            if not os.path.isfile(mapfile):
+                logging.error('[ERROR] Mapfile %s does not exist !' % mapfile)
+                return results
+        logging.debug('  |- Mapfile\t%s' % os.path.basename(mapfile))
+
         mf=open(mapfile) 
 
         # check paths
@@ -1467,12 +1559,12 @@ class MAPPER():
                     else:
                         if facet == 'title':
                            logging.debug('    | [ERROR] Facet %s is mandatory, but value is empty' % facet)
-            except IOError, e:
+            except IOError as e:
                 logging.error("[ERROR] %s in validation of facet '%s' and value '%s' \n" % (e,facet, value))
                 exit()
 
         outfile='%s/%s' % (path,'validation.stat')
-        print '\n Statistics of\n\tcommunity\t%s\n\tsubset\t\t%s\n\t# of records\t%d\n  see in %s\n\n' % (community,oaiset,fcount,outfile)  
+        print('\n Statistics of\n\tcommunity\t%s\n\tsubset\t\t%s\n\t# of records\t%d\n  see in %s\n\n' % (community,oaiset,fcount,outfile))  
         printstats='\n Statistics of\n\tcommunity\t%s\n\tsubset\t\t%s\n\t# of records\t%d\n  see as well %s\n\n' % (community,oaiset,fcount,outfile)  
         printstats+=" |-> {:<16} <-- {:<20} \n  |- {:<10} | {:<9} | \n".format('Facet name','XPATH','Mapped','Validated')
         printstats+="  |-- {:>5} | {:>4} | {:>5} | {:>4} |\n".format('#','%','#','%')
@@ -1549,33 +1641,33 @@ class CKAN_CLIENT(object):
     """
 
     def __init__ (self, ip_host, api_key):
-	    self.ip_host = ip_host
-	    self.api_key = api_key
-	    self.logger = logging.getLogger()
-	
+            self.ip_host = ip_host
+            self.api_key = api_key
+            self.logger = logging.getLogger()
+        
     def validate_actionname(self,action):
         return True
-	
-	
+        
+        
     def action(self, action, data={}):
         ## action (action, jsondata) - method
-	    # Call the api action <action> with the <jsondata> on the CKAN instance which was defined by iphost
-	    # parameter of CKAN_CLIENT.
-	    #
-	    # Parameters:
-	    # -----------
-	    # (string)  action  - Action name of the API v3 of CKAN
-	    # (dict)    data    - Dictionary with json data
-	    #
-	    # Return Values:
-	    # --------------
-	    # (dict)    response dictionary of CKAN
-	    
-	    if (not self.validate_actionname(action)):
-		    print '[ERROR] Action name '+ str(action) +' is not defined in CKAN_CLIENT!'
-	    else:
-		    return self.__action_api(action, data)
-		
+            # Call the api action <action> with the <jsondata> on the CKAN instance which was defined by iphost
+            # parameter of CKAN_CLIENT.
+            #
+            # Parameters:
+            # -----------
+            # (string)  action  - Action name of the API v3 of CKAN
+            # (dict)    data    - Dictionary with json data
+            #
+            # Return Values:
+            # --------------
+            # (dict)    response dictionary of CKAN
+            
+            if (not self.validate_actionname(action)):
+                    print('[ERROR] Action name '+ str(action) +' is not defined in CKAN_CLIENT!')
+            else:
+                    return self.__action_api(action, data)
+                
     def __action_api (self, action, data_dict):
         # Make the HTTP request for data set generation.
         response=''
@@ -1588,14 +1680,14 @@ class CKAN_CLIENT(object):
         # special cases:
         if (action == "package_activate_all"):
             if data_dict['group']:
-	            data = self.action('member_list',{"id" : data_dict['group'], "object_type":"package"})
+                    data = self.action('member_list',{"id" : data_dict['group'], "object_type":"package"})
             else:
-	            data = self.action('package_list',{})
+                    data = self.action('package_list',{})
 
-            print 'Total number of datasets: ' + str(len(data['result']))
+            print('Total number of datasets: ' + str(len(data['result'])))
             for dataset in data['result']:
-	            logging.info('\tTry to activate object: ' + str(dataset))
-	            self.action('package_update',{"name" : dataset[0], "state":"active"})
+                    logging.info('\tTry to activate object: ' + str(dataset))
+                    self.action('package_update',{"name" : dataset[0], "state":"active"})
 
             return True
         elif (action == "package_delete_all"):
@@ -1606,12 +1698,12 @@ class CKAN_CLIENT(object):
             else:
                 data = self.action('package_list',{})
             pcount = 0
-            print 'Total number of datasets: ' + str(len(data['result']))
+            print('Total number of datasets: ' + str(len(data['result'])))
             #self.action('bulk_update_delete',{"datasets" : data['result'], "id":"enes"})
             for dataset in data['result']:
                 pcount += 1
                 print('\tTry to delete object (' + str(pcount) + ' of ' + str(len(data['result'])) + '): ' + str(dataset))
-                print '\t', (self.action('package_update',{"name" : dataset[0], "state":"delete"}))['success']
+                print('\t', (self.action('package_update',{"name" : dataset[0], "state":"delete"}))['success'])
 
             return True
         elif (action == "member_create" or action == "organization_member_create"):
@@ -1624,10 +1716,10 @@ class CKAN_CLIENT(object):
                             ds_id = (self.action('package_show',{"id" : data_dict['name']}))['id']
 
             member_dict = {
-	            "id": data_dict['group'],
-	            "object": ds_id,
-	            "object_type": "package", 
-	            "capacity" : "public"
+                    "id": data_dict['group'],
+                    "object": ds_id,
+                    "object_type": "package", 
+                    "capacity" : "public"
             }
 
             data_dict	= member_dict
@@ -1636,36 +1728,80 @@ class CKAN_CLIENT(object):
             action_url = "http://{host}/api/3/action/{action}".format(host=self.ip_host,action=action)
 
         # make json data in conformity with URL standards
-        data_string = unicode(urllib.quote(json.dumps(data_dict)), errors='replace')
+        try:
+            if PY2 :
+                data_string = quote(json.dumps(data_dict))##.encode("utf-8") ## HEW-D 160810 , encoding="latin-1" ))##HEW-D .decode(encoding)
+            else :
+                data_string = parse.quote(json.dumps(data_dict)).encode(encoding) ## HEW-D 160810 , encoding="latin-1" ))##HEW-D .decode(encoding)
+        except Exception as err :
+            logging.critical('%s while building url data' % err)
+
+        ###HEW-D data_string = unicode(urllib.quote(json.dumps(data_dict)), errors='replace')
 
         logging.debug('\t|-- Action %s\n\t|-- Calling %s\n\t|-- Data %s ' % (action,action_url,data_dict))	
         ##HEW-Tlogging.debug('\t|-- Object %s ' % data_dict)	
         try:
-            request = urllib2.Request(action_url)
+            request = Request(action_url,data_string)
+            self.logger.debug('request %s' % request)            
             if (self.api_key): request.add_header('Authorization', self.api_key)
-            response = urllib2.urlopen(request,data_string)
-        except urllib2.HTTPError as e:
-            logging.debug('\tHTTPError %s : The server %s couldn\'t fulfill the action %s.' % (e.code,self.ip_host,action))
+            self.logger.debug('api_key %s....' % self.api_key)
+            if PY2 :
+                response = urlopen(request)
+            else :
+                response = urlopen(request)                
+            self.logger.debug('response %s' % response)            
+        except HTTPError as e:
+            self.logger.warning('%s : The server %s couldn\'t fulfill the action %s.' % (e,self.ip_host,action))
             if ( e.code == 403 ):
-                logging.error('\tAccess forbidden, maybe the API key is not valid?')
-                exit(e.code)
+                logging.error('Access forbidden, maybe the API key is not valid?')
+                ## exit(e.code)
             elif ( e.code == 409 and action == 'package_create'):
-                logging.debug('\tMaybe the dataset already exists => try to update the package')
+                self.logger.info('\tMaybe the dataset already exists => try to update the package')
                 self.action('package_update',data_dict)
-                ##HEW-D return {"success" : False}
             elif ( e.code == 409):
-                logging.debug('\tMaybe you have a parameter error?')
+                self.logger.debug('\tMaybe you have a parameter error?')
                 return {"success" : False}
             elif ( e.code == 500):
-                logging.error('\tInternal server error')
-                exit(e.code)
-        except urllib2.URLError as e:
-            logging.error('\tURLError %s : %s' % (e,e.reason))
-            exit('%s' % e.reason)
+                self.logger.critical('\tInternal server error')
+                return {"success" : False}
+        except URLError as e:
+            self.logger.critical('\tURLError %s : %s' % (e,e.reason))
+            return {"success" : False}
+        except Exception as e:
+            self.logger.critical('\t%s' % e)
+            return {"success" : False}
         else :
             out = json.loads(response.read())
+            self.logger.debug('out %s' % out)
             assert response.code >= 200
             return out
+
+##HEW-D        try:
+##HEW-D            request = urllib2.Request(action_url)
+##HEW-D            if (self.api_key): request.add_header('Authorization', self.api_key)
+##HEW-D            response = urllib2.urlopen(request,data_string)
+##HEW-D        except HTTPError as e:
+##HEW-D            logging.debug('\tHTTPError %s : The server %s couldn\'t fulfill the action %s.' % (e.code,self.ip_host,action))
+##HEW-D            if ( e.code == 403 ):
+##HEW-D                logging.error('\tAccess forbidden, maybe the API key is not valid?')
+##HEW-D                exit(e.code)
+##HEW-D            elif ( e.code == 409 and action == 'package_create'):
+##HEW-D                logging.debug('\tMaybe the dataset already exists => try to update the package')
+##HEW-D                self.action('package_update',data_dict)
+##HEW-D                ##HEW-D return {"success" : False}
+##HEW-D            elif ( e.code == 409):
+##HEW-D                logging.debug('\tMaybe you have a parameter error?')
+##HEW-D                return {"success" : False}
+##HEW-D            elif ( e.code == 500):
+##HEW-D                logging.error('\tInternal server error')
+##HEW-D                exit(e.code)
+##HEW-D        except URLError as e:
+##HEW-D            logging.error('\tURLError %s : %s' % (e,e.reason))
+##HEW-D            exit('%s' % e.reason)
+##HEW-D        else :
+##HEW-D            out = json.loads(response.read())
+##HEW-D            assert response.code >= 200
+##HEW-D            return out
 
 class UPLOADER (object):
 
@@ -1707,11 +1843,11 @@ class UPLOADER (object):
     # UPLOAD DATASET TO CKAN
     upload = UP.upload(dsname,ckanstatus,community,jsondata)
     if (upload == 1):
-        print 'Creation of record succeed'
+        print('Creation of record succeed')
     elif (upload == 2):
-        print 'Update of record succeed'
+        print('Update of record succeed')
     else:
-        print 'Upload of record failed'
+        print('Upload of record failed')
     """
     
     def __init__(self, CKAN):
@@ -1849,6 +1985,14 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
+<<<<<<< HEAD
+=======
+##HEW- changed!!!!
+        jsondata["owner_org"]="crete" ##HEW!!! "eudat"
+
+
+        ####??? write 
+>>>>>>> master
    
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
@@ -1907,8 +2051,8 @@ def main():
     logger = setup_custom_logger('root',options.verbose)
 
     # print out general info:
-    print '\nVersion:  \t%s' % ManagerVersion
-    print 'Run mode:   \t%s' % pstat['short'][mode]
+    ##HEW-Dprint('\n|- Version:  \t%s' % ManagerVersion)
+    print('|- Run mode:   \t%s' % pstat['short'][mode])
     logging.debug('Process ID:\t%s' % str(jid))
     logging.debug('Processing status:\t')
     for key in pstat['status']:
@@ -1948,7 +2092,7 @@ def main():
             sys.exit(-1)
             
     ## START PROCESSING:
-    print "Start : \t%s\n" % now
+    print ("|- Start : \t%s\n" % now)
     logging.info("Loop over processes and related requests :\n")
     logging.info('|- <Process> started : %s' % "<Time>")
     logging.info(' |- Joblist: %s' % "<Filename of request list>")
@@ -1960,7 +2104,7 @@ def main():
         # start the process:
         process(options,pstat)
         exit()
-    except Exception, e:
+    except Exception as e:
         logging.critical("[CRITICAL] Program is aborted because of a critical error! Description:")
         logging.critical("%s" % traceback.format_exc())
         exit()
@@ -2016,19 +2160,18 @@ def process(options,pstat):
 
     ## GENERATION mode:    
     if (pstat['status']['g'] == 'tbd'):
-        print '\n|- Generation started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
         GEN = GENERATOR(pstat,options.outdir)
         process_generate(GEN,reqlist)
         
     ## HARVESTING mode:    
     if (pstat['status']['h'] == 'tbd'):
-        print '\n|- Harvesting started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        ### print('\n|- Harvesting started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
         HV = HARVESTER(pstat,options.outdir,options.fromdate)
         process_harvest(HV,reqlist)
         
     ## MAPPINING - Mode:  
     if (pstat['status']['m'] == 'tbd'):
-        print '\n|- Mapping started : %s' % time.strftime("%Y-%m-%d %H:%M:%S")
+        print('\n|- Mapping started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
         MP = MAPPER()
         process_map(MP,reqlist)
 
@@ -2171,8 +2314,9 @@ def process_validate(MP, rlist):
         cstart = time.time()
         
         if len(request) > 4:
-            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+request[4])
+            path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/'+request[4])
         else:
+<<<<<<< HEAD
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
         outfile='%s/%s' % (path,'validation.stat')
 
@@ -2184,6 +2328,11 @@ def process_validate(MP, rlist):
         logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
 
         results = MP.validate(request[0],request[3],path,target)
+=======
+            path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/SET')
+
+        results = MP.validate(request[0],os.path.basename(request[3]),path)
+>>>>>>> master
 
         ctime=time.time()-cstart
         results['time'] = ctime
@@ -2214,7 +2363,7 @@ def process_upload(UP, rlist, options):
     def print_extra(key,jsondata):
         for v in jsondata['extras']:
             if v['key'] == key:
-                print ' Key : %s | Value : %s |' % (v['key'],v['value'])
+                print(' Key : %s | Value : %s |' % (v['key'],v['value']))
  
 
     ###HEW-D disabled for Training create credentials and handle cleint if required
@@ -2222,7 +2371,7 @@ def process_upload(UP, rlist, options):
     if (options.handle_check):
           try:
               cred = PIDClientCredentials.load_from_JSON('credentials_11098')
-          except Exception, err:
+          except Exception as err:
               logging.critical("[CRITICAL %s ] : Could not create credentials from credstore %s" % (err,options.handle_check))
               ##p.print_help()
               sys.exit(-1)
@@ -2250,10 +2399,22 @@ def process_upload(UP, rlist, options):
     for request in rlist:
         ir+=1
         logging.info('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
+<<<<<<< HEAD
         community, source = request[0:2]
         mdprefix = request[3]
         print 'mdprefix %s' % mdprefix
 
+=======
+        community, source, dir = request[0:3]
+        ckan_community=community.lower()
+        mdprefix = os.path.basename(request[3])
+        if len(request) > 4:
+            subset = request[4]
+        else:
+            subset = 'SET'
+        dir = dir+'/'+subset
+        
+>>>>>>> master
         results = {
             'count':0,
             'ecount':0,
@@ -2261,6 +2422,7 @@ def process_upload(UP, rlist, options):
             'time':0
         }
 
+<<<<<<< HEAD
         try:
             ckangroup=CKAN.action('group_show',{"id":community})
         except Exception, err:
@@ -2271,6 +2433,19 @@ def process_upload(UP, rlist, options):
         if 'success' not in ckangroup and ckangroup['success'] != True :
             logging.critical(" CKAN group %s does not exist" % community)
             sys.exit()
+=======
+        print ('|- Community %s\n |- MD prefix %s\n |- Subset %s\n' % (community,mdprefix,subset))
+
+        try:
+            ckangroup=CKAN.action('group_list') ## ,{"id":community})
+            if ckan_community not in ckangroup['result'] :
+                logger.critical('Can not found community %s' % community)
+                sys.exit(-1)
+        except Exception :
+            logging.critical("Can not list CKAN groups")
+  
+        dir=os.path.abspath('oaidata/'+community+'-'+mdprefix+'/'+subset)
+>>>>>>> master
 
         if len(request) > 4:
             subset=request[4]
@@ -2312,7 +2487,7 @@ def process_upload(UP, rlist, options):
             bartags=perc/5
             if perc%10 == 0 and perc != oldperc :
                 oldperc=perc
-                logging.info("\t[%-20s] %d / %d%%\r" % ('='*bartags, fcount, perc ))
+                print("\t[%-20s] %d / %d%%\r" % ('='*bartags, fcount, perc ))
                 sys.stdout.flush()
 
             jsondata = dict()
@@ -2375,7 +2550,7 @@ def process_upload(UP, rlist, options):
 ##            except UnicodeEncodeError:
 ##                logging.error('        |-> [ERROR] Unicode encoding failed during md checksum determination')
 ##                checksum=None
-##            except Exception, err:
+##            except Exception as err:
 ##                logging.error('        |-> [ERROR] %s' % err)
 ##                checksum=None
 ##            else:
@@ -2404,7 +2579,7 @@ def process_upload(UP, rlist, options):
                     checksum2 = client.get_value_from_handle(pid, "CHECKSUM",rec)
                     ManagerVersion2 = client.get_value_from_handle(pid, "JMDVERSION",rec)
                     B2findHost = client.get_value_from_handle(pid,"B2FINDHOST",rec)
-                except Exception, err:
+                except Exception as err:
                     logging.error("[CRITICAL : %s] in client.get_value_from_handle" % err )
                 else:
                     logging.debug("Got checksum2 %s, ManagerVersion2 %s and B2findHost %s from PID %s" % (checksum2,ManagerVersion2,B2findHost,pid))
@@ -2456,7 +2631,7 @@ def process_upload(UP, rlist, options):
                                 npid = client.register_handle(pid, ckands, checksum, None, True ) ## , additional_URLs=None, overwrite=False, **extratypes)
                             except (HandleAuthenticationError,HandleSyntaxError) as err :
                                 logging.critical("[CRITICAL : %s] in client.register_handle" % err )
-                            except Exception, err:
+                            except Exception as err:
                                 logging.critical("[CRITICAL : %s] in client.register_handle" % err )
                                 sys.exit()
                             else:
@@ -2468,7 +2643,7 @@ def process_upload(UP, rlist, options):
                                 client.modify_handle_value(pid,CHECKSUM=checksum)
                             except (HandleAuthenticationError,HandleNotFoundException,HandleSyntaxError) as err :
                                 logging.critical("[CRITICAL : %s] client.modify_handle_value %s" % (err,pid))
-                            except Exception, err:
+                            except Exception as err:
                                 logging.critical("[CRITICAL : %s]  client.modify_handle_value %s" % (err,pid))
                                 sys.exit()
                             else:
@@ -2484,7 +2659,7 @@ def process_upload(UP, rlist, options):
                         client.modify_handle_value(pid, MD_STATUS='B2FIND_uploaded')
                     except (HandleAuthenticationError,HandleNotFoundException,HandleSyntaxError) as err :
                         logging.critical("[CRITICAL : %s] in client.modify_handle_value of pid %s" % (err,pid))
-                    except Exception, err:
+                    except Exception as err:
                         logging.critical("[CRITICAL : %s] in client.modify_handle_value of %s" % (err,pid))
                         sys.exit()
                     else:
