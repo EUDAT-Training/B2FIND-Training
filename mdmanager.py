@@ -1894,7 +1894,7 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
-##HEW!!!!
+##HEW- changed!!!!
         jsondata["owner_org"]="crete" ##HEW!!! "eudat"
 
 
