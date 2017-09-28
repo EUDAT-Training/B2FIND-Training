@@ -1,10 +1,6 @@
 # The *mdmanager.py* script
 This document describes the usage of the python script `mdmanager.py`,
-<<<<<<< HEAD
 which is used in all training modules belonging to the 'ingestion of metadata', i.e. from [01.b Generate metadata](01.b-generate-metadata.md) to [04.b Upload metadata] (04.b-upload-metadata.md).
-=======
-which is used in all training modules belonging to the 'ingestion of metadata', i.e. from [01.b Generate metadata](01.b-generate-metadata.md) to [04.b Upload metadata](04.b-upload-metadata.md).
->>>>>>> master
 
 ## Environment
 Ubuntu 14.04 server with the following system packages:
@@ -22,7 +18,6 @@ sudo easy_install pip
 To run the script you need Python 2.7.
 
 ### 2. The source code
-<<<<<<< HEAD
 The python script [mdmanager.py](mdmanager.py) comes with this training material. To download the repository do:
 ```sh
 git clone https://github.com/EUDAT-Training/B2FIND-Training.git
@@ -34,21 +29,6 @@ Additionally the script requires several modules listed in the file `requirement
 cd B2FIND-Training
 pip install -r requirments.txt
 ```
-=======
-The python script [mdmanager.py](mdmanager.py) comes with the training material.Please download the repository and change in the working directory ```B2FIND-Training``` :
-```sh
-git clone https://github.com/EUDAT-Training/B2FIND-Training.git
-cd B2FIND-Training
-```
-
-The script requires several modules listed in the file `requirements.txt`, which need to be installed first by
-
-```sh
-pip install -r requirements.txt
-```
-Maybe you need sudo rights to install all needed packages.
-
->>>>>>> master
 Check with
 ```sh
 pip freeze 
@@ -85,11 +65,7 @@ Management of metadata, comprising
 In the following subsections we discuss the usage of the several options in more detail.
 
 ### General options
-<<<<<<< HEAD
 The 'global' options as shown in the top part of the help output:
-=======
-The 'global' options are listed after the ```Description``` directly under ```Options``` :
->>>>>>> master
 
 ```sh
 Options
@@ -112,11 +88,7 @@ Options
 ```
 
 We want to emphasize here the cross-process option *community* specifying the community or the project which 'owns' the metadata. This parameter is employed by all modes of the script and used to tie the different steps of preparing and uploading metadata together, which are executed by running the script in its different [processing modes](#processingModes).
-<<<<<<< HEAD
 In this repository we will take you through all these steps along *use cases*, whereby the name of the treated use case will be employed as the parameter *community*. 
-=======
-In this repository we will take you through all these steps along *use cases*, whereby the name of the treated use case will be employed as the parameter *community*.
->>>>>>> master
 
 The options *mdsubset* and *mdprefix* influence especially the harvesting and mapping procedures. So they determine not only the OAI parameters *set* and *mdprefix*, but as well the path where harvested files are stored and where the mapping and upload process expect the files to be processed. 
 
@@ -151,11 +123,8 @@ requests specified in the list file.
 
 **Excercise** Inspect the file *harvest_list* for the general formatting of such a file.
 
-<<<<<<< HEAD
-### <a name="processingModes"></a> Processing modes
-=======
 ### <a name="processingModes">Processing modes</a>
->>>>>>> master
+
 Depending on the processing step you want to perform, the script *mdmanager.py* can be executed in different modes by using the option `-m | --mode`,
 and provides procedures for the whole ingestion workflow how to come from unstructured metadata to entries in the discovery portal (own CKAN or B2FIND instance).
 
@@ -169,11 +138,7 @@ m | Mapping of specially formated XML to a target JSON schema | [03.a MD Mapping
 v | Validation of mapped JSON records as compatible with target schema | [03.b MD Validation ](03.b-validate-metadata.md) | 
 u | Uploading of JSON records to B2FIND or another CKAN instance |  [04.b MD Uploader ](04.b-upload-metadata.md) |
 
-<<<<<<< HEAD
-#### <a name="modeGeneration></a> Generation mode
-=======
 #### <a name="modeGeneration"> Generation mode </a>
->>>>>>> master
 This means using mode option `--mode g` and is linked to the module [ 01.b Generate metadata](01.b-generate-metadata.md)
 ```sh
 ------------------
@@ -232,11 +197,4 @@ These options will be required to upload an dataset to a CKAN database.
 
 ### Information and support
 
-<<<<<<< HEAD
-```sh
-For any further information and documentation please look at the README.md
-file or send an email to widmann@dkrz.de.
-```
-=======
 For any further information and documentation please look at the [README.md](README.md) file or send an email to *widmann@dkrz.de*.
->>>>>>> master
