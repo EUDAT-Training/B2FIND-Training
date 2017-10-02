@@ -182,13 +182,10 @@ For now we click on the link **Repository information**. Here you can add inform
 
 <img align="centre" src="img/jOAI_EditRepositoryInfo.png" width="800px">
 
-<<<<<<< HEAD
-Note : For now we don't specify the optional `Namespace identifier`.
+> Note : For now we don't specify the optional `Namespace identifier`.
 
 ## 8. <a name="reposSecurity"></a> (Optional) Repository security
 After this installation anyone has access to all ionformation on the server. To restrict access to sensitive data such as harvesting information follow:
 http://www.dlese.org/oai/docs/configuring_joai.jsp#accessControl
 This is optional and not required to follow the tutorial. However on a production system we strongly recommend to restrict access.
-=======
-Note : For now we don't specify the optional parameter `Namespace identifier`.
->>>>>>> master
+
