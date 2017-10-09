@@ -43,8 +43,9 @@ The order and numbering of the submodules in the table below follow the curricul
 | 04.b | [Upload metadata] (04.b-upload-metadata.md) | data managers | B2FIND integration, to the B2FIND catalogue done by B2FIND team |
 | 05 | [Using B2FIND](05-using-B2FIND.md)	| researchers | B2FIND usage
 | 05.a | [Graphical User Interface](05.a-search-GUI.md)	| researchers | B2FIND usage |
-| 05.b | [Command Line Interface](05.b-search-CLI.md)	| researchers | B2FIND usage |
-| 05.c | [Data access](05.c-data-access.md) |  researchers | B2FIND usage |
+| 05.b | [B2FIND (CKAN) API](05.b-search-API.md)	| researchers | B2FIND usage |
+| 05.c | [Command Line Interface](05.c-search-CLI.md)	| researchers | B2FIND usage |
+| 05.d | [Data access](05.d-data-access.md) |  researchers | B2FIND usage |
 
 ## Use cases
 Because it's easier to follow and understand the training on the base of concrete use cases, we provide some simple examples and the corresponding data samples.
