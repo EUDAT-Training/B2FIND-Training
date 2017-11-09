@@ -96,7 +96,7 @@ The options *mdsubset* and *mdprefix* influence especially the harvesting and ma
 
 ### Operation modes for single and multiple sources
 
-In the following sections the sample use cases will employ both of these operation modes and we will hint at how to set parameters and how they influence the bahaviour.
+In the following sections the sample use cases will employ both of these operation modes and we will hint at how to set parameters and how they influence the behaviour.
 
 #### Single Source
 
@@ -184,7 +184,7 @@ uploaded to a CKAN repository.
 ```
 
 #### Upload mode
-This means using mode option `--mode u` and is linked to the module [04.b Upload metadata] (04.b-upload-metadata.md)
+This means using mode option `--mode u` and is linked to the module [04.b Upload metadata](04.b-upload-metadata.md)
 
 ```sh
 Upload Options
