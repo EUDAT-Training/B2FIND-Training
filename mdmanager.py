@@ -169,7 +169,7 @@ class GENERATOR(object):
         print ' |- From %s-separated spreadsheet\n\t%s' % (request[2],inpath)
 
         """ Parse a CSV or TSV file """
-<<<<<<< HEAD
+
 	mapdc=dict()
 	fields=list()
 	try:
@@ -184,29 +184,12 @@ class GENERATOR(object):
                         fields.append(row[1].strip())
 		else : 
                     print ' |- create mapfile\n\t%s and' % mapfile
-=======
-        mapdc=dict()
-        fields=list()
-        try:
-                fp = open(fn)
-                ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
-                print(' |- Original fields:\n\t%s' % ofields)
-
-                if os.path.isfile(mapfile) :
-                    print(' |- Use existing mapfile\t%s' % mapfile)
-                    r = csv.reader(open(mapfile, "r"),delimiter='>')
-                    for row in r:
-                        fields.append(row[1].strip())
-                else : 
-                    print(' |- Generate mapfile\t%s' % mapfile)
->>>>>>> master
                     w = csv.writer(open(mapfile, "w"),delimiter='>')
                     for of in ofields:
                         mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
                         fields.append(mapdc[of].strip())
                         w.writerow([of, mapdc[of]])
 
-<<<<<<< HEAD
 		if not delimiter == ',' :
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
 		else:
@@ -227,30 +210,6 @@ class GENERATOR(object):
 		print "Error ({0}): {1}".format(errno, strerror)
 		raise SystemExit
 	fp.close()
-=======
-                if not delimiter == ',' :
-                    tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
-                else:
-                    tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
-                
-                print(' |- Generate XML files in %s' % outpath)
-                for row in tsv:
-                        dc = self.makedc(row)
-                        if 'dc:identifier' in row:
-                            outfile="".join(row['dc:identifier'].split())+'.xml'
-                            print('  |--> %s' % outfile)
-                            self.writefile(outpath+'/'+outfile, dc)
-                        else:
-                            print(' ERROR : At least target field dc:identifier must be specified') 
-                            os.remove(mapfile)
-                            sys.exit()
-
-        except IOError as err :
-                print ("Error %s" % err)
-                raise SystemExit
-        fp.close()
->>>>>>> master
-
         return -1
 
     def makedc(self,row):
@@ -269,19 +228,12 @@ class GENERATOR(object):
         return metadata
 
     def writefile(self,name, obj):
-<<<<<<< HEAD
+
 	""" Writes Dublin Core or Macrepo XML object to a file """
 	if isinstance(obj, DublinCore):
 		fp = open(name, 'w')
 		fp.write(obj.makeXML(self.DC_NS))
 	fp.close()
-=======
-        """ Writes Dublin Core or Macrepo XML object to a file """
-        if isinstance(obj, DublinCore):
-                fp = open(name, 'w')
-                fp.write(obj.makeXML(self.DC_NS))
-        fp.close()
->>>>>>> master
 
 class HARVESTER(object):
     
@@ -403,11 +355,6 @@ class HARVESTER(object):
         else:
             print "\t|- Iterate through records in %d sec" % (time.time()-start)
 
-<<<<<<< HEAD
-=======
-        print ("\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start))
-        
->>>>>>> master
         logging.debug('    |   | %-4s | %-45s | %-45s |\n    |%s|' % ('#','OAI Identifier','DS Identifier',"-" * 106))
 
         # set subset:
@@ -425,7 +372,7 @@ class HARVESTER(object):
             ## counter and progress bar
             fcount+=1
             if fcount <= noffs : continue
-<<<<<<< HEAD
+
             if ntotrecs > 0 :
                 perc=int(fcount*100/ntotrecs)
                 bartags=perc/5 #HEW-D fcount/100
@@ -433,15 +380,6 @@ class HARVESTER(object):
                     oldperc=perc
                     print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 )
                     sys.stdout.flush()
-=======
-            perc=int(fcount*100/ntotrecs)
-            bartags=perc/5 #HEW-D fcount/100
-            if perc%10 == 0 and perc != oldperc :
-                oldperc=perc
-                print ("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 ))
-                sys.stdout.flush()
-
->>>>>>> master
 
             if req["lverb"] == 'ListIdentifiers' :
                     if (record.deleted):
@@ -1446,21 +1384,12 @@ class MAPPER():
             mapext='conf' ##!!!HEW --> json
         else:
             mapext='xml'
-<<<<<<< HEAD
 
         # check and read rules from mapfile
         if (target_mdschema != None and not target_mdschema.startswith('#')):
             mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
         else:
             mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,mdprefix,mapext)
-=======
-        ## mapfile
-        # check and read rules from mapfile
-##        if (target_mdschema != None and not target_mdschema.startswith('#')):
-##            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
-##        else:
-        mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,os.path.basename(mdprefix),mapext)
->>>>>>> master
 
         if not os.path.isfile(mapfile):
             logging.debug('[WARNING] Community specific mapfile %s does not exist !' % mapfile)
@@ -1985,15 +1914,9 @@ class UPLOADER (object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
-<<<<<<< HEAD
-=======
 ##HEW- changed!!!!
         jsondata["owner_org"]="crete" ##HEW!!! "eudat"
 
-
-        ####??? write 
->>>>>>> master
-   
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
             logging.debug('\t - Try to create dataset %s' % ds)
@@ -2203,19 +2126,6 @@ def process(options,pstat):
             # start the process uploading:
             process_upload(UP,reqlist,options)
 
-##HEW-D             if mode is 'multi':
-##HEW-D                 convert_list='harvest_list'
-##HEW-D                 logging.info(' |- Joblist:  \t%s' % convert_list )
-##HEW-D                 process_upload(UP, parse_list_file('upload', convert_list or options.list, options.community, options.mdsubset), options)
-##HEW-D             else:
-##HEW-D                 process_upload(UP,[[
-##HEW-D                     options.community,
-##HEW-D                     options.source,
-##HEW-D                     options.mdprefix,
-##HEW-D                     options.outdir + '/' + options.mdprefix,
-##HEW-D                     options.mdsubset
-##HEW-D                 ]],options)
- 
 def process_harvest(HV, rlist):
     ## process_harvest (HARVESTER object, rlist) - function
     # Harvests per request.
@@ -2316,8 +2226,8 @@ def process_validate(MP, rlist):
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/'+request[4])
         else:
-<<<<<<< HEAD
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
+
         outfile='%s/%s' % (path,'validation.stat')
 
         if (len(request) > 5 and request[5]):            
@@ -2328,17 +2238,9 @@ def process_validate(MP, rlist):
         logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
 
         results = MP.validate(request[0],request[3],path,target)
-=======
-            path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/SET')
-
-        results = MP.validate(request[0],os.path.basename(request[3]),path)
->>>>>>> master
 
         ctime=time.time()-cstart
         results['time'] = ctime
-        
-        # save stats:
-        ###MP.OUT.save_stats(request[0]+'-' + request[3],request[4],'v',results)
         
 def process_oaiconvert(MP, rlist):
 
@@ -2399,22 +2301,16 @@ def process_upload(UP, rlist, options):
     for request in rlist:
         ir+=1
         logging.info('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
-<<<<<<< HEAD
         community, source = request[0:2]
         mdprefix = request[3]
         print 'mdprefix %s' % mdprefix
 
-=======
-        community, source, dir = request[0:3]
-        ckan_community=community.lower()
-        mdprefix = os.path.basename(request[3])
         if len(request) > 4:
             subset = request[4]
         else:
             subset = 'SET'
         dir = dir+'/'+subset
         
->>>>>>> master
         results = {
             'count':0,
             'ecount':0,
@@ -2422,7 +2318,6 @@ def process_upload(UP, rlist, options):
             'time':0
         }
 
-<<<<<<< HEAD
         try:
             ckangroup=CKAN.action('group_show',{"id":community})
         except Exception, err:
@@ -2433,24 +2328,8 @@ def process_upload(UP, rlist, options):
         if 'success' not in ckangroup and ckangroup['success'] != True :
             logging.critical(" CKAN group %s does not exist" % community)
             sys.exit()
-=======
+
         print ('|- Community %s\n |- MD prefix %s\n |- Subset %s\n' % (community,mdprefix,subset))
-
-        try:
-            ckangroup=CKAN.action('group_list') ## ,{"id":community})
-            if ckan_community not in ckangroup['result'] :
-                logger.critical('Can not found community %s' % community)
-                sys.exit(-1)
-        except Exception :
-            logging.critical("Can not list CKAN groups")
-  
-        dir=os.path.abspath('oaidata/'+community+'-'+mdprefix+'/'+subset)
->>>>>>> master
-
-        if len(request) > 4:
-            subset=request[4]
-        else:
-            subset='/SET_1'
 
         path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+subset)
 
@@ -2773,9 +2652,6 @@ def options_parser(modes):
     group_processmodes = optparse.OptionGroup(p, "Processing modes","The script can be executed in different modes by using the option -m | --mode, and provides procedures for the whole ingestion workflow how to come from unstructured metadata to entries in the discovery portal (own CKAN or B2FIND instance).")
     group_processmodes.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='\nThis specifies the processing mode. Supported modes are (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
 
-    p.add_option('--community', '-c', help="community or project, for which metadata are harvested, processed, stored and uploaded. This 'label' is used through the whole metadata life cycle.", default='', metavar='STRING')
-    ##HEW-D really needed (for Training) ???  
-    p.add_option('--mdsubset', help="Subset of metadata to be harvested (by default 'None') and subdirectory of harvested and processed metadata (by default 'SET_1'",default=None, metavar='STRING')
     group_generate = optparse.OptionGroup(p, "Generation Options",
         "These options will be required to generate formatted metadata sets (by default DublinCore XML files) from 'raw' spreadsheet data that resides in the PATH given by SOURCE.")
     group_generate.add_option('--delimiter', help="Delimiter, which seperates the fields and associated values in the datasets (lines) of the spreadsheets, can be 'comma' (default) or 'tab'",default='comma', metavar='STRING')
