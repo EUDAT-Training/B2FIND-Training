@@ -1,7 +1,8 @@
-# Installation of an OAI server
-This document describes how to install and set up a full implementation of an OAI server based on the open source software *jOAI*. 
 
-This server allows not only to harvest from OAI-PMH endpoints but as well to provide metadata records via *OAI-PMH*. In the following two modules 02.a and 02.b we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. jOAI will run within Apache Tomcat and we will use an Ubuntu machine to guide you through the examples. 
+# Installation of an OAI server
+This document describes how to install and set up a full implementation of an Open Archives Initiative (OAI) server based on the open source software *jOAI*. 
+
+With and OAI sever, it is not only possible to harvest from OAI Protocol for Metadata Harvesting (OAI-PMH) endpoints, but also to provide metadata records via *OAI-PMH*. In the next two modules, 02.a and 02.b, we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. In our examples, jOAI will run within Apache Tomcat on an Ubuntu machine.
 
 ## Environment
 Ubuntu 14.04 server
@@ -13,10 +14,11 @@ Ubuntu 14.04 server
 sudo apt-get update
 sudo apt-get upgrade
 ```
-### 2. Internet connection and browser
-If you are using a VM, e.g. setup in VirtualBox Manager or in a cloud, you will need to configure the network to work in bridge mode (VM box). Furthermore an internet browser, e.g. firefox, should be installed on your computer.
 
-If you are using a VM in a cloud environment you might want to configure the firewall:
+### 2. Internet connection and browser
+If you are using a VM, e.g. in VirtualBox Manager, you will need to configure the network to work in bridge mode. Furthermore, an internet browser, e.g. Firefox, should be installed on your computer.
+
+If you are using a VM in a cloud environment you might need to configure the firewall. Below we demonstrate setting up an example firewall using iptables-persistent. If you are using a different firewall configuration tool, it is important that port 80 and port 8080 are open for use (also port 8181 in most cases, see the [next section](#3a-tomcat-trouble-shooting)).
 - Install iptables-persistent
 ```sh
 sudo apt-get install iptables-persistent
@@ -38,6 +40,7 @@ sudo apt-get install iptables-persistent
 -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
 -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
 -A INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 80181 -j ACCEPT
 -A INPUT -j LOG
 -A INPUT -j DROP
 COMMIT
@@ -48,12 +51,12 @@ COMMIT
 /etc/init.d/iptables-persistent restart
 ```
 
-##Installation
+### Installation
 
 ### 2. Download and unpack the jOAI Software
 See http://www.dlese.org/dds/services/joai_software.jsp for details.
 
-The current version can be downloaded from Sourceforge, e.g. as zip file
+The current version can be downloaded from Sourceforge as zip file:
 
 ```sh
 wget https://sourceforge.net/projects/dlsciences/files/jOAI%20-%20OAI%20Provider_Harvester/v3.1.1.4/joai_v3.1.1.4.zip
@@ -65,18 +68,18 @@ Note, unzip does not come by default with an Ubuntu server 14.04, you can instal
 sudo apt-get install unzip
 ```
 
-### 3. Install tomcat
-In the INSTALL.txt of the jOAI package above it is recommended to download
-the Tomcat server container from http://tomcat.apache.org/ .
-But in most cases (and in case of Ubuntu version 12 and greater) you can use the pre-installed Tomcat package.  
-The current version of tomcat is 7, but jOAI runs as well within tomcat6.
+### 3. Install Tomcat
+In the INSTALL.txt of the jOAI package above, it is recommended to download
+the Tomcat server container from http://tomcat.apache.org/.
+However, in most cases (and in case of Ubuntu version 12 and greater), you can use the pre-installed Tomcat package.  
+The current version of tomcat is 7, but jOAI also runs within tomcat6, if that is what is on the system.
 ```sh
 sudo apt-get install tomcat7
 ```
 
 #### 3a. Tomcat trouble shooting
-One known problem with tomcat is, that there are conflicts with other web servers, e.g. an apache, running on the same machine.
-If you want run e.g. a CKAN instance in parallel, you must change the port of the connector in the file ```/etc/tomcat7/server.xml``` :
+One known problem with Tomcat is that there are conflicts with other web servers, e.g. Apache, running on the same machine.
+If you want run a CKAN instance in parallel, for instance, you must change the port of the connector in the file ```/etc/tomcat7/server.xml``` :
 ```sh
    <!-- Changed port 8080 to 8181 -->
     <Connector port="8181" protocol="HTTP/1.1"
@@ -84,11 +87,11 @@ If you want run e.g. a CKAN instance in parallel, you must change the port of th
                URIEncoding="UTF-8"
                redirectPort="8443" />
 ```    
-After restart of tomcat by
+Then restart Tomcat by
 ```
 sudo service tomcat7 start
 ```
-jOAI will run on
+Hence, jOAI will run on:
 ```
 http://localhost:8181/
 ```
@@ -179,7 +182,7 @@ as described in 01-configure-your-OAI-server
 ## 7. Repository configuration
 You should do some basic configurations at the beginning.
 
-On the entry page Section *Overview* click the button **Set up the Provider**. On page *Data Provider Documentation* you will find a lot of information we will need in the next modul. 
+On the entry page Section *Overview* click the button **Set up the Provider**. On page *Data Provider Documentation* you will find a lot of information we will need in the next module cf dxsAASDFZXGCHADS. 
 
 For now we click on the link **Repository information**. Here you can add information describing your repository. (Allways use the questionmark buttons to get more detailed inforamtion about the fields).
 
