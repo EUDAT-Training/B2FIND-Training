@@ -40,7 +40,7 @@ sudo apt-get install iptables-persistent
 -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
 -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
 -A INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 80181 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 8181 -j ACCEPT
 -A INPUT -j LOG
 -A INPUT -j DROP
 COMMIT
@@ -182,7 +182,7 @@ as described in 01-configure-your-OAI-server
 ## 7. Repository configuration
 You should do some basic configurations at the beginning.
 
-On the entry page Section *Overview* click the button **Set up the Provider**. On page *Data Provider Documentation* you will find a lot of information we will need in the next module cf dxsAASDFZXGCHADS. 
+On the entry page Section *Overview* click the button **Set up the Provider**. On page *Data Provider Documentation* you will find a lot of information we will need in the next module. 
 
 For now we click on the link **Repository information**. Here you can add information describing your repository. (Allways use the questionmark buttons to get more detailed inforamtion about the fields).
 
