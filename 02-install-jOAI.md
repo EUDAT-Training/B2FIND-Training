@@ -20,7 +20,7 @@ sudo apt-get upgrade
 In general, an internet browser, e.g. Firefox, should be installed on your computer.
 If you are using a VM, e.g. in VirtualBox Manager, you will need to configure the network to work in bridge mode. 
 
-If you are using a VM in a cloud environment, you might need to configure the firewall. Below we demonstrate setting up an example firewall using iptables-persistent. If you are using a different firewall configuration tool, it is important that port 80 and port 8080 are open for use (also port 8181 in most cases, see the [next section](#3a-tomcat-trouble-shooting)).
+If you are using a VM in a cloud environment, you might need to configure the firewall. Below we demonstrate setting up an example firewall using iptables-persistent. If you are using a different firewall configuration tool, it is important that port 80 and port 8080 are open for use (also port 8181 in most cases, see the [next section](#3a-tomcat-troubleshooting)).
 - Install iptables-persistent
 
 ```sh
@@ -103,7 +103,7 @@ or if you work on a remote server (VM):
 http://<ip-address or fully qualified domain name>:8181/
 ```
 
-We will deploy CKAN, which makes use of apache, so we advise you to use port 8181, the firewall has also been set up accordingly in [section](#2-internet-connection-and-browser)).
+We will deploy CKAN, which makes use of apache, so we advise you to use port 8181, the firewall has also been set up accordingly in [section 2](#2-internet-connection-and-browser)).
 
 For general **troubleshooting and Diagnostic techniques**, refer to the [Apache Tomcat troubleshooting page](https://wiki.apache.org/tomcat/FAQ/Troubleshooting_and_Diagnostics).
 
