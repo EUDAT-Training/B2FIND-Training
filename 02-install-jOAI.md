@@ -1,8 +1,8 @@
 
-# Installation of an OAI server
+# Installing an OAI server
 This document describes how to install and set up a full implementation of an Open Archives Initiative (OAI) server based on the open source software *jOAI*. 
 
-With and OAI sever, it is not only possible to harvest from OAI Protocol for Metadata Harvesting (OAI-PMH) endpoints, but also to provide metadata records via *OAI-PMH*. In the next two modules, 02.a and 02.b, we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. In our examples, jOAI will run within Apache Tomcat on an Ubuntu machine.
+With and OAI sever, it is not only possible to harvest from OAI Protocol for Metadata Harvesting (OAI-PMH) endpoints, but also to provide metadata records via *OAI-PMH*. In the next two modules, [02.a](../master/02.a-OAI-data_provider.md) and [02.b](../master/02.b-OAI-harvester.md), we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. In our examples, jOAI will run within Apache Tomcat on an Ubuntu machine.
 
 ## Environment
 Ubuntu 14.04 server
@@ -16,10 +16,13 @@ sudo apt-get upgrade
 ```
 
 ### 2. Internet connection and browser
-If you are using a VM, e.g. in VirtualBox Manager, you will need to configure the network to work in bridge mode. Furthermore, an internet browser, e.g. Firefox, should be installed on your computer.
 
-If you are using a VM in a cloud environment you might need to configure the firewall. Below we demonstrate setting up an example firewall using iptables-persistent. If you are using a different firewall configuration tool, it is important that port 80 and port 8080 are open for use (also port 8181 in most cases, see the [next section](#3a-tomcat-trouble-shooting)).
+In general, an internet browser, e.g. Firefox, should be installed on your computer.
+If you are using a VM, e.g. in VirtualBox Manager, you will need to configure the network to work in bridge mode. 
+
+If you are using a VM in a cloud environment, you might need to configure the firewall. Below we demonstrate setting up an example firewall using iptables-persistent. If you are using a different firewall configuration tool, it is important that port 80 and port 8080 are open for use (also port 8181 in most cases, see the [next section](#3a-tomcat-trouble-shooting)).
 - Install iptables-persistent
+
 ```sh
 sudo apt-get install iptables-persistent
 ```
@@ -54,7 +57,7 @@ COMMIT
 ### Installation
 
 ### 2. Download and unpack the jOAI Software
-See http://www.dlese.org/dds/services/joai_software.jsp for details.
+See [this page](http://www.dlese.org/dds/services/joai_software.jsp) for details about jOAI.
 
 The current version can be downloaded from Sourceforge as zip file:
 
@@ -70,14 +73,14 @@ sudo apt-get install unzip
 
 ### 3. Install Tomcat
 In the INSTALL.txt of the jOAI package above, it is recommended to download
-the Tomcat server container from http://tomcat.apache.org/.
+the Tomcat server container from [the official Tomcat webpage](http://tomcat.apache.org/).
 However, in most cases (and in case of Ubuntu version 12 and greater), you can use the pre-installed Tomcat package.  
 The current version of tomcat is 7, but jOAI also runs within tomcat6, if that is what is on the system.
 ```sh
 sudo apt-get install tomcat7
 ```
 
-#### 3a. Tomcat trouble shooting
+#### 3a. Tomcat troubleshooting
 One known problem with Tomcat is that there are conflicts with other web servers, e.g. Apache, running on the same machine.
 If you want run a CKAN instance in parallel, for instance, you must change the port of the connector in the file ```/etc/tomcat7/server.xml``` :
 ```sh
@@ -93,41 +96,40 @@ sudo service tomcat7 start
 ```
 Hence, jOAI will run on:
 ```
-http://localhost:8181/
+http://localhost:8181/,
 ```
-or when you work on a remote server (VM)
+or if you work on a remote server (VM):
 ```
 http://<ip-address or fully qualified domain name>:8181/
 ```
 
-**Since we will deploy CKAN, which makes use of apache, we advise you to use port 8181. Please also change your firewall accordingly.**
+We will deploy CKAN, which makes use of apache, so we advise you to use port 8181, the firewall has also been set up accordingly in [section](#2-internet-connection-and-browser)).
 
-For general **troubleshooting and Diagnostic techniques** we refer to
-``` https://wiki.apache.org/tomcat/FAQ/Troubleshooting_and_Diagnostics ```
+For general **troubleshooting and Diagnostic techniques**, refer to the [Apache Tomcat troubleshooting page](https://wiki.apache.org/tomcat/FAQ/Troubleshooting_and_Diagnostics).
 
 ### 4. Add the web application jOAI to the Tomcat container
-Place the file *oai.war* into the *webapps* directory found in your Tomcat installation directory. *webapps* is the default location where Tomcat searches for web applications.
+Place the file *oai.war* into the *webapps* directory found in your Tomcat installation directory. The *webapps* directory is the default location where Tomcat searches for web applications:
 ```sh
 sudo cp joai_v3.1.1.4/oai.war /var/lib/tomcat7/webapps/
 ```
 
-During the first start tomcat will unpack the application *oai*.
+During its first start, Tomcat will unpack the application *oai*.
 
 ### 5. Install the Java Platform, Standard Edition v5 or later
-Tomcat needs the Java Run Time environment (JRE).
-Often this is already preinstalled on ubuntu by apt-get update.
+Tomcat needs the Java Runtime environment (JRE).
+Often, this is already preinstalled on ubuntu by an apt-get update.
 
-You can check the instalation (path) e.g. by 
+You can check the installation (path) by/: 
 ```sh
 readlink -f $(which java)
 ``` 
-If java is not installed, install at least JRE :
+If java is not installed, at least install JRE :
 ```sh
-sudo apt-get install default-jdk
+sudo apt-get install default-jdk,
 ```
 or for the latest java version execute:
 ```sh
-sudo apt-get install oracle-java8-installer
+sudo apt-get install oracle-java8-installer.
 ```
 
 Finally set the environment variable JRE_HOME, e.g. 
@@ -139,29 +141,29 @@ or
 ```sh
 JRE_HOME=/usr/lib/jvm/java-8-oracle/jre/bin/java
 ```
-in your ```sh ~/.bashrc```
+in your ```sh ~/.bashrc```.
 
 ## 6. Start Tomcat 
 
-Try to start tomcat by
+Try to start Tomcat using:
 ```sh
 sudo service tomcat7 start
 ```
 
-To stop, start and restart tomcat you can use the follwing command:
+To stop, start, or restart Tomcat you can use the follwing command:
 ```sh
 sudo service tomcat7 <stop, start, restart>
 ```
 
-If you now enter in an internet browser
+Now, if you are working on the current machine, try the following in an internet browser:
 ```sh
 <localhost>:8181
 ```
-or
+If you are working on a remote server (VM), try:
 ```
 <ip address or fully qualified domain name>:8181
 ```
-and all works fine you should see a page showing **'It works'** and the graphical user interface of the web application jOAI should be opened by 
+If all works fine, you should see a page with the title **'It works!'**, and the graphical user interface of the web application jOAI should be opened by: 
 ```sh
 localhost:8181/oai
 ```
@@ -172,26 +174,26 @@ http://<ip-address or fully qualified domain name>:8181/oai/
 
 <img align="centre" src="img/jOAI_Overview.png" width="800px">
 
-Congratultaions !
+Congratultaions!
 
 **Note**, when running tomcat for the first time after a configuration change, the loading of the webpage can take very long.
 
 Now you can configure and use your OAI-PMH provider and harvester
-as described in 01-configure-your-OAI-server
+as described in the following module, [02.a-Configuring an OAI Data Provider](../master/02.a-OAI-data_provider.md).
 
 ## 7. Repository configuration
-You should do some basic configurations at the beginning.
+First, some basic configurations should be set.
+On the *Overview* page, by clicking on the link **Set up the Provider**, you will be lead to the *Data Provider Documentation* page, where you can find lots of information that will be needed in the next module. 
 
-On the entry page Section *Overview* click the button **Set up the Provider**. On page *Data Provider Documentation* you will find a lot of information we will need in the next module. 
-
-For now we click on the link **Repository information**. Here you can add information describing your repository. (Allways use the questionmark buttons to get more detailed inforamtion about the fields).
+For now, click on the **Repository information** link. By clicking on the **Edit repository info** button on this page, you will be lead to a page similar to the image below, where information describing your repository can be added.
 
 <img align="centre" src="img/jOAI_EditRepositoryInfo.png" width="800px">
 
-> Note : For now we don't specify the optional `Namespace identifier`.
+This page can also be accessed through the menus, following **Data Provider**, and then **Repository Information and Administration**.
+
+> Note: For now we will not specify the optional `Namespace identifier`.
 
 ## 8. <a name="reposSecurity"></a> (Optional) Repository security
-After this installation anyone has access to all ionformation on the server. To restrict access to sensitive data such as harvesting information follow:
-http://www.dlese.org/oai/docs/configuring_joai.jsp#accessControl
-This is optional and not required to follow the tutorial. However on a production system we strongly recommend to restrict access.
+After this installation, anyone can access all ionformation on the server. To restrict access to sensitive data, such as harvesting information, follow the instructions on [this page](https://uc.dls.ucar.edu/joai/docs/configuring_joai.jsp#accessControl).
+This is optional and not required for this tutorial. However we strongly recommend to restrict access on a production system .
 
