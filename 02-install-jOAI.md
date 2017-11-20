@@ -75,7 +75,7 @@ sudo apt-get install unzip
 In the INSTALL.txt of the jOAI package above, it is recommended to download
 the Tomcat server container from [the official Tomcat webpage](http://tomcat.apache.org/).
 However, in most cases (and in case of Ubuntu version 12 and greater), you can use the pre-installed Tomcat package.  
-The current version of tomcat is 7, but jOAI also runs within tomcat6, if that is what is on the system.
+The current version of tomcat is 7, but jOAI also runs within tomcat6, if that is what is on your system.
 ```sh
 sudo apt-get install tomcat7
 ```
@@ -119,11 +119,11 @@ During its first start, Tomcat will unpack the application *oai*.
 Tomcat needs the Java Runtime environment (JRE).
 Often, this is already preinstalled on ubuntu by an apt-get update.
 
-You can check the installation (path) by/: 
+You can check the installation (path) by: 
 ```sh
 readlink -f $(which java)
 ``` 
-If java is not installed, at least install JRE :
+If java is not installed, at least install JRE:
 ```sh
 sudo apt-get install default-jdk,
 ```
@@ -143,7 +143,7 @@ JRE_HOME=/usr/lib/jvm/java-8-oracle/jre/bin/java
 ```
 in your ```sh ~/.bashrc```.
 
-## 6. Start Tomcat 
+### 6. Start Tomcat 
 
 Try to start Tomcat using:
 ```sh
@@ -181,7 +181,7 @@ Congratultaions!
 Now you can configure and use your OAI-PMH provider and harvester
 as described in the following module, [02.a-Configuring an OAI Data Provider](../master/02.a-OAI-data_provider.md).
 
-## 7. Repository configuration
+### 7. Repository configuration
 First, some basic configurations should be set.
 On the *Overview* page, by clicking on the link **Set up the Provider**, you will be lead to the *Data Provider Documentation* page, where you can find lots of information that will be needed in the next module. 
 
@@ -193,7 +193,7 @@ This page can also be accessed through the menus, following **Data Provider**, a
 
 > Note: For now we will not specify the optional `Namespace identifier`.
 
-## 8. <a name="reposSecurity"></a> (Optional) Repository security
+### 8. (Optional) Repository security
 After this installation, anyone can access all ionformation on the server. To restrict access to sensitive data, such as harvesting information, follow the instructions on [this page](https://uc.dls.ucar.edu/joai/docs/configuring_joai.jsp#accessControl).
 This is optional and not required for this tutorial. However we strongly recommend to restrict access on a production system .
 
