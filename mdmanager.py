@@ -313,36 +313,26 @@ class HARVESTER(object):
             
             "timestart" : time.time(),  # start time per subset process
         }
-        
+
         start=time.time()
         ntotrecs=0
 
-        if (not req["mdsubset"]):
-            logging.critical(' Option mdsubset is mandatory for harvesting')
-            return -1
-            subset = 'SET'
+        mdsubset=req["mdsubset"]        
+        if (not mdsubset):
+            logging.warning('No OAI subset is given!')
+            subset='SET'
         else:
-            subset = req["mdsubset"]
+            subset = mdsubset
 
         sickle = SickleClass.Sickle(req['url'], max_retries=3, timeout=300)
         outtypedir='xml'
         outtypeext='xml'
         oaireq=getattr(sickle,req["lverb"], None)
         try:
-            records,rc=tee(oaireq(**{'metadataPrefix':req['mdprefix'],'set':req['mdsubset'],'ignore_deleted':True,'from':self.fromdate}))
-        except HTTPError as e:
-            logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
+            records,rc=tee(oaireq(**{'metadataPrefix':req['mdprefix'],'set':mdsubset,'ignore_deleted':True,'from':self.fromdate}))
+        except (HTTPError,ConnectionError,etree.XMLSyntaxError,Exception) as e:
+            logging.error("%s : Cannot harvest through request %s\n" % (e,req))
             return -1
-        except ConnectionError as e:
-            logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
-            return -1
-        except etree.XMLSyntaxError as e:
-            logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
-            return -1
-        except Exception as e:
-            logging.error("[ERROR %s ] : %s" % (e,traceback.format_exc()))
-            return -1
-
         try:
             ntotrecs=len(list(rc))
         except :
@@ -2146,7 +2136,7 @@ def process_harvest(HV, rlist):
         results = HV.harvest(ir,request)
     
         if (results == -1):
-            logging.error("Couldn't harvest from %s" % request)
+            logging.critical("Couldn't harvest from %s" % request)
 
         harvesttime=time.time()-harveststart
 
