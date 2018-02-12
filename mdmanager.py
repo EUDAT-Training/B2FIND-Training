@@ -1258,7 +1258,7 @@ class MAPPER():
                     except Exception as e:
                         logging.error('    | [ERROR] %s : Cannot decode jsondata %s' % (e,jsondata))
                     try:
-                        logging.debug('   | [INFO] save json file')
+                        logging.debug('   | [INFO] save json file in %s' % outpath+'/'+filename)
                         json_file.write(data)
                     except TypeError as err :
                         logging.error('    | [ERROR] Cannot write json file %s : %s' % (outpath+'/'+filename,err))
@@ -1670,7 +1670,7 @@ class CKAN_CLIENT(object):
                 response = urlopen(request)                
             self.logger.debug('response %s' % response)            
         except HTTPError as e:
-            self.logger.warning('%s : The server %s couldn\'t fulfill the action %s.' % (e,self.ip_host,action))
+            self.logger.error('%s : The server %s couldn\'t fulfill the action %s.' % (e,self.ip_host,action))
             if ( e.code == 403 ):
                 logging.error('Access forbidden, maybe the API key is not valid?')
                 ## exit(e.code)
@@ -1901,11 +1901,11 @@ class UPLOADER (object):
         rvalue = 0
         
         # add some general CKAN specific fields to dictionary:
-        jsondata["name"] = ds
+        jsondata["name"] = ds.lower()
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
 ##HEW- changed!!!!
-        jsondata["owner_org"]="crete" ##HEW!!! "eudat"
+        jsondata["owner_org"]="eudat" ##HEW!!! "eudat"
 
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
@@ -2184,7 +2184,7 @@ def process_map(MP, rlist):
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+request[4])
         else:
-            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET_1')
+            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
              
         if (len(request) > 5 and request[5]):            
             target=request[5]
@@ -2293,13 +2293,11 @@ def process_upload(UP, rlist, options):
         logging.info('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
         community, source = request[0:2]
         mdprefix = request[3]
-        print 'mdprefix %s' % mdprefix
 
         if len(request) > 4:
             subset = request[4]
         else:
             subset = 'SET'
-        dir = dir+'/'+subset
         
         results = {
             'count':0,
@@ -2309,12 +2307,14 @@ def process_upload(UP, rlist, options):
         }
 
         try:
-            ckangroup=CKAN.action('group_show',{"id":community})
+            ckangroup=CKAN.action('group_list')
+            if community not in ckangroup['result'] :
+                logger.critical('Can not found community %s' % community)
+                sys.exit(-1)
         except Exception, err:
             logging.critical("%s : Can not show CKAN group %s" % (err,community))
             sys.exit()
             
-        print "ckangroup['success'] %s" % ckangroup['success']
         if 'success' not in ckangroup and ckangroup['success'] != True :
             logging.critical(" CKAN group %s does not exist" % community)
             sys.exit()
@@ -2324,7 +2324,7 @@ def process_upload(UP, rlist, options):
         path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+subset)
 
         if not os.path.exists(path):
-            logging.error('[ERROR] The directory "%s" does not exist! No files for uploading are found!\n(Maybe your upload list has old items?)' % path)
+            logging.critical('The directory "%s" does not exist! No files for uploading are found!' % path)
             
             # save stats:
             ##UP.OUT.save_stats(community+'-'+mdprefix,subset,'u',results)
@@ -2604,7 +2604,7 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
         reqlist.append(request.split())
         
     if len(reqlist) == 0:
-        logging.error(' No matching request found in %s' % filename)
+        logging.critical(' No matching request found in %s' % filename)
         exit()
  
     return reqlist
@@ -2662,7 +2662,7 @@ def options_parser(modes):
         "These options will be required to upload an dataset to a CKAN database.")
     group_upload.add_option('--iphost', '-i', help="IP adress of B2FIND portal (CKAN instance)", metavar='IP')
     group_upload.add_option('--auth', help="Authentification for CKAN APIs (API key, by default taken from file $HOME/.netrc)",metavar='STRING')
-    group_upload.add_option('--ckan_organization', help="CKAN Organization name (by default 'rda')",default='rda',metavar='STRING')
+    group_upload.add_option('--ckan_organization', help="CKAN Organization name (by default 'rda')",default='eudat',metavar='STRING')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--handle_check', help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credential file", default=None,metavar='FILE')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--ckan_check',help="check existence and checksum against existing datasets in CKAN dattabase",default='False', metavar='BOOLEAN')
 
