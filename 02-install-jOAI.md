@@ -1,8 +1,8 @@
 
 # Installing an OAI server
-This document describes how to install and set up a full implementation of an Open Archives Initiative (OAI) server based on the open source software *jOAI*. 
+This document describes how to install and set up a full implementation of an Open Archives Initiative (OAI) server based on the open source software *jOAI*. An OAI server can be used to provide metadata records via OAI Protocol for Metadata Harvesting (OAI-PMH). It can also be used to a harvest metadata from OAI-PMH endpoints.
 
-With and OAI sever, it is not only possible to harvest from OAI Protocol for Metadata Harvesting (OAI-PMH) endpoints, but also to provide metadata records via *OAI-PMH*. In the next two modules, [02.a](../master/02.a-OAI-data_provider.md) and [02.b](../master/02.b-OAI-harvester.md), we will explain how to configure the OAI-PMH data provider and harvester tool based on this software. In our examples, jOAI will run within Apache Tomcat on an Ubuntu machine.
+In the next two modules, [02.a](../master/02.a-OAI-data_provider.md) and [02.b](../master/02.b-OAI-harvester.md), we will explain how to configure the OAI-PMH data provider and harvester tool  repectively, based on this software. In our examples, jOAI will run within Apache Tomcat on an Ubuntu machine.
 
 ## Environment
 Ubuntu 14.04 server
