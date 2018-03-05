@@ -2090,22 +2090,10 @@ def process(options,pstat):
 
     ## VALIDATOR - Mode:  
     if (pstat['status']['v'] == 'tbd'):
-            MP = MAPPER()
-            logging.info('\n|- Validating started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
-        
-            # start the process converting:
-            if mode is 'multi':
-                convert_list='harvest_list'
-                logging.info(' |- Joblist:  \t%s' % options.list)
-                process_validate(MP, parse_list_file('validate', convert_list or options.list, options.community,options.mdsubset))
-            else:
-                process_validate(MP,[[
-                    options.community,
-                    options.source,
-                    options.mdprefix,
-                    options.outdir + '/' + options.mdprefix,
-                    options.mdsubset
-                ]])
+        print('\n|- Validating started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
+        MP = MAPPER()
+        process_validate(MP,reqlist)
+
     ## UPLOADING - Mode:  
     if (pstat['status']['u'] == 'tbd'):
             # create CKAN object                       
@@ -2216,7 +2204,7 @@ def process_validate(MP, rlist):
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/'+request[4])
         else:
-            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
+            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET_1')
 
         outfile='%s/%s' % (path,'validation.stat')
 
@@ -2590,7 +2578,7 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
         if (mdprefix != None):
             if ( not request.split()[3] == mdprefix) :
               continue
-            
+
         # sort out lines that don't match given subset
         if (subset != None):
             if len(request.split()) < 5 :
