@@ -166,50 +166,50 @@ class GENERATOR(object):
 
         ## mapfile
         mapfile="mapfiles/%s-%s.csv" % (community,mdprefix)
+        print ' |- From %s-separated spreadsheet\n\t%s' % (request[2],inpath)
 
         """ Parse a CSV or TSV file """
-        mapdc=dict()
-        fields=list()
-        try:
-                fp = open(fn)
-                ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
-                print(' |- Original fields:\n\t%s' % ofields)
 
-                if os.path.isfile(mapfile) :
-                    print(' |- Use existing mapfile\t%s' % mapfile)
+	mapdc=dict()
+	fields=list()
+	try:
+		fp = open(fn)
+		ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
+                print ' |- with original fields (headline)\n\t%s' % ofields
+
+		if os.path.isfile(mapfile) :
+                    print ' |- using existing mapfile\t%s' % mapfile
                     r = csv.reader(open(mapfile, "r"),delimiter='>')
                     for row in r:
                         fields.append(row[1].strip())
-                else : 
-                    print(' |- Generate mapfile\t%s' % mapfile)
+		else : 
+                    print ' |- create mapfile\n\t%s and' % mapfile
                     w = csv.writer(open(mapfile, "w"),delimiter='>')
                     for of in ofields:
                         mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
                         fields.append(mapdc[of].strip())
                         w.writerow([of, mapdc[of]])
 
-                if not delimiter == ',' :
+		if not delimiter == ',' :
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
-                else:
+		else:
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
-                
-                print(' |- Generate XML files in %s' % outpath)
-                for row in tsv:
-                        dc = self.makedc(row)
-                        if 'dc:identifier' in row:
-                            outfile="".join(row['dc:identifier'].split())+'.xml'
-                            print('  |--> %s' % outfile)
+		
+                print ' |- generate XML files in %s' % outpath
+		for row in tsv:
+			dc = self.makedc(row)
+			if 'dc:identifier' in row:
+                            outfile=re.sub('[\(\)]','',"".join(row['dc:identifier'].split()).replace(',','-').replace('/','-'))+'.xml'
+                            print '  |--> %s' % outfile
                             self.writefile(outpath+'/'+outfile, dc)
-                        else:
-                            print(' ERROR : At least target field dc:identifier must be specified') 
-                            os.remove(mapfile)
-                            sys.exit()
+			else:
+                            print ' ERROR : At least target field dc:identifier must be specified' 
+			    sys.exit()
 
-        except IOError as err :
-                print ("Error %s" % err)
-                raise SystemExit
-        fp.close()
-
+	except IOError as (errno, strerror):
+		print "Error ({0}): {1}".format(errno, strerror)
+		raise SystemExit
+	fp.close()
         return -1
 
     def makedc(self,row):
@@ -228,11 +228,12 @@ class GENERATOR(object):
         return metadata
 
     def writefile(self,name, obj):
-        """ Writes Dublin Core or Macrepo XML object to a file """
-        if isinstance(obj, DublinCore):
-                fp = open(name, 'w')
-                fp.write(obj.makeXML(self.DC_NS))
-        fp.close()
+
+	""" Writes Dublin Core or Macrepo XML object to a file """
+	if isinstance(obj, DublinCore):
+		fp = open(name, 'w')
+		fp.write(obj.makeXML(self.DC_NS))
+	fp.close()
 
 class HARVESTER(object):
     
@@ -312,39 +313,38 @@ class HARVESTER(object):
             
             "timestart" : time.time(),  # start time per subset process
         }
-        
-        start=time.time()
 
-        if (not req["mdsubset"]):
-            logging.critical(' Option mdsubset is mandatory for harvesting')
-            return -1
-            subset = 'SET'
+        start=time.time()
+        ntotrecs=0
+
+        mdsubset=req["mdsubset"]        
+        if (not mdsubset):
+            logging.warning('No OAI subset is given!')
+            subset='SET'
         else:
-            subset = req["mdsubset"]
+            subset = mdsubset
 
         sickle = SickleClass.Sickle(req['url'], max_retries=3, timeout=300)
         outtypedir='xml'
         outtypeext='xml'
         oaireq=getattr(sickle,req["lverb"], None)
         try:
-            records,rc=tee(oaireq(**{'metadataPrefix':req['mdprefix'],'set':req['mdsubset'],'ignore_deleted':True,'from':self.fromdate}))
-        except HTTPError as e:
-            logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
+            records,rc=tee(oaireq(**{'metadataPrefix':req['mdprefix'],'set':mdsubset,'ignore_deleted':True,'from':self.fromdate}))
+        except (HTTPError,ConnectionError,etree.XMLSyntaxError,Exception) as e:
+            logging.error("%s : Cannot harvest through request %s\n" % (e,req))
             return -1
-        except ConnectionError as e:
-            logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
-            return -1
-        except etree.XMLSyntaxError as e:
-            logging.error("[ERROR: %s ] Cannot harvest through request %s\n" % (e,req))
-            return -1
-        except Exception as e:
-            logging.error("[ERROR %s ] : %s" % (e,traceback.format_exc()))
-            return -1
+        try:
+            ntotrecs=len(list(rc))
+        except :
+            print 'iterate through iterable does not work ?'
 
-        ntotrecs=sum(1 for _ in rc)
+        ### ntotrecs=sum(1 for _ in rc)
 
-        print ("\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start))
-        
+        if ntotrecs > 0 :
+            print "\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start)
+        else:
+            print "\t|- Iterate through records in %d sec" % (time.time()-start)
+
         logging.debug('    |   | %-4s | %-45s | %-45s |\n    |%s|' % ('#','OAI Identifier','DS Identifier',"-" * 106))
 
         # set subset:
@@ -362,13 +362,14 @@ class HARVESTER(object):
             ## counter and progress bar
             fcount+=1
             if fcount <= noffs : continue
-            perc=int(fcount*100/ntotrecs)
-            bartags=perc/5 #HEW-D fcount/100
-            if perc%10 == 0 and perc != oldperc :
-                oldperc=perc
-                print ("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 ))
-                sys.stdout.flush()
 
+            if ntotrecs > 0 :
+                perc=int(fcount*100/ntotrecs)
+                bartags=perc/5 #HEW-D fcount/100
+                if perc%10 == 0 and perc != oldperc :
+                    oldperc=perc
+                    print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 )
+                    sys.stdout.flush()
 
             if req["lverb"] == 'ListIdentifiers' :
                     if (record.deleted):
@@ -426,6 +427,18 @@ class HARVESTER(object):
                     ## logging.debug(metadata)
                     stats['ecount']+=1
                     continue
+
+        # add all subset stats to total stats and reset the temporal subset stats:
+        for key in ['tcount', 'ecount', 'count', 'dcount']:
+                stats['tot'+key] += stats[key]
+            
+
+        print '   \t|- %-10s |@ %-10s |\n\t| Provided | Harvested | Failed | Deleted |\n\t| %8d | %9d | %6d | %6d |' % ( 'Finished',time.strftime("%H:%M:%S"),
+                    stats['tottcount'],
+                    stats['totcount'],
+                    stats['totecount'],
+                    stats['totdcount']
+                )
 
 class MAPPER():
 
@@ -1112,8 +1125,6 @@ class MAPPER():
             fcount+=1
             perc=int(fcount*100/int(len(files)))
             bartags=perc/5
-                ##??? perc=int(fcount*100/int(100)) ##HEW-?? len(records) not known
-
             if perc%10 == 0 and perc != oldperc:
                 oldperc=perc
                 print ("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start ))
@@ -1135,6 +1146,7 @@ class MAPPER():
                         logging.error('    | [ERROR] %s : Cannot load or parse %s-file %s' % (e,infformat,infilepath))
                         results['ecount'] += 1
                         continue
+
                 ## XPATH rsp. JPATH converter
                 if  mdprefix == 'json':
                     try:
@@ -1246,7 +1258,7 @@ class MAPPER():
                     except Exception as e:
                         logging.error('    | [ERROR] %s : Cannot decode jsondata %s' % (e,jsondata))
                     try:
-                        logging.debug('   | [INFO] save json file')
+                        logging.debug('   | [INFO] save json file in %s' % outpath+'/'+filename)
                         json_file.write(data)
                     except TypeError as err :
                         logging.error('    | [ERROR] Cannot write json file %s : %s' % (outpath+'/'+filename,err))
@@ -1263,13 +1275,11 @@ class MAPPER():
         out=' %s to json stdout\nsome stuff\nlast line ..' % infformat
         if (err is not None ): logging.error('[ERROR] ' + err)
 
-        logging.info(
-                '   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |' 
-                % ( 'Finished',time.strftime("%H:%M:%S"),
+        print '   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |'  % ( 'Finished',time.strftime("%H:%M:%S"),
                     results['tcount'],
                     fcount,
                     results['ecount']
-                ))
+                )
 
         # search in output for result statistics
         last_line = out.split('\n')[-2]
@@ -1336,7 +1346,7 @@ class MAPPER():
             ##    print(' Following key-value errors fails validation:\n' + errlist 
             return vall
 
-    def validate(self,community,mdprefix,path):
+    def validate(self,community,mdprefix,path,target_mdschema):
         ## validate(MAPPER object, community, mdprefix, path) - method
         # validates the (mapped) JSON files in directory <path> against the B2FIND md schema
         # Parameters:
@@ -1364,12 +1374,12 @@ class MAPPER():
             mapext='conf' ##!!!HEW --> json
         else:
             mapext='xml'
-        ## mapfile
+
         # check and read rules from mapfile
-##        if (target_mdschema != None and not target_mdschema.startswith('#')):
-##            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
-##        else:
-        mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,os.path.basename(mdprefix),mapext)
+        if (target_mdschema != None and not target_mdschema.startswith('#')):
+            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,target_mdschema,mapext)
+        else:
+            mapfile='%s/mapfiles/%s-%s.%s' % (os.getcwd(),community,mdprefix,mapext)
 
         if not os.path.isfile(mapfile):
             logging.debug('[WARNING] Community specific mapfile %s does not exist !' % mapfile)
@@ -1424,10 +1434,10 @@ class MAPPER():
             ## counter and progress bar
             fcount+=1
             perc=int(fcount*100/int(len(files)))
-            bartags=perc/10
-            if perc%10 == 0 and perc != oldperc :
+            bartags=perc/5
+            if perc%10 == 0 and perc != oldperc:
                 oldperc=perc
-                logging.info("\r\t[%-20s] %d / %d%% in %d sec" % ('='*bartags, fcount, perc, time.time()-start ))
+                print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start )
                 sys.stdout.flush()
 
             jsondata = dict()
@@ -1647,7 +1657,7 @@ class CKAN_CLIENT(object):
 
         ###HEW-D data_string = unicode(urllib.quote(json.dumps(data_dict)), errors='replace')
 
-        logging.debug('\t|-- Action %s\n\t|-- Calling %s ' % (action,action_url))	
+        logging.debug('\t|-- Action %s\n\t|-- Calling %s\n\t|-- Data %s ' % (action,action_url,data_dict))	
         ##HEW-Tlogging.debug('\t|-- Object %s ' % data_dict)	
         try:
             request = Request(action_url,data_string)
@@ -1660,7 +1670,7 @@ class CKAN_CLIENT(object):
                 response = urlopen(request)                
             self.logger.debug('response %s' % response)            
         except HTTPError as e:
-            self.logger.warning('%s : The server %s couldn\'t fulfill the action %s.' % (e,self.ip_host,action))
+            self.logger.error('%s : The server %s couldn\'t fulfill the action %s.' % (e,self.ip_host,action))
             if ( e.code == 403 ):
                 logging.error('Access forbidden, maybe the API key is not valid?')
                 ## exit(e.code)
@@ -1891,15 +1901,12 @@ class UPLOADER (object):
         rvalue = 0
         
         # add some general CKAN specific fields to dictionary:
-        jsondata["name"] = ds
+        jsondata["name"] = ds.lower()
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
 ##HEW- changed!!!!
-        jsondata["owner_org"]="crete" ##HEW!!! "eudat"
+        jsondata["owner_org"]="eudat" ##HEW!!! "eudat"
 
-
-        ####??? write 
-   
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
             logging.debug('\t - Try to create dataset %s' % ds)
@@ -2035,6 +2042,8 @@ def process(options,pstat):
     procOptions=['community','source','verb','mdprefix','mdsubset','target_mdschema']
     if(options.source):
         mode = 'single'
+        ##HEW Not used in training
+        options.target_mdschema=None
         mandParams=['community','verb','mdprefix'] # mandatory processing params
         for param in mandParams :
             if not getattr(options,param) :
@@ -2054,6 +2063,8 @@ def process(options,pstat):
             sys.exit(-1)
         mode = 'multi'
         logger.debug(' |- Joblist:  \t%s' % options.list)
+        ## HEW set options.target_mdschema to NONE for Training
+        options.target_mdschema=None
         reqlist=parse_list_file('harvest',options.list, options.community,options.mdsubset,options.mdprefix,options.target_mdschema)
 
     ## check job request (processing) options
@@ -2102,20 +2113,8 @@ def process(options,pstat):
             UP = UPLOADER(CKAN)
             logging.info('\n|- Uploading started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
             logging.info(' |- Host:  \t%s' % CKAN.ip_host )
-
             # start the process uploading:
-            if mode is 'multi':
-                convert_list='harvest_list'
-                logging.info(' |- Joblist:  \t%s' % convert_list )
-                process_upload(UP, parse_list_file('upload', convert_list or options.list, options.community, options.mdsubset), options)
-            else:
-                process_upload(UP,[[
-                    options.community,
-                    options.source,
-                    options.mdprefix,
-                    options.outdir + '/' + options.mdprefix,
-                    options.mdsubset
-                ]],options)
+            process_upload(UP,reqlist,options)
 
 def process_harvest(HV, rlist):
     ## process_harvest (HARVESTER object, rlist) - function
@@ -2137,7 +2136,7 @@ def process_harvest(HV, rlist):
         results = HV.harvest(ir,request)
     
         if (results == -1):
-            logging.error("Couldn't harvest from %s" % request)
+            logging.critical("Couldn't harvest from %s" % request)
 
         harvesttime=time.time()-harveststart
 
@@ -2180,17 +2179,18 @@ def process_map(MP, rlist):
     ir=0
     for request in rlist:
         ir+=1
-        if (len(request) > 5 and request[5]):            
-            target=request[5]
-        else:
-            target=None
         cstart = time.time()
         
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+request[4])
         else:
-            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET_1')
+            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
              
+        if (len(request) > 5 and request[5]):            
+            target=request[5]
+        else:
+            target=None
+
         results = MP.map(ir,request[0],request[3],path,target)
 
         ctime=time.time()-cstart
@@ -2211,26 +2211,26 @@ def process_validate(MP, rlist):
     ir=0
     for request in rlist:
         ir+=1
-        if len(request) > 4:
-            outfile='%s/%s/%s' % (request[2],request[4],'validation.stat')
-        else:
-            outfile='%s/%s/%s' % (request[2],'SET','validation.stat')
-
-        logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
         cstart = time.time()
         
         if len(request) > 4:
             path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/'+request[4])
         else:
-            path=os.path.abspath('oaidata/'+request[0]+'-'+os.path.basename(request[3])+'/SET')
+            path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/SET')
 
-        results = MP.validate(request[0],os.path.basename(request[3]),path)
+        outfile='%s/%s' % (path,'validation.stat')
+
+        if (len(request) > 5 and request[5]):            
+            target=request[5]
+        else:
+            target=None
+
+        logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
+
+        results = MP.validate(request[0],request[3],path,target)
 
         ctime=time.time()-cstart
         results['time'] = ctime
-        
-        # save stats:
-        ###MP.OUT.save_stats(request[0]+'-' + request[3],request[4],'v',results)
         
 def process_oaiconvert(MP, rlist):
 
@@ -2258,7 +2258,8 @@ def process_upload(UP, rlist, options):
                 print(' Key : %s | Value : %s |' % (v['key'],v['value']))
  
 
-    # create credentials and handle cleint if required
+    ###HEW-D disabled for Training create credentials and handle cleint if required
+    options.handle_check=False  ###HEW-D disabled for Training
     if (options.handle_check):
           try:
               cred = PIDClientCredentials.load_from_JSON('credentials_11098')
@@ -2290,14 +2291,13 @@ def process_upload(UP, rlist, options):
     for request in rlist:
         ir+=1
         logging.info('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
-        community, source, dir = request[0:3]
-        ckan_community=community.lower()
-        mdprefix = os.path.basename(request[3])
+        community, source = request[0:2]
+        mdprefix = request[3]
+
         if len(request) > 4:
             subset = request[4]
         else:
             subset = 'SET'
-        dir = dir+'/'+subset
         
         results = {
             'count':0,
@@ -2306,20 +2306,25 @@ def process_upload(UP, rlist, options):
             'time':0
         }
 
-        print ('|- Community %s\n |- MD prefix %s\n |- Subset %s\n' % (community,mdprefix,subset))
-
         try:
-            ckangroup=CKAN.action('group_list') ## ,{"id":community})
-            if ckan_community not in ckangroup['result'] :
+            ckangroup=CKAN.action('group_list')
+            if community not in ckangroup['result'] :
                 logger.critical('Can not found community %s' % community)
                 sys.exit(-1)
-        except Exception :
-            logging.critical("Can not list CKAN groups")
-  
-        dir=os.path.abspath('oaidata/'+community+'-'+mdprefix+'/'+subset)
+        except Exception, err:
+            logging.critical("%s : Can not show CKAN group %s" % (err,community))
+            sys.exit()
+            
+        if 'success' not in ckangroup and ckangroup['success'] != True :
+            logging.critical(" CKAN group %s does not exist" % community)
+            sys.exit()
 
-        if not os.path.exists(dir):
-            logging.error('[ERROR] The directory "%s" does not exist! No files for uploading are found!\n(Maybe your upload list has old items?)' % (dir))
+        print ('|- Community %s\n |- MD prefix %s\n |- Subset %s\n' % (community,mdprefix,subset))
+
+        path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+subset)
+
+        if not os.path.exists(path):
+            logging.critical('The directory "%s" does not exist! No files for uploading are found!' % path)
             
             # save stats:
             ##UP.OUT.save_stats(community+'-'+mdprefix,subset,'u',results)
@@ -2327,7 +2332,8 @@ def process_upload(UP, rlist, options):
             continue
         
         logging.debug('    |   | %-4s | %-40s |\n    |%s|' % ('#','id',"-" * 53))
-        
+        ##HEW : For Training no ckan_check
+        options.ckan_check = 'False'
         if (last_community != community and options.ckan_check == 'True'):
             last_community = community
             UP.get_packages(community)
@@ -2335,7 +2341,7 @@ def process_upload(UP, rlist, options):
         uploadstart = time.time()
         
         # find all .json files in dir/json:
-        files = filter(lambda x: x.endswith('.json'), os.listdir(dir+'/json'))
+        files = filter(lambda x: x.endswith('.json'), os.listdir(path+'/json'))
         
         results['tcount'] = len(files)
         
@@ -2354,13 +2360,13 @@ def process_upload(UP, rlist, options):
                 sys.stdout.flush()
 
             jsondata = dict()
-            pathfname= dir+'/json/'+filename
+            pathfname= path+'/json/'+filename
             if ( os.path.getsize(pathfname) > 0 ):
                 with open(pathfname, 'r') as f:
                     try:
                         jsondata=json.loads(f.read())
                     except:
-                        logging.error('    | [ERROR] Cannot load the json file %s' % dir+'/json/'+filename)
+                        logging.error('    | [ERROR] Cannot load the json file %s' % path+'/json/'+filename)
                         results['ecount'] += 1
                         continue
             else:
@@ -2373,6 +2379,9 @@ def process_upload(UP, rlist, options):
             logging.info('    | u | %-4d | %-40s |' % (fcount,ds_id))
 
             # get OAI identifier from json data extra field 'oai_identifier':
+            if 'oai_identifier' not in jsondata :
+                jsondata['oai_identifier'] = [ds_id]
+
             oai_id = jsondata['oai_identifier'][0]
             logging.debug("        |-> identifier: %s\n" % (oai_id))
             
@@ -2416,6 +2425,7 @@ def process_upload(UP, rlist, options):
 ##            else:
 ##                jsondata['version'] = checksum
             jsondata['version'] = None
+            jsondata['owner_org'] = options.ckan_organization
                 
             # Set the tag ManagerVersion:
             jsondata['extras'].append({
@@ -2594,7 +2604,7 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
         reqlist.append(request.split())
         
     if len(reqlist) == 0:
-        logging.error(' No matching request found in %s' % filename)
+        logging.critical(' No matching request found in %s' % filename)
         exit()
  
     return reqlist
@@ -2618,35 +2628,50 @@ def options_parser(modes):
         
     p.add_option('-v', '--verbose', action="count",
                         help="increase output verbosity (e.g., -vv is more than -v)", default=False)
-    p.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='\nThis specifies the processing mode. Supported modes are (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
-    p.add_option('--community', '-c', help="community where data harvested from and uploaded to", default='', metavar='STRING')
-    p.add_option('--fromdate', help="Filter harvested files by date (Format: YYYY-MM-DD).", default=None, metavar='DATE')
-    p.add_option('--handle_check', 
-         help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credstore file",
-         default=None,metavar='FILE')
-    p.add_option('--ckan_check',
-         help="check existence and checksum against existing datasets in CKAN database",
-         default='False', metavar='BOOLEAN')
-    p.add_option('--outdir', '-d', help="The relative root dir in which all harvested files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH')         
-    group_multi = optparse.OptionGroup(p, "Multi Mode Options",
-        "Use these options if you want to ingest from a list in a file.")
-    group_multi.add_option('--list', '-l', help="list of OAI harvest sources (default is ./harvest_list)", default='harvest_list',metavar='FILE')
-         
-    group_single = optparse.OptionGroup(p, "Single Mode Options",
-        "Use these options if you want to ingest from only ONE source.")
-    group_single.add_option('--source', '-s', help="A URL to .xml files which you want to harvest",default=None,metavar='PATH')
-    group_single.add_option('--verb', help="Verbs or requests defined in OAI-PMH, can be ListRecords (default) or ListIdentifers here",default='ListRecords', metavar='STRING')
-    group_single.add_option('--mdsubset', help="Subset of harvested meta data",default=None, metavar='STRING')
-    group_single.add_option('--mdprefix', help="Prefix of harvested meta data",default=None, metavar='STRING')
-    group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
+
+    p.add_option('--outdir', '-d', help="The relative root directory in which all harvested and processed files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH') 
+    p.add_option('--community', '-c', help="community or project, for which metadata are harvested, processed, stored and uploaded. This 'label' is used through the whole metadata life cycle.", default='', metavar='STRING')
+    ##HEW-D really needed (for Training) ???  
+    p.add_option('--mdsubset', help="Subset of metadata to be harvested (by default 'None') and subdirectory of harvested and processed metadata (by default 'SET_1'",default=None, metavar='STRING')
+    p.add_option('--mdprefix', help="Metadata schema of harvested meta data (default is the OAI mdprefix 'oai_dc')",default='oai_dc', metavar='STRING')
+    group_single = optparse.OptionGroup(p, "Single Source Operation Mode","Use the source option if you want to ingest from only ONE source.")
+    group_single.add_option('--source', '-s', help="In 'generation mode' a PATH to raw metadata given as spreadsheets or in 'harvest mode' an URL to a data provider you want to harvest metadata records from.",default=None,metavar='URL or PATH')    
+    group_multi = optparse.OptionGroup(p, "Multiple Sources Operation Mode","Use the list option if you want to ingest from multiple sources via the requests specified in the list file.")
+    group_multi.add_option('--list', '-l', help="list of harvest sources and requests (default is ./harvest_list)", default='harvest_list',metavar='FILE')
+
+    group_processmodes = optparse.OptionGroup(p, "Processing modes","The script can be executed in different modes by using the option -m | --mode, and provides procedures for the whole ingestion workflow how to come from unstructured metadata to entries in the discovery portal (own CKAN or B2FIND instance).")
+    group_processmodes.add_option('--mode', '-m', metavar='PROCESSINGMODE', help='\nThis specifies the processing mode. Supported modes are (h)arvesting, (m)apping, (v)alidating, and (u)ploading.')
+
+    group_generate = optparse.OptionGroup(p, "Generation Options",
+        "These options will be required to generate formatted metadata sets (by default DublinCore XML files) from 'raw' spreadsheet data that resides in the PATH given by SOURCE.")
+    group_generate.add_option('--delimiter', help="Delimiter, which seperates the fields and associated values in the datasets (lines) of the spreadsheets, can be 'comma' (default) or 'tab'",default='comma', metavar='STRING')
+
+    group_harvest = optparse.OptionGroup(p, "Harvest Options",
+        "These options will be required to harvest metadata records from a data provider (by default via OAI-PMH from the URL given by SOURCE).")
+    group_harvest.add_option('--verb', help="Verbs or requests defining the mode of harvesting, can be ListRecords(default) or ListIdentifers if OAI-PMH used or e.g. 'works' if JSON-API is used",default='ListRecords', metavar='STRING')
+    group_harvest.add_option('--fromdate', help="Filter harvested files by date (Format: YYYY-MM-DD).", default=None, metavar='DATE')
+
+    group_map = optparse.OptionGroup(p, "Mapping Options",
+        "These options will be required to map metadata records formatted in a supported metadata format to JSON records formatted in a common target schema. (by default XML records are mapped onto the B2FIND schema, compatable to be uploaded to a CKAN repository.")
+    group_map.add_option('--subset', help="Subdirectory of harvested meta data records to be mapped. By default this is the same as the the term given by option '--mdsubset'.",default=None, metavar='STRING')
+    group_map.add_option('--mdschema', help="Metadata format and schema of harvested meta data records to be mapped. By default this is the same as the term given by option '--mdprefix'.",default=None, metavar='STRING')
+
+    ##HEW-D : Not used in Training (yet) !!! group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
     
     group_upload = optparse.OptionGroup(p, "Upload Options",
         "These options will be required to upload an dataset to a CKAN database.")
     group_upload.add_option('--iphost', '-i', help="IP adress of B2FIND portal (CKAN instance)", metavar='IP')
     group_upload.add_option('--auth', help="Authentification for CKAN APIs (API key, by default taken from file $HOME/.netrc)",metavar='STRING')
-    
-    p.add_option_group(group_multi)
+    group_upload.add_option('--ckan_organization', help="CKAN Organization name (by default 'rda')",default='eudat',metavar='STRING')
+    ##HEW-D:(Not used yet in the Training) group_upload.add_option('--handle_check', help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credential file", default=None,metavar='FILE')
+    ##HEW-D:(Not used yet in the Training) group_upload.add_option('--ckan_check',help="check existence and checksum against existing datasets in CKAN dattabase",default='False', metavar='BOOLEAN')
+
     p.add_option_group(group_single)
+    p.add_option_group(group_multi)
+    p.add_option_group(group_processmodes)
+    p.add_option_group(group_generate)
+    p.add_option_group(group_harvest)
+    p.add_option_group(group_map)
     p.add_option_group(group_upload)
     
     return p
