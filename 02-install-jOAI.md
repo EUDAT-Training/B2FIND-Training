@@ -94,7 +94,7 @@ If you want run a CKAN instance in parallel, for instance, you must change the p
 ```    
 Then restart Tomcat by
 ```
-sudo service tomcat7 start
+sudo service tomcat7 restart
 ```
 Hence, jOAI will run on:
 ```
