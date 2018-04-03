@@ -102,13 +102,16 @@ sudo -u postgres psql -l
 ```
 Check that the encoding of databases is UTF8, if not internationalisation may be a problem. Since changing the encoding of PostgreSQL may mean deleting existing databases, it is suggested that this is fixed before continuing with the CKAN installation.
 
-Next you will need to create a database user if one doesn’t already exist. Create a new PostgreSQL database user called ckan_default, and enter a password for the user when prompted. You will need this password later, but will be in plain text in the configuration file, so don't set to something very secretive:
-```sh
-sudo -u postgres createuser -S -D -R -P ckan_default
+Next you will need to create a database user if one doesn’t already exist. Create a new PostgreSQL database user called ckan_default, and enter a password for the user when prompted. 
+
 ```
-Create a new PostgreSQL database, called ckan_default, owned by the database user you just created:
-```sh
-sudo -u postgres createdb -O ckan_default ckan_default -E utf-8
+sudo su - postgres
+psql
+CREATE DATABASE "ckan_default";
+CREATE USER ckan_default WITH PASSWORD 'ckan_default';
+GRANT ALL PRIVILEGES ON DATABASE "ckan_default" to ckan_default;
+\q
+exit
 ```
 
 Finally, in the configuration file ```/etc/ckan/default/production.ini```, you have to sustitute the following:
