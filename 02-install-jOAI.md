@@ -125,7 +125,7 @@ readlink -f $(which java)
 ``` 
 If java is not installed, at least install JRE:
 ```sh
-sudo apt-get install default-jdk,
+sudo apt-get install default-jdk
 ```
 or for the latest java version execute:
 ```sh
