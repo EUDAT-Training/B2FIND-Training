@@ -1,4 +1,7 @@
 # Install CKAN
+In the previous section we created our own metadata, we harvested  third party metadata and transformed and validated them.
+Now we install our metadata portal to which we will upload the mapped metadata.
+
 This document describes how to install the CKAN software.
 For more detailed documentation, refer to the [official CKAN installation guide](http://docs.ckan.org/en/latest/maintaining/installing/install-from-package.html).
 
@@ -25,22 +28,22 @@ sudo apt-get install -y nginx apache2 libapache2-mod-wsgi libpq5 redis-server gi
 ### 2. Download the CKAN package:
 On Ubuntu 14.04
 ```sh
-wget http://packaging.ckan.org/python-ckan_2.5-trusty_amd64.deb
+wget http://packaging.ckan.org.s3-eu-west-1.amazonaws.com/python-ckan_2.7-trusty_amd64.deb
 ```
 On Ubuntu 12.04:
 ```sh
-wget http://packaging.ckan.org/python-ckan_2.5-precise_amd64.deb
+wget http://packaging.ckan.org.s3-eu-west-1.amazonaws.com/python-ckan_2.7-precise_amd64.deb
 ```
 
 ### 3. Install the CKAN package:
 
 On Ubuntu 14.04:
 ```sh
-sudo dpkg -i python-ckan_2.5-trusty_amd64.deb
+sudo dpkg -i python-ckan_2.7-trusty_amd64.deb
 ```
 On Ubuntu 12.04:
 ```sh
-sudo dpkg -i python-ckan_2.5-precise_amd64.deb
+sudo dpkg -i python-ckan_2.7-precise_amd64.deb
 ```
 
 ### 3. Install PostgreSQL
@@ -72,6 +75,7 @@ You should see a welcome page from Solr if you open ```http://localhost:8983/sol
 
 #### Troubleshooting :
 
+**Java home not set**
 If you receive the message ```Could not start Jetty servlet engine because no Java Development Kit (JDK) was found.``` you will have to edit the JAVA_HOME setting in ```/etc/default/jetty``` to point to your machine’s JDK install location. 
  For example:
 ```sh
@@ -83,24 +87,13 @@ JDK_DIRS="/usr/lib/jvm/java-8-oracle /usr/lib/jvm/default-java /usr/lib/jvm/java
 ```
 This line lists all possible locations for the JDK and takes the first valid one.
 
+**JSP support under Ubuntu 14.04**
  Another error maybe a `HTTP ERROR 500` saying `JSP support not configured`. This might happen on Ubuntu machines.
 ```
 wget https://launchpad.net/~vshn/+archive/ubuntu/solr/+files/solr-jetty-jsp-fix_1.0.2_all.deb
 sudo dpkg -i solr-jetty-jsp-fix_1.0.2_all.deb
 sudo service jetty restart
 ```
-
-Replace the default ```schema.xml``` file with a symbolic link to the CKAN schema file included in the sources:
-```sh
-sudo mv /etc/solr/conf/schema.xml /etc/solr/conf/schema.xml.bak
-sudo ln -s /usr/lib/ckan/default/src/ckan/ckan/config/solr/schema.xml /etc/solr/conf/schema.xml
-```
-
-Now restart Solr:
-```sh
-sudo service jetty restart
-```
-and check that Solr is running by opening http://localhost:8983/solr/.
 
 ### 5. Setup a PostgreSQL database
 List existing databases:
@@ -109,13 +102,16 @@ sudo -u postgres psql -l
 ```
 Check that the encoding of databases is UTF8, if not internationalisation may be a problem. Since changing the encoding of PostgreSQL may mean deleting existing databases, it is suggested that this is fixed before continuing with the CKAN installation.
 
-Next you will need to create a database user if one doesn’t already exist. Create a new PostgreSQL database user called ckan_default, and enter a password for the user when prompted. You will need this password later, but will be in plain text in the configuration file, so don't set to something very secretive:
-```sh
-sudo -u postgres createuser -S -D -R -P ckan_default
+Next you will need to create a database user if one doesn’t already exist. Create a new PostgreSQL database user called ckan_default, and enter a password for the user when prompted. 
+
 ```
-Create a new PostgreSQL database, called ckan_default, owned by the database user you just created:
-```sh
-sudo -u postgres createdb -O ckan_default ckan_default -E utf-8
+sudo su - postgres
+psql
+CREATE DATABASE "ckan_default";
+CREATE USER ckan_default WITH PASSWORD 'ckan_default';
+GRANT ALL PRIVILEGES ON DATABASE "ckan_default" to ckan_default;
+\q
+exit
 ```
 
 Finally, in the configuration file ```/etc/ckan/default/production.ini```, you have to sustitute the following:
@@ -148,6 +144,22 @@ Initialize your CKAN database by running this command in a terminal:
 ```sh
 sudo ckan db init
 ```
+
+#### Trouble shooting
+
+**XML schemas under solr and CKAN**
+
+Replace the default ```schema.xml``` file with a symbolic link to the CKAN schema file included in the sources:
+```sh
+sudo mv /etc/solr/conf/schema.xml /etc/solr/conf/schema.xml.bak
+sudo ln -s /usr/lib/ckan/default/src/ckan/ckan/config/solr/schema.xml /etc/solr/conf/schema.xml
+```
+
+Now restart Solr:
+```sh
+sudo service jetty restart
+```
+and check that Solr is running by opening http://localhost:8983/solr/.
 
 ### 7. Restart Apache and Nginx
 Restart Apache and Nginx by running this command in a terminal:

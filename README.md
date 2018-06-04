@@ -7,26 +7,26 @@
 
 ## Content
 
-This training module provides detailed instructions for integration in and usage of the [ EUDAT metadata service B2FIND ](http:/b2find.eudat.eu). Please consult the user [documentation on the services](https://eudat.eu/services/userdoc) for a more general introduction to B2FIND.
+This training module provides detailed instructions for the usage of the [ EUDAT metadata service B2FIND ](http:/b2find.eudat.eu). We explain how to employ B2FIND as an external metadata portal service for communities and how scientists from any community can search through metadata provided to B2FIND. Please consult the user [documentation on the services](https://eudat.eu/services/userdoc) for a more general introduction to B2FIND.
 
 Additionally, we provide hands-on material for the whole metadata management workflow, from metadata generation and formating,  providing and harvesting (using OAI-PMH ), to mapping and validation, and finally uploading to a metadata catalogue and portal (based on CKAN). This workflow is shown, together with the training modules, in the figure below.
 
 <img align="centre" src="img/MD_workflow.png" width="800px">
 
-We provide step by step installation instructions which indicate how the training services and tools are set up and that will give the users an idea of how to install the software stack temselves. 
+The training material consists of step-by-step installation instructions which indicate how the training services and tools are set up. By this users get deeper insight into how components of the service are linked to each other. Note, that we not only provide the view of a service adapter (community) or researcher using the platform to search through the metadata catalogue, but also the view of the service provider EUDAT. At the end of the tutorial you will have stepped into each of the roles. 
 
 ## Target audience
 
 This training material foresees three types of trainees: 
-* Those who want to learn how to **integrate** the B2FIND service, i.e. data managers who want to publish their metadata within EUDAT.
-* Those who want to **set up the whole metadata workflow**, including an OAI harvester service and an own CKAN portal, locally at their site. This may be geared more towards data manageres and site admins. 
+* Those who want to learn how to **adapt** or **integrate** the B2FIND service as a metadata portal for their community, i.e. data managers who want to publish their community's metadata through EUDAT.
+* Those who want to **set up the whole metadata workflow**, including an OAI harvester service and an own CKAN portal, locally at their site. This may be geared more towards data managers and site admins. 
 * Those who want to **use** the EUDAT B2FIND service, i.e. scientists who want to search and access research data.
 
 Following the full, in-depth tutorial will allow you to understand how the components of the whole metadata management workflow are combined. Thus, it enables you to also extend the integration of the B2FIND service at the low-level (technology-level rather than API level). Following just the "use" part of the training will familiarise you with the query and search APIs of the services, but not with the underlying technology and its wiring.
 
 ## Submodules
 
-The order and numbering of the submodules in the table below follow the curriculum of the training as shown in the figure above. Next to the *Target audience* column, in the *Required for B2FIND* column, we specify if a submodule is needed w.r.t. B2FIND usage or integration. Each component takes about 0.5 to 1.0 hours.
+The order and numbering of the submodules in the table below follows the curriculum of the training as shown in the figure above. Next to the *Target audience* column, in the *Required for B2FIND* column, we specify if a submodule is needed w.r.t. B2FIND usage or integration. Each component takes about 0.5 to 1.0 hours.
 
 | #    | Submodule            | Target audience           | Required for B2FIND |
 |-----|----------------------|---------------------------|---------------------|
