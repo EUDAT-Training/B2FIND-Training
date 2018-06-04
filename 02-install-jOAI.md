@@ -44,6 +44,8 @@ sudo apt-get install iptables-persistent
 -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
 -A INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
 -A INPUT -p tcp -m tcp --dport 8181 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 8983 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 5432 -j ACCEPT
 -A INPUT -j LOG
 -A INPUT -j DROP
 COMMIT
@@ -92,7 +94,7 @@ If you want run a CKAN instance in parallel, for instance, you must change the p
 ```    
 Then restart Tomcat by
 ```
-sudo service tomcat7 start
+sudo service tomcat7 restart
 ```
 Hence, jOAI will run on:
 ```
@@ -125,7 +127,7 @@ readlink -f $(which java)
 ``` 
 If java is not installed, at least install JRE:
 ```sh
-sudo apt-get install default-jdk,
+sudo apt-get install default-jdk
 ```
 or for the latest java version execute:
 ```sh
