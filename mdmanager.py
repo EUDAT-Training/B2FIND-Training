@@ -166,50 +166,50 @@ class GENERATOR(object):
 
         ## mapfile
         mapfile="mapfiles/%s-%s.csv" % (community,mdprefix)
-        print ' |- From %s-separated spreadsheet\n\t%s' % (request[2],inpath)
+        print(' |- From %s-separated spreadsheet\n\t%s' % (request[2],inpath))
 
         """ Parse a CSV or TSV file """
 
-	mapdc=dict()
-	fields=list()
-	try:
-		fp = open(fn)
-		ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
-                print ' |- with original fields (headline)\n\t%s' % ofields
+        mapdc=dict()
+        fields=list()
+        try:
+                fp = open(fn)
+                ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
+                print(' |- with original fields (headline)\n\t%s' % ofields)
 
-		if os.path.isfile(mapfile) :
-                    print ' |- using existing mapfile\t%s' % mapfile
+                if os.path.isfile(mapfile) :
+                    print(' |- using existing mapfile\t%s' % mapfile)
                     r = csv.reader(open(mapfile, "r"),delimiter='>')
                     for row in r:
                         fields.append(row[1].strip())
-		else : 
-                    print ' |- create mapfile\n\t%s and' % mapfile
+                else : 
+                    print(' |- create mapfile\n\t%s and' % mapfile)
                     w = csv.writer(open(mapfile, "w"),delimiter='>')
                     for of in ofields:
                         mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
                         fields.append(mapdc[of].strip())
                         w.writerow([of, mapdc[of]])
 
-		if not delimiter == ',' :
+                if not delimiter == ',' :
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
-		else:
+                else:
                     tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
-		
-                print ' |- generate XML files in %s' % outpath
-		for row in tsv:
-			dc = self.makedc(row)
-			if 'dc:identifier' in row:
+                
+                print(' |- generate XML files in %s' % outpath)
+                for row in tsv:
+                        dc = self.makedc(row)
+                        if 'dc:identifier' in row:
                             outfile=re.sub('[\(\)]','',"".join(row['dc:identifier'].split()).replace(',','-').replace('/','-'))+'.xml'
-                            print '  |--> %s' % outfile
+                            print('  |--> %s' % outfile)
                             self.writefile(outpath+'/'+outfile, dc)
-			else:
-                            print ' ERROR : At least target field dc:identifier must be specified' 
-			    sys.exit()
+                        else:
+                            print(' ERROR : At least target field dc:identifier must be specified') 
+                            sys.exit()
 
-	except IOError as (errno, strerror):
-		print "Error ({0}): {1}".format(errno, strerror)
-		raise SystemExit
-	fp.close()
+        except IOError as strerror :
+                print("Error ({0})".format(strerror))
+                raise SystemExit
+        fp.close()
         return -1
 
     def makedc(self,row):
@@ -229,11 +229,11 @@ class GENERATOR(object):
 
     def writefile(self,name, obj):
 
-	""" Writes Dublin Core or Macrepo XML object to a file """
-	if isinstance(obj, DublinCore):
-		fp = open(name, 'w')
-		fp.write(obj.makeXML(self.DC_NS))
-	fp.close()
+        """ Writes Dublin Core or Macrepo XML object to a file """
+        if isinstance(obj, DublinCore):
+                fp = open(name, 'w')
+                fp.write(obj.makeXML(self.DC_NS))
+        fp.close()
 
 class HARVESTER(object):
     
@@ -336,14 +336,14 @@ class HARVESTER(object):
         try:
             ntotrecs=len(list(rc))
         except :
-            print 'iterate through iterable does not work ?'
+            print('iterate through iterable does not work ?')
 
         ### ntotrecs=sum(1 for _ in rc)
 
         if ntotrecs > 0 :
-            print "\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start)
+            print("\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start))
         else:
-            print "\t|- Iterate through records in %d sec" % (time.time()-start)
+            print("\t|- Iterate through records in %d sec" % (time.time()-start))
 
         logging.debug('    |   | %-4s | %-45s | %-45s |\n    |%s|' % ('#','OAI Identifier','DS Identifier',"-" * 106))
 
@@ -365,10 +365,10 @@ class HARVESTER(object):
 
             if ntotrecs > 0 :
                 perc=int(fcount*100/ntotrecs)
-                bartags=perc/5 #HEW-D fcount/100
+                bartags=int(perc/5) #HEW-D fcount/100
                 if perc%10 == 0 and perc != oldperc :
                     oldperc=perc
-                    print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 )
+                    print("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 ))
                     sys.stdout.flush()
 
             if req["lverb"] == 'ListIdentifiers' :
@@ -387,8 +387,8 @@ class HARVESTER(object):
                     oai_id = record.header.identifier
 
             # generate a uniquely identifier for this dataset:
-            uid = str(uuid.uuid5(uuid.NAMESPACE_DNS, req['community']+oai_id.encode('ascii','replace')))
-                
+            uid = str(uuid.uuid5(uuid.NAMESPACE_DNS, oai_id))
+            
             xmlfile = subsetdir + '/xml/' + os.path.basename(uid) + '.xml'
             try:
                 logging.debug('    | h | %-4d | %-45s | %-45s |' % (stats['count']+1,oai_id,uid))
@@ -397,8 +397,8 @@ class HARVESTER(object):
                 # get the raw xml content:    
                 metadata = etree.fromstring(record.raw)
                 if (metadata is not None):
-                        metadata = etree.tostring(metadata, pretty_print = True) 
-                        metadata = metadata.encode('ascii', 'ignore')
+                        metadata = etree.tostring(metadata, pretty_print = True).decode('utf-8') 
+                        ##HEW-D metadata = metadata.encode('ascii', 'ignore')
                         if (not os.path.isdir(subsetdir+'/xml')):
                             os.makedirs(subsetdir+'/xml')
                            
@@ -433,12 +433,12 @@ class HARVESTER(object):
                 stats['tot'+key] += stats[key]
             
 
-        print '   \t|- %-10s |@ %-10s |\n\t| Provided | Harvested | Failed | Deleted |\n\t| %8d | %9d | %6d | %6d |' % ( 'Finished',time.strftime("%H:%M:%S"),
+        print('   \t|- %-10s |@ %-10s |\n\t| Provided | Harvested | Failed | Deleted |\n\t| %8d | %9d | %6d | %6d |' % ( 'Finished',time.strftime("%H:%M:%S"),
                     stats['tottcount'],
                     stats['totcount'],
                     stats['totecount'],
                     stats['totdcount']
-                )
+                ))
 
 class MAPPER():
 
@@ -505,8 +505,13 @@ class MAPPER():
 
         ## settings for pyparsing
         nonBracePrintables = ''
-        unicodePrintables = u''.join(unichr(c) for c in xrange(65536) 
+        if PY2:
+            unicodePrintables = u''.join(unichr(c) for c in range(65536)
                                         if not unichr(c).isspace())
+        else:
+            unicodePrintables = u''.join(chr(c) for c in range(65536)
+                                        if not chr(c).isspace())
+        
         for c in unicodePrintables: ## printables:
             if c not in '(){}[]':
                 nonBracePrintables = nonBracePrintables + c
@@ -1112,7 +1117,7 @@ class MAPPER():
         # loop over all files (harvested records) in input path ( path/xml or path/hjson) 
         ##HEW-D  results['tcount'] = len(filter(lambda x: x.endswith('.json'), os.listdir(path+'/hjson')))
         files = filter(lambda x: x.endswith(infformat), os.listdir(path+insubdir))
-        results['tcount'] = len(files)
+        results['tcount'] = len(list(files))
         fcount = 0
         oldperc=0
         err = None
@@ -1275,11 +1280,11 @@ class MAPPER():
         out=' %s to json stdout\nsome stuff\nlast line ..' % infformat
         if (err is not None ): logging.error('[ERROR] ' + err)
 
-        print '   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |'  % ( 'Finished',time.strftime("%H:%M:%S"),
+        print('   \t|- %-10s |@ %-10s |\n\t| Provided | Mapped | Failed |\n\t| %8d | %6d | %6d |'  % ( 'Finished',time.strftime("%H:%M:%S"),
                     results['tcount'],
                     fcount,
                     results['ecount']
-                )
+                ))
 
         # search in output for result statistics
         last_line = out.split('\n')[-2]
@@ -1437,7 +1442,7 @@ class MAPPER():
             bartags=perc/5
             if perc%10 == 0 and perc != oldperc:
                 oldperc=perc
-                print "\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start )
+                print("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start ))
                 sys.stdout.flush()
 
             jsondata = dict()
@@ -2299,7 +2304,7 @@ def process_upload(UP, rlist, options):
             if community not in ckangroup['result'] :
                 logger.critical('Can not found community %s' % community)
                 sys.exit(-1)
-        except Exception, err:
+        except Exception as err:
             logging.critical("%s : Can not show CKAN group %s" % (err,community))
             sys.exit()
             
@@ -2555,6 +2560,7 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
 
     l = 0
     for request in lines:
+        logging.debug(' Request in %s : %s' % (filename,request))
     
         l += 1
         
@@ -2562,6 +2568,7 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
         if (request.startswith('<#')):
             inside_comment = True
             continue
+
         if ((request.startswith('>') or request.endswith('>')) and (inside_comment == True)):
             inside_comment = False
             continue
@@ -2621,7 +2628,7 @@ def options_parser(modes):
     p.add_option('--community', '-c', help="community or project, for which metadata are harvested, processed, stored and uploaded. This 'label' is used through the whole metadata life cycle.", default='', metavar='STRING')
     ##HEW-D really needed (for Training) ???  
     p.add_option('--mdsubset', help="Subset of metadata to be harvested (by default 'None') and subdirectory of harvested and processed metadata (by default 'SET_1'",default=None, metavar='STRING')
-    p.add_option('--mdprefix', help="Metadata schema of harvested meta data (default is the OAI mdprefix 'oai_dc')",default='oai_dc', metavar='STRING')
+    p.add_option('--mdprefix', help="Metadata schema of harvested meta data (default is the OAI mdprefix 'oai_dc')",default=None, metavar='STRING')
     group_single = optparse.OptionGroup(p, "Single Source Operation Mode","Use the source option if you want to ingest from only ONE source.")
     group_single.add_option('--source', '-s', help="In 'generation mode' a PATH to raw metadata given as spreadsheets or in 'harvest mode' an URL to a data provider you want to harvest metadata records from.",default=None,metavar='URL or PATH')    
     group_multi = optparse.OptionGroup(p, "Multiple Sources Operation Mode","Use the list option if you want to ingest from multiple sources via the requests specified in the list file.")
