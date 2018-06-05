@@ -13,16 +13,31 @@ In the B2FIND catalogue metadata gathered from a variety of communities are pres
 
 ### II. Identifier
 
-| Ref N.m | Field name | Description | Obligation | Type | Occurency |
+| Ref N.m | Field name | Description | Type | Obligation | Occurency | CKAN name | CKAN Type |
 |---------|------------|-------------|------------|------|-----------|
-| II.1.    | Identifiers     | An identicator that identifies and locate the referenced data resource | Recommented | shown | 0.n |
+| II.1.    | Source    | An .... | URL | [Mandatory] | [0-]1 | url | default |
+| II.2.    | PID    | A .... | URL | [Mandatory] | [0-]1 | PID | extra |
+| II.3.    | DOI    | A .... | URL | [Mandatory] | [0-]1 | DOI | extra |
+| II.4.    | MetaDataAccess    | A .... | URL | Recommended | 0-1 | MetaDataAccess | extra |
 
 ### III. Provenenance Information
 
-| Ref N.m | Field name | Description | Obligation | Type | Occurency |
+| Ref N.m | Field name | Description | Type | Obligation | Occurency | CKAN name | CKAN Type |
 |---------|------------|-------------|------------|------|-----------|
-| III.2.    | Discipline      | A scientific discipline the resource originates from. A closed vocabulary based on a Wikipedia-classification is used. | Recommended | shown | 0.n |
+| III.1.    |    | An .... | textual | Optional | 0-n | author | default |
+| III..    |    | An .... | textual | Optional | 0- |  | extra |
+| III..    |    | An .... | textual | Optional | 0- |  | extra |
+| III..    |    | An .... | textual | Optional | 0- |  | extra |
+| III..    |    | An .... | textual | Optional | 0- |  | extra |
+
 
 ### IV. Representation Information
+| Ref N.m | Field name | Description | Type | Obligation | Occurency | CKAN name | CKAN Type |
+|---------|------------|-------------|------------|------|-----------|
+| IV.1.    |    | An .... | textual | Optional | 0-n |  | default |
+
 
 ### V. Coverage
+| Ref N.m | Field name | Description | Type | Obligation | Occurency | CKAN name | CKAN Type |
+|---------|------------|-------------|------------|------|-----------|
+| VI.1.    | Discipline      | A scientific discipline the resource originates from. A closed vocabulary based on a Wikipedia-classification is used. | Recommended | shown | 0.n |
