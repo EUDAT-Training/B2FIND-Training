@@ -5,19 +5,24 @@ In the B2FIND catalogue metadata gathered from a variety of communities are pres
 
 ### I. General Information
 
-| Ref N.m | Field name | Description | Obligation | Type | Occurency |
-|---------|------------|-------------|------------|------|-----------|
-| I.1.    | Title      | A name or title by which a resource is known | Mandatory | shown | 1 |
+| Ref N.m | Field name | Description | Type | Obligation | Occurency | CKAN name | CKAN Type |
+|---------|------------|-------------|------------|------|-----------|-----------|-----------|
+| I.1.    | Title      | A name or title by which a resource is known | textual | mandatory | 1 | title | default |
+| I.2.    | Description | An additional information describing the content of the resource. Could be an abstract, a summary or a Table of Content. | textual | recommended | 0-1 | notes | default | 	 
+| I.3.    | Tags       | A subject, keyword, classification code, or key phrase describing the content. | textual | optional | 0-n | tags | default | 
 
-### II. Data Access
+### II. Identifier
 
 | Ref N.m | Field name | Description | Obligation | Type | Occurency |
 |---------|------------|-------------|------------|------|-----------|
 | II.1.    | Identifiers     | An identicator that identifies and locate the referenced data resource | Recommented | shown | 0.n |
 
-### III. Provenenance Data
+### III. Provenenance Information
 
 | Ref N.m | Field name | Description | Obligation | Type | Occurency |
 |---------|------------|-------------|------------|------|-----------|
 | III.2.    | Discipline      | A scientific discipline the resource originates from. A closed vocabulary based on a Wikipedia-classification is used. | Recommended | shown | 0.n |
 
+### IV. Representation Information
+
+### V. Coverage
