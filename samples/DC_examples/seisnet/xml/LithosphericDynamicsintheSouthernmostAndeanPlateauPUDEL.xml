@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator>Heit, Benjamin</dc:creator>
+	<dc:identifier>Lithospheric Dynamics in the Southernmost Andean Plateau (PUDEL)</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ Seismic waveforms   2015-02-17 -27.0 -68.4 -25.4 -65.4 Argentina</dc:publisher>
+</metadata>

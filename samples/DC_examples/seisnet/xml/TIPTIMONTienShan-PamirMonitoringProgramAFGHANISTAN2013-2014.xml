@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator>    Schurr, Bernd</dc:creator>
+	<dc:identifier>TIPTIMON (Tien Shan-Pamir Monitoring Program) AFGHANISTAN (2013/2014)</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ    Broadband seismic waveforms</dc:publisher>
+	<dc:subject>2015-07-09 35.4 37.3 69.7 71.3 Afghanistan</dc:subject>
+</metadata>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:coverage>Spain</dc:coverage>
+	<dc:creator>Heit, Benjamin</dc:creator>
+	<dc:identifier>High Resolution Seismological Profiling across Sierra Nevada (HIRE)</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ</dc:publisher>
+	<dc:subject>Seismic waveforms, PASSEQ</dc:subject>
+	<dcterms:created>2015-03-03</dcterms:created>
+	<dcterms:spatial>36.7 -3.1 37.3 -2.9</dcterms:spatial>
+</metadata>

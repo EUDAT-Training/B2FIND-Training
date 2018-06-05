@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator>Roessler, Dirk</dc:creator>
+	<dc:identifier>Extended Pollino Seismic Experiment, 2014-2015, GFZ Potsdam (FEFI, Pompei, NERA projects)</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ</dc:publisher>
+	<dc:subject>  Seismic waveforms 2016-05-03</dc:subject>
+	<dcterms:created>  39.5 15.5 40.5 16.5 Southern Italy</dcterms:created>
+</metadata>

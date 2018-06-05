@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:coverage>2014-10-16</dc:coverage>
+	<dc:creator>Ryberg, Trond</dc:creator>
+	<dc:identifier>Lake Toba seismic network, Sumatra, Indonesia</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ</dc:publisher>
+	<dcterms:created>Deutsches GeoForschungsZentrum GFZ</dcterms:created>
+	<dcterms:spatial>Broadband seismic waveforms</dcterms:spatial>
+</metadata>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:coverage>   Greece</dc:coverage>
+	<dc:creator>Friederich, W.</dc:creator>
+	<dc:identifier>Egelados project 2005/07,RUB Bochum, Germany</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ</dc:publisher>
+	<dc:subject>Seismic waveforms Crete</dc:subject>
+	<dcterms:created>2016-05-03</dcterms:created>
+	<dcterms:spatial>    35.4 21.8 38.9 29.0</dcterms:spatial>
+</metadata>

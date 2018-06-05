@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:coverage>Democratic Republic of the Congo</dc:coverage>
+	<dc:creator>Oth, Adrien</dc:creator>
+	<dc:identifier>Kivu Seismological Network (KivuSnet)</dc:identifier>
+	<dc:publisher>Deutsches GeoForschungsZentrum GFZ</dc:publisher>
+	<dc:subject>Broadband seismic waveforms</dc:subject>
+	<dcterms:created>2014-04-10</dcterms:created>
+	<dcterms:spatial>-3.4 28.5 -1.2 30.0</dcterms:spatial>
+</metadata>

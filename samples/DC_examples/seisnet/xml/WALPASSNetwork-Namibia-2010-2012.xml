@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<metadata
+    xmlns="http://example.org/myapp/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+	<dc:creator>Heit, Ben   Deutsches GeoForschungsZentrum GFZ</dc:creator>
+	<dc:identifier>WALPASS Network, Namibia, 2010/2012</dc:identifier>
+	<dc:publisher>Broadband seismic waveforms, DESIRE</dc:publisher>
+	<dc:subject>2015-07-08</dc:subject>
+	<dcterms:created>-22.0 12.0 -17.0 16.0</dcterms:created>
+	<dcterms:spatial>Namibia</dcterms:spatial>
+</metadata>
