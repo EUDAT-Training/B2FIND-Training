@@ -1,4 +1,6 @@
 sickle
+SPARQLWrapper
+owslib
 lxml
 simplejson
 python-Levenshtein
@@ -7,4 +9,5 @@ dublincore
 ckanapi
 b2handle
 babel
+pyenchant
 pyparsing
