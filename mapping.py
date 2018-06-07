@@ -33,6 +33,7 @@ import time, datetime, subprocess
 import logging
 import traceback
 import re
+from output import Output
 
 # needed for MAPPER :
 import codecs
@@ -64,11 +65,12 @@ class Mapper(object):
     #
     """
 
-    def __init__ (self, base_outdir,fromdate):
+    def __init__ (self, OUT, base_outdir,fromdate):
         ##HEW-D logging = logging.getLogger()
         self.base_outdir = base_outdir
         self.fromdate = fromdate
         self.logger = logging.getLogger('root')
+        self.OUT = OUT
         # Read in B2FIND metadata schema and fields
         schemafile =  '%s/mapfiles/b2find_schema.json' % (os.getcwd())
         with open(schemafile, 'r') as f:

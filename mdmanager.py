@@ -42,6 +42,7 @@ from itertools import tee
 from generating import Generator
 from harvesting import Harvester
 from mapping import Mapper
+from output import Output
 
 # needed for Harvester class:
 import sickle as SickleClass
@@ -519,6 +520,9 @@ def main():
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     jid = os.getpid()
 
+    # Output instance
+    OUT = Output(pstat,now,jid,options)
+
     ## logger
     logger = setup_custom_logger('root',options.verbose)
 
@@ -574,7 +578,7 @@ def main():
 
     try:
         # start the process:
-        process(options,pstat)
+        process(options,pstat,OUT)
         exit()
     except Exception as e:
         logging.critical("[CRITICAL] Program is aborted because of a critical error! Description:")
@@ -585,7 +589,7 @@ def main():
         logging.info("\nEnd :\t\t%s" % now)
 
 
-def process(options,pstat):
+def process(options,pstat,OUT):
     ## process (options,pstat) - function
     # Starts processing as specified in pstat['tbd'] and 
     #  according the request list given bey the options
@@ -644,13 +648,13 @@ def process(options,pstat):
     ## MAPPINING - Mode:  
     if (pstat['status']['m'] == 'tbd'):
         print('\n|- Mapping started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
-        MP = Mapper(options.outdir,options.fromdate)
+        MP = Mapper(OUT,options.outdir,options.fromdate)
         process_map(MP,reqlist)
 
     ## VALIDATOR - Mode:  
     if (pstat['status']['v'] == 'tbd'):
         print('\n|- Validating started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
-        MP = Mapper()
+        MP = Mapper(OUT,options.outdir,options.fromdate)
         process_validate(MP,reqlist)
 
     ## UPLOADING - Mode:  
@@ -774,7 +778,7 @@ def process_validate(MP, rlist):
 
         logging.info('   |# %-4d : %-10s\t%-20s\t--> %-30s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[3:5],outfile,'Started',time.strftime("%H:%M:%S")))
 
-        results = MP.validate(request[0],request[3],path,target)
+        results = MP.validate(request,target)
 
         ctime=time.time()-cstart
         results['time'] = ctime
