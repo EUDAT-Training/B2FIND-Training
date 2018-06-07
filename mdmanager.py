@@ -38,13 +38,16 @@ else:
 import socket
 from itertools import tee 
 
+##import classes from B2FIND modules
+from generating import Generator
+from harvesting import Harvester
 
 # needed for GENERATOR
-import csv
-from DublinCoreTerms import DublinCore
+##import csv
+##from DublinCoreTerms import DublinCore
 
 
-# needed for HARVESTER class:
+# needed for Harvester class:
 import sickle as SickleClass
 from sickle.oaiexceptions import NoRecordsMatch
 from requests.exceptions import ConnectionError
@@ -89,356 +92,6 @@ def setup_custom_logger(name,verbose):
     logger.addHandler(handler)
     return logger
 
-class GENERATOR(object):
-    
-    """
-    ### GENERATOR - class
-    # Provides methods to generate XML records from raw data as csv's or tsv's
-    #
-    # Parameters:
-    # -----------
-    # 1. (dict)  pstat   - dictionary with the states of every process
-    # 2. (path)  rootdir - rootdir of teh input and output data.
-    #
-    # Public Methods:
-    # ---------------
-    # generate(request) - generate XML files from comma or tab separated values
-    #
-    # Usage:
-    # ------
-
-    # create GENERATOR object                       
-    GEN = GENERATOR(pstat,rootdir)
-
-    # generate corresponing to the request:
-    request = [
-                    community,
-                    delimiter,
-                    mdprefix,
-                    mdsubset
-                ]
-    results = GEN.generate(request)
-    """
-    
-    def __init__ (self, pstat, base_outdir):
-        self.pstat = pstat
-        self.base_outdir = base_outdir
-        self.DC_NS = 'http://purl.org/dc/elements/1.1/'
-
-    def generate(self, nr, request):
-        ## method generate(GENERATOR object, [community, delimiter, mdprefix, mdsubset])
-        # Generate XML files in format <mdprefix> and in subdir <mdsubset> from path <source> raw metadata (csv's, tsv's).
-        # Generate every N. file a new subset directory.
-        #
-        # Parameters:
-        # -----------
-        # (list)  request - A request list with following items:
-        #                    1. community
-        #                    2. source
-        #                    3. verb (comma | tab)
-        #                    4. mdprefix (e.g. oai_dc)
-        #                    5. mdsubset
-        #
-        # Return Values:
-        # --------------
-        # 1. (integer)  is -1 if something went wrong    
-    
-    
-        start=time.time()
-        ## set parameters
-        community=request[0]
-        inpath=request[1]
-        if request[2] == 'comma' or request[2] == 'ListRecords' : # default
-            delimiter=','
-        else :
-            delimiter='\t'
-        mdprefix=request[3]
-        if len(request)>4 and request[4] != None:
-            mdsubset=request[4]  
-        else:
-            mdsubset='SET'
-
-        outpath = '/'.join([self.base_outdir,community+'-'+mdprefix,mdsubset+'_1','xml'])
-        if not os.path.isdir(outpath) :
-            os.makedirs(outpath)
-        ## csv file to parse
-        fn='%s' % inpath
-
-        ## mapfile
-        mapfile="mapfiles/%s-%s.csv" % (community,mdprefix)
-        print(' |- From %s-separated spreadsheet\n\t%s' % (request[2],inpath))
-
-        """ Parse a CSV or TSV file """
-
-        mapdc=dict()
-        fields=list()
-        try:
-                fp = open(fn)
-                ofields = re.split(delimiter,fp.readline().rstrip('\n').strip())
-                print(' |- with original fields (headline)\n\t%s' % ofields)
-
-                if os.path.isfile(mapfile) :
-                    print(' |- using existing mapfile\t%s' % mapfile)
-                    r = csv.reader(open(mapfile, "r"),delimiter='>')
-                    for row in r:
-                        fields.append(row[1].strip())
-                else : 
-                    print(' |- create mapfile\n\t%s and' % mapfile)
-                    w = csv.writer(open(mapfile, "w"),delimiter='>')
-                    for of in ofields:
-                        mapdc[of.strip()]=raw_input('Target field for %s : ' % of.strip())
-                        fields.append(mapdc[of].strip())
-                        w.writerow([of, mapdc[of]])
-
-                if not delimiter == ',' :
-                    tsv = csv.DictReader(fp, fieldnames=fields, delimiter='\t')
-                else:
-                    tsv = csv.DictReader(fp, fieldnames=fields, delimiter=delimiter)
-                
-                print(' |- generate XML files in %s' % outpath)
-                for row in tsv:
-                        dc = self.makedc(row)
-                        if 'dc:identifier' in row:
-                            outfile=re.sub('[\(\)]','',"".join(row['dc:identifier'].split()).replace(',','-').replace('/','-'))+'.xml'
-                            print('  |--> %s' % outfile)
-                            self.writefile(outpath+'/'+outfile, dc)
-                        else:
-                            print(' ERROR : At least target field dc:identifier must be specified') 
-                            sys.exit()
-
-        except IOError as strerror :
-                print("Error ({0})".format(strerror))
-                raise SystemExit
-        fp.close()
-        return -1
-
-    def makedc(self,row):
-        """ Generate a Dublin Core XML file from a TSV """
-        metadata = DublinCore()
-        with open('mapfiles/dcelements.txt','r') as f:
-                dcelements = f.read().splitlines()
-        for dcelem in dcelements :
-                setattr(metadata,dcelem.capitalize(),row.get('dc:'+dcelem,''))
-
-        with open('mapfiles/dcterms.txt','r') as f:
-                dcterms = f.read().splitlines()
-        for dcterm in dcterms :
-                setattr(metadata,dcterm.capitalize(),row.get('dcterms:'+dcterm,''))
-
-        return metadata
-
-    def writefile(self,name, obj):
-
-        """ Writes Dublin Core or Macrepo XML object to a file """
-        if isinstance(obj, DublinCore):
-                fp = open(name, 'w')
-                fp.write(obj.makeXML(self.DC_NS))
-        fp.close()
-
-class HARVESTER(object):
-    
-    """
-    ### HARVESTER - class
-    # Provides methods to harvest metadata records via OAI-PMH and other protocols
-    #
-    # Parameters:
-    # -----------
-    # 1. (dict)         pstat   - dictionary with the states of every process (was built by main.pstat_init())
-    # 2. (path)         rootdir - rootdir where the subdirs will be created and the harvested files will be saved.
-    # 3. (string)       fromdate  - filter for harvesting, format: YYYY-MM-DD
-    #
-    # Return Values:
-    # --------------
-    # 1. HARVESTER object
-    #
-    # Public Methods:
-    # ---------------
-    # .harvest(request) - harvest from a source via OAI-PMH using the python module 'Sickle'
-    #
-    # Usage:
-    # ------
-
-    # create HARVESTER object                       
-    HV = HARVESTER(pstat,rootdir,fromdate)
-    # harvest metadata of a community from a source via verb 
-    #   with md OAI format mdprefix and OAI set mdsubset :
-    request = [community,source,verb,mdprefix,mdsubset]
-    results = HV.harvest(request)
-    """
-    
-    def __init__ (self, pstat, base_outdir, fromdate):
-        self.pstat = pstat
-        self.base_outdir = base_outdir
-        self.fromdate = fromdate        
-    
-    def harvest(self, nr, request):
-        ## harvest (HARVESTER object, [community, source, verb, mdprefix, mdsubset]) - method
-        # Harvest all files with <mdprefix> and <mdsubset> from <source> via sickle module and store those to hard drive.
-        # Generate every N. file a new subset directory.
-        #
-        # Parameters:
-        # -----------
-        # (list)  request - A request list with following items:
-        #                    1. community
-        #                    2. source
-        #                    3. verb
-        #                    4. mdprefix
-        #                    5. mdsubset
-        #
-        # Return Values:
-        # --------------
-        # 1. (integer)  is -1 if something went wrong    
-    
-    
-        # create a request dictionary:
-        req = {
-            "community" : request[0],
-            "url"   : request[1],
-            "lverb" : request[2],
-            "mdprefix"  : request[3],
-            "mdsubset"  : request[4]   if len(request)>4 else None
-        }
-
-        # create dictionary with stats:
-        stats = {
-            "tottcount" : 0,    # total number of all provided datasets
-            "totcount"  : 0,    # total number of all successful harvested datasets
-            "totecount" : 0,    # total number of all failed datasets
-            "totdcount" : 0,    # total number of all deleted datasets
-            
-            "tcount"    : 0,    # number of all provided datasets per subset
-            "count"     : 0,    # number of all successful harvested datasets per subset
-            "ecount"    : 0,    # number of all failed datasets per subset
-            "dcount"    : 0,    # number of all deleted datasets per subset
-            
-            "timestart" : time.time(),  # start time per subset process
-        }
-
-        start=time.time()
-        ntotrecs=0
-
-        mdsubset=req["mdsubset"]        
-        if (not mdsubset):
-            logging.warning('No OAI subset is given!')
-            subset='SET'
-        else:
-            subset = mdsubset
-
-        sickle = SickleClass.Sickle(req['url'], max_retries=3, timeout=300)
-        outtypedir='xml'
-        outtypeext='xml'
-        oaireq=getattr(sickle,req["lverb"], None)
-        try:
-            records,rc=tee(oaireq(**{'metadataPrefix':req['mdprefix'],'set':mdsubset,'ignore_deleted':True,'from':self.fromdate}))
-        except (HTTPError,ConnectionError,etree.XMLSyntaxError,Exception) as e:
-            logging.error("%s : Cannot harvest through request %s\n" % (e,req))
-            return -1
-        try:
-            ntotrecs=len(list(rc))
-        except :
-            print('iterate through iterable does not work ?')
-
-        ### ntotrecs=sum(1 for _ in rc)
-
-        if ntotrecs > 0 :
-            print("\t|- Iterate through %d records in %d sec" % (ntotrecs,time.time()-start))
-        else:
-            print("\t|- Iterate through records in %d sec" % (time.time()-start))
-
-        logging.debug('    |   | %-4s | %-45s | %-45s |\n    |%s|' % ('#','OAI Identifier','DS Identifier',"-" * 106))
-
-        # set subset:
-        # make subset dir:
-        subsetdir = '/'.join([self.base_outdir,req['community']+'-'+req['mdprefix'],subset])
-
-        noffs=0 # set to number of record, where harvesting should start
-        start2=time.time()
-        fcount=0
-        oldperc=0
-
-        logging.info("\t|- Get records and store on disc ...")
-        for record in records:
-            stats['tcount'] += 1
-            ## counter and progress bar
-            fcount+=1
-            if fcount <= noffs : continue
-
-            if ntotrecs > 0 :
-                perc=int(fcount*100/ntotrecs)
-                bartags=int(perc/5) #HEW-D fcount/100
-                if perc%10 == 0 and perc != oldperc :
-                    oldperc=perc
-                    print("\r\t[%-20s] %5d (%3d%%) in %d sec" % ('='*bartags, fcount, perc, time.time()-start2 ))
-                    sys.stdout.flush()
-
-            if req["lverb"] == 'ListIdentifiers' :
-                    if (record.deleted):
-                       ##HEW-??? deleted_metadata[record.identifier] = 
-                       stats['totdcount'] += 1
-                       continue
-                    else:
-                       oai_id = record.identifier
-                       record = sickle.GetRecord(**{'metadataPrefix':req['mdprefix'],'identifier':record.identifier})
-            elif req["lverb"] == 'ListRecords' :
-                if (record.header.deleted):
-                    stats['totdcount'] += 1
-                    continue
-                else:
-                    oai_id = record.header.identifier
-
-            # generate a uniquely identifier for this dataset:
-            uid = str(uuid.uuid5(uuid.NAMESPACE_DNS, oai_id))
-            
-            xmlfile = subsetdir + '/xml/' + os.path.basename(uid) + '.xml'
-            try:
-                logging.debug('    | h | %-4d | %-45s | %-45s |' % (stats['count']+1,oai_id,uid))
-                ## logging.debug('Harvested XML file written to %s' % xmlfile)
-                    
-                # get the raw xml content:    
-                metadata = etree.fromstring(record.raw)
-                if (metadata is not None):
-                        metadata = etree.tostring(metadata, pretty_print = True).decode('utf-8') 
-                        ##HEW-D metadata = metadata.encode('ascii', 'ignore')
-                        if (not os.path.isdir(subsetdir+'/xml')):
-                            os.makedirs(subsetdir+'/xml')
-                           
-                        # write metadata in file:
-                        try:
-                            f = open(xmlfile, 'w')
-                            f.write(metadata)
-                            f.close
-                        except IOError as e:
-                            logging.error("[ERROR] Cannot write metadata in xml file '%s': %s\n" % (xmlfile,e))
-                            stats['ecount'] +=1
-                            continue
-                        
-                        stats['count'] += 1
-                        ## logging.debug('Harvested XML file written to %s' % xmlfile)
-                        
-                else:
-                        stats['ecount'] += 1
-                        logging.warning('    [WARNING] No metadata available for %s' % oai_id)
-            except TypeError as e:
-                    logging.error('    [ERROR] TypeError: %s' % e)
-                    stats['ecount']+=1        
-                    continue
-            except Exception as e:
-                    logging.error("    [ERROR] %s and %s" % (e,traceback.format_exc()))
-                    ## logging.debug(metadata)
-                    stats['ecount']+=1
-                    continue
-
-        # add all subset stats to total stats and reset the temporal subset stats:
-        for key in ['tcount', 'ecount', 'count', 'dcount']:
-                stats['tot'+key] += stats[key]
-            
-
-        print('   \t|- %-10s |@ %-10s |\n\t| Provided | Harvested | Failed | Deleted |\n\t| %8d | %9d | %6d | %6d |' % ( 'Finished',time.strftime("%H:%M:%S"),
-                    stats['tottcount'],
-                    stats['totcount'],
-                    stats['totecount'],
-                    stats['totdcount']
-                ))
 
 class MAPPER():
 
@@ -2078,13 +1731,13 @@ def process(options,pstat):
 
     ## GENERATION mode:    
     if (pstat['status']['g'] == 'tbd'):
-        GEN = GENERATOR(pstat,options.outdir)
+        GEN = Generator(pstat,options.outdir)
         process_generate(GEN,reqlist)
         
     ## HARVESTING mode:    
     if (pstat['status']['h'] == 'tbd'):
         ### print('\n|- Harvesting started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
-        HV = HARVESTER(pstat,options.outdir,options.fromdate)
+        HV = Harvester(pstat,options.outdir,options.fromdate)
         process_harvest(HV,reqlist)
         
     ## MAPPINING - Mode:  
@@ -2109,37 +1762,13 @@ def process(options,pstat):
             # start the process uploading:
             process_upload(UP,reqlist,options)
 
-def process_harvest(HV, rlist):
-    ## process_harvest (HARVESTER object, rlist) - function
-    # Harvests per request.
-    #
-    # Parameters:
-    # -----------
-    # (object)  HV    - instance of class HARVESTER
-    # (list)    rlist - list of request lists 
-    #
-    # Return Values:
-    # --------------
-    # None
-    ir=0
-    for request in rlist:
-        ir+=1
-        harveststart = time.time()
-        logging.info('   |# %-4d : %-30s \n\t|- %-10s |@ %-10s |' % (ir,request,'Started',time.strftime("%H:%M:%S")))
-        results = HV.harvest(ir,request)
-    
-        if (results == -1):
-            logging.critical("Couldn't harvest from %s" % request)
-
-        harvesttime=time.time()-harveststart
-
 def process_generate(GEN, rlist):
     ## process_generate (GENERATOR object, rlist) - function
     # Generate metadata per request.
     #
     # Parameters:
     # -----------
-    # (object)  GEN   - instance of class HARVESTER
+    # (object)  GEN   - instance of class Generator
     # (list)    rlist - list of request lists 
     #
     # Return Values:
@@ -2150,12 +1779,36 @@ def process_generate(GEN, rlist):
         ir+=1
         genstart = time.time()
         logging.info('   |# %-4d : %-30s \n\t|- %-10s |@ %-10s |' % (ir,request,'Started',time.strftime("%H:%M:%S")))
-        results = GEN.generate(ir,request)
+        results = GEN.generate(request)
     
         if (results == -1):
             logging.error("Couldn't generate metadata according request %s" % request)
 
         gentime=time.time()-genstart
+
+def process_harvest(HV, rlist):
+    ## process_harvest (Harvester object, rlist) - function
+    # Harvests per request.
+    #
+    # Parameters:
+    # -----------
+    # (object)  HV    - instance of class Harvester
+    # (list)    rlist - list of request lists 
+    #
+    # Return Values:
+    # --------------
+    # None
+    ir=0
+    for request in rlist:
+        ir+=1
+        harveststart = time.time()
+        logging.info('   |# %-4d : %-30s \n\t|- %-10s |@ %-10s |' % (ir,request,'Started',time.strftime("%H:%M:%S")))
+        results = HV.harvest(request)
+    
+        if (results == -1):
+            logging.critical("Couldn't harvest from %s" % request)
+
+        harvesttime=time.time()-harveststart
 
 def process_map(MP, rlist):
     ## process_map (MAPPER object, rlist) - function
