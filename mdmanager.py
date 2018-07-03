@@ -42,6 +42,7 @@ from itertools import tee
 from generating import Generator
 from harvesting import Harvester
 from mapping import Mapper
+from uploading import Uploader
 from output import Output
 
 # needed for Harvester class:
@@ -59,9 +60,6 @@ import codecs
 import re
 import xml.etree.ElementTree as ET
 import io
-
-# needed for UPLOADER class:
-from collections import OrderedDict
 
 def setup_custom_logger(name,verbose):
     log_format='%(levelname)s :  %(message)s'
@@ -207,6 +205,7 @@ class CKAN_CLIENT(object):
             action_url = "http://{host}/api/3/action/{action}".format(host=self.ip_host,action=action)
 
         # make json data in conformity with URL standards
+        encoding='utf-8'
         try:
             if PY2 :
                 data_string = quote(json.dumps(data_dict))##.encode("utf-8") ## HEW-D 160810 , encoding="latin-1" ))##HEW-D .decode(encoding)
@@ -281,223 +280,6 @@ class CKAN_CLIENT(object):
 ##HEW-D            out = json.loads(response.read())
 ##HEW-D            assert response.code >= 200
 ##HEW-D            return out
-
-class UPLOADER (object):
-
-    """
-    ### UPLOADER - class
-    # Uploads JSON files to CKAN portal and provides more methods for checking a dataset
-    #
-    # Parameters:
-    # -----------
-    # 1. (CKAN_CLIENT object)   CKAN - object of the CKAN_CLIENT class
-    #
-    # Return Values:
-    # --------------
-    # 1. UPLOADER object
-    #
-    # Public Methods:
-    # ---------------
-    # .check_dataset(dsname,checksum)   - Compare the checksum of the dataset <dsname> with <checksum> 
-    # .check_url(url)           - Checks and validates a url via urllib module
-    # .delete(dsname,dsstatus)  - Deletes a dataset from a CKAN portal
-    # .get_packages(community)  - Gets the details of all packages from a community in CKAN and store those in <UPLOADER.package_list>
-    # .upload(dsname, dsstatus,
-    #   community, jsondata)    - Uploads a dataset to a CKAN portal
-    # .check(jsondata)       - Validates the fields in the <jsondata> by using B2FIND standard
-    #
-    # Usage:
-    # ------
-
-    # create UPLOADER object:
-    UP = UPLOADER(CKAN,OUT)
-
-    # VALIDATE JSON DATA
-    if (not UP.check(jsondata)):
-        print "Dataset is broken or does not pass the B2FIND standard"
-
-    # CHECK DATASET IN CKAN
-    ckanstatus = UP.check_dataset(dsname,checksum)
-
-    # UPLOAD DATASET TO CKAN
-    upload = UP.upload(dsname,ckanstatus,community,jsondata)
-    if (upload == 1):
-        print('Creation of record succeed')
-    elif (upload == 2):
-        print('Update of record succeed')
-    else:
-        print('Upload of record failed')
-    """
-    
-    def __init__(self, CKAN):
-        self.logger = logging.getLogger()
-        self.CKAN = CKAN
-        
-        self.package_list = dict()
-        # B2FIND metadata fields
-        self.b2findfields = list()
-        self.b2findfields = [
-                   "title","notes","tags","url","DOI","PID","Checksum","Rights","Discipline","author","Publisher","PublicationYear","PublicationTimestamp","Language","TemporalCoverage","SpatialCoverage","spatial","Format","Contact","MetadataAccess","oai_set","oai_identifier","fulltext"]
-        self.ckandeffields = ["author","title","notes","tags","url"]
-
-    def json2ckan(self, jsondata):
-        ## json2ckan(UPLOADER object, json data) - method
-        ##  converts flat JSON structure to CKAN JSON record with extra fields
-        logging.debug('    | Adapt default fields for upload to CKAN')
-        for key in self.ckandeffields :
-            if key not in jsondata:
-                logging.debug('[WARNING] : CKAN default key %s does not exist' % key)
-            else:
-                logging.debug('    | -- %-25s ' % key)
-                if key in  ["author"] :
-                    jsondata[key]=';'.join(list(jsondata[key]))
-                elif key in ["title","notes"] :
-                    jsondata[key]='\n'.join(list(jsondata[key]))##.encode("iso-8859-1") ### !!! encode to display e.g. 'Umlauts' corectly
-
-        jsondata['extras']=list()
-        logging.debug('    | Adapt extra fields for upload to CKAN')
-        for key in set(self.b2findfields) - set(self.ckandeffields) :
-            if key in jsondata :
-                logging.debug('    | -- %-25s ' % key)
-                if key in ['Contact','Format','Language','Publisher','PublicationYear','Checksum']:
-                    value=';'.join(jsondata[key])
-                elif key in ['oai_set','oai_identifier']: ### ,'fulltext']
-                    if isinstance(jsondata[key],list) or isinstance(jsondata[key],set) : 
-                        value=jsondata[key][-1]      
-                else:
-                    value=jsondata[key]
-                jsondata['extras'].append({
-                     "key" : key,
-                     "value" : value
-                })
-                del jsondata[key]
-            else:
-                logging.debug('[WARNING] : No data for key %s ' % key)
-
-        return jsondata
-
-    def check(self, jsondata):
-        ## check(UPLOADER object, json data) - method
-        # Checks the jsondata and returns the correct ones
-        #
-        # Parameters:
-        # -----------
-        # 1. (dict)    jsondata - json dictionary with metadata fields with B2FIND standard
-        #
-        # Return Values:
-        # --------------
-        # 1. (dict)   
-        # Raise errors:
-        # -------------
-        #               0 - critical error occured
-        #               1 - non-critical error occured
-        #               2 - no error occured    
-    
-        errmsg = ''
-        
-        ## check mandatory fields ...
-        mandFields=['title','url','oai_identifier']
-        for field in mandFields :
-            if field not in jsondata: ##  or jsondata[field] == ''):
-                raise Exception("The mandatory field '%s' is missing" % field)
-        ##HEW-D elif ('url' in jsondata and not self.check_url(jsondata['url'])):
-        ##HEW-D     errmsg = "'url': The source url is broken"
-        ##HEW-D     if(status > 1): status = 1  # set status
-            
-        # ... OAI Set
-        if('oai_set' in jsondata and ';' in  jsondata['oai_set']):
-            jsondata['oai_set'] = jsondata['oai_set'].split(';')[-1] 
-            
-        # shrink field fulltext
-        if('fulltext' in jsondata):
-            ##raise Exception("'fulltext': Too big ( %d bytes, %d len)" % (sys.getsizeof(jsondata['fulltext']),len(jsondata['fulltext'])))
-            encoding='utf-8'
-            encoded = u' '.join([x.strip() for x in jsondata['fulltext'] if x is not None]).encode(encoding)[:32000]
-            encoded=re.sub('\s+',' ',encoded)
-            jsondata['fulltext']=encoded.decode(encoding, 'ignore')
-
-        if 'PublicationYear' in jsondata :
-            try:
-                datetime.datetime.strptime(jsondata['PublicationYear'][0], '%Y')
-            except (ValueError,TypeError) as e:
-                raise Exception("Error %s : Key %s value %s has incorrect data format, should be YYYY" % (e,'PublicationYear',jsondata['PublicationYear']))
-                # delete this field from the jsondata:
-                del jsondata['PublicationYear']
-                
-        # check Date-Times for consistency with UTC format
-        dt_keys=['PublicationTimestamp', 'TemporalCoverage:BeginDate', 'TemporalCoverage:EndDate']
-        for key in dt_keys:
-            if key in jsondata :
-                try:
-                    datetime.datetime.strptime(jsondata[key], '%Y-%m-%d'+'T'+'%H:%M:%S'+'Z')
-                except ValueError:
-                    raise Exception("Value %s of key %s has incorrect data format, should be YYYY-MM-DDThh:mm:ssZ" % (jsondata[key],key))
-                    del jsondata[key] # delete this field from the jsondata
-
-        return jsondata
-
-    def upload(self, ds, dsstatus, community, jsondata):
-        ## upload (UPLOADER object, dsname, dsstatus, community, jsondata) - method
-        # Uploads a dataset <jsondata> with name <dsname> as a member of <community> to CKAN. 
-        #   <dsstatus> describes the state of the package and is 'new', 'changed', 'unchanged' or 'unknown'.         #   In the case of a 'new' or 'unknown' package this method will call the API 'package_create' 
-        #   and in the case of a 'changed' package the API 'package_update'. 
-        #   Nothing happens if the state is 'unchanged'
-        #
-        # Parameters:
-        # -----------
-        # 1. (string)   dsname - Name of the dataset
-        # 2. (string)   dsstatus - Status of the dataset: can be 'new', 'changed', 'unchanged' or 'unknown'.
-        #                           See also .check_dataset()
-        # 3. (string)   dsname - A B2FIND community in CKAN
-        # 4. (dict)     jsondata - Metadata fields of the dataset in JSON format
-        #
-        # Return Values:
-        # --------------
-        # 1. (integer)  upload result:
-        #               0 - critical error occured
-        #               1 - no error occured, uploaded with 'package_create'
-        #               2 - no error occured, uploaded with 'package_update'
-    
-        rvalue = 0
-        
-        # add some general CKAN specific fields to dictionary:
-        jsondata["name"] = ds.lower()
-        jsondata["state"]='active'
-        jsondata["groups"]=[{ "name" : community }]
-##HEW- changed!!!!
-        jsondata["owner_org"]="eudat" ##HEW!!! "eudat"
-
-        # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
-        if (dsstatus == 'new' or dsstatus == 'unknown') :
-            logging.debug('\t - Try to create dataset %s' % ds)
-            
-            results = self.CKAN.action('package_create',jsondata)
-            if (results and results['success']):
-                rvalue = 1
-            else:
-                logging.debug('\t - Creation failed. Try to update instead.')
-                results = self.CKAN.action('package_update',jsondata)
-                if (results and results['success']):
-                    rvalue = 2
-                else:
-                    rvalue = 0
-        
-        # if the dsstatus is 'changed' then update it with package_update:
-        elif (dsstatus == 'changed'):
-            logging.debug('\t - Try to update dataset %s' % ds)
-            
-            results = self.CKAN.action('package_update',jsondata)
-            if (results and results['success']):
-                rvalue = 2
-            else:
-                logging.debug('\t - Update failed. Try to create instead.')
-                results = self.CKAN.action('package_create',jsondata)
-                if (results and results['success']):
-                    rvalue = 1
-                else:
-                    rvalue = 0
-           
-        return rvalue
 
 def main():
     global TimeStart
@@ -661,11 +443,24 @@ def process(options,pstat,OUT):
     if (pstat['status']['u'] == 'tbd'):
             # create CKAN object                       
             CKAN = CKAN_CLIENT(options.iphost,options.auth)
-            UP = UPLOADER(CKAN)
-            logging.info('\n|- Uploading started : %s' % time.strftime("%Y-%m-%d %H:%M:%S"))
-            logging.info(' |- Host:  \t%s' % CKAN.ip_host )
-            # start the process uploading:
-            process_upload(UP,reqlist,options)
+            # create credentials and handle client if required
+            if (options.handle_check):
+                try:
+                    cred = PIDClientCredentials.load_from_JSON('credentials_11098')
+                except Exception as err:
+                    logger.critical("%s : Could not create credentials from credstore %s" % (err,options.handle_check))
+                    ##p.print_help()
+                    sys.exit(-1)
+                else:
+                    logger.debug("Create EUDATHandleClient instance")
+                    HandleClient = EUDATHandleClient.instantiate_with_credentials(cred)
+            else:
+                cred=None
+                HandleClient=None
+
+            UP = Uploader(CKAN,options.ckan_check,HandleClient,cred,OUT,options.outdir,options.fromdate,options.iphost)
+            logger.info(' |- Host:  \t%s' % CKAN.ip_host )
+            process_upload(UP, reqlist)
 
 def process_generate(GEN, rlist):
     ## process_generate (GENERATOR object, rlist) - function
@@ -800,7 +595,7 @@ def process_oaiconvert(MP, rlist):
         MP.OUT.save_stats(request[0]+'-' + request[3],request[4],'o',results)
 
 
-def process_upload(UP, rlist, options):
+def process_upload(UP, rlist):
     ##HEW-D-ec credentials,ec = None,None
 
     def print_extra(key,jsondata):
@@ -820,7 +615,10 @@ def process_upload(UP, rlist, options):
               sys.exit(-1)
           else:
               logging.debug("Create EUDATHandleClient instance")
-              client = EUDATHandleClient.instantiate_with_credentials(cred)
+              HandleClient = EUDATHandleClient.instantiate_with_credentials(cred)
+    else:
+        cred=None
+        HandleClient=None
 
     CKAN = UP.CKAN
     last_community = ''
@@ -894,7 +692,7 @@ def process_upload(UP, rlist, options):
         # find all .json files in dir/json:
         files = filter(lambda x: x.endswith('.json'), os.listdir(path+'/json'))
         
-        results['tcount'] = len(files)
+        results['tcount'] = len(list(files))
         
         scount = 0
         fcount = 0
@@ -1182,7 +980,7 @@ def options_parser(modes):
     p.add_option('-v', '--verbose', action="count",
                         help="increase output verbosity (e.g., -vv is more than -v)", default=False)
 
-    p.add_option('--outdir', '-d', help="The relative root directory in which all harvested and processed files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH') 
+    p.add_option('--outdir', '-o', help="The relative root directory in which all harvested and processed files will be saved. The converting and the uploading processes work with the files from this dir. (default is 'oaidata')",default='oaidata', metavar='PATH') 
     p.add_option('--community', '-c', help="community or project, for which metadata are harvested, processed, stored and uploaded. This 'label' is used through the whole metadata life cycle.", default='', metavar='STRING')
     ##HEW-D really needed (for Training) ???  
     p.add_option('--mdsubset', help="Subset of metadata to be harvested (by default 'None') and subdirectory of harvested and processed metadata (by default 'SET_1'",default=None, metavar='STRING')
@@ -1215,6 +1013,10 @@ def options_parser(modes):
         "These options will be required to upload an dataset to a CKAN database.")
     group_upload.add_option('--iphost', '-i', help="IP adress of B2FIND portal (CKAN instance)", metavar='IP')
     group_upload.add_option('--auth', help="Authentification for CKAN APIs (API key, by default taken from file $HOME/.netrc)",metavar='STRING')
+    group_upload.add_option('--handle_check', 
+         help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credstore file", default=None,metavar='FILE')
+    group_upload.add_option('--ckan_check',
+         help="check existence and checksum against existing datasets in CKAN database", default='False', metavar='BOOLEAN')
     group_upload.add_option('--ckan_organization', help="CKAN Organization name (by default 'rda')",default='eudat',metavar='STRING')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--handle_check', help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credential file", default=None,metavar='FILE')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--ckan_check',help="check existence and checksum against existing datasets in CKAN dattabase",default='False', metavar='BOOLEAN')
@@ -1264,7 +1066,7 @@ def pstat_init (p,modes,mode,source,iphost):
     else:
        stext='a list of MD providers'
        
-    pstat['text']['g']='Generate XML files from raw information' 
+    pstat['text']['g']='Generate XML files from ' + stext 
     pstat['text']['h']='Harvest XML files from ' + stext 
     pstat['text']['c']='Convert XML to B2FIND JSON'  
     pstat['text']['m']='Map community XML to B2FIND JSON and do semantic mapping'  
@@ -1274,7 +1076,7 @@ def pstat_init (p,modes,mode,source,iphost):
     pstat['text']['d']='Delete B2FIND datasets from %s' % iphost
     
     pstat['short']['h-u']='TotalIngestion'
-    pstat['short']['g']='Generation'
+    pstat['short']['g']='Generating'
     pstat['short']['h']='Harvesting'
     pstat['short']['c']='Converting'
     pstat['short']['m']='Mapping'
