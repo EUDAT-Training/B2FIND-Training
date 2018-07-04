@@ -44,6 +44,7 @@ from harvesting import Harvester
 from mapping import Mapper
 from uploading import Uploader
 from output import Output
+import settings
 
 # needed for Harvester class:
 import sickle as SickleClass
@@ -282,6 +283,9 @@ class CKAN_CLIENT(object):
 ##HEW-D            return out
 
 def main():
+    # initialize global settings
+    settings.init()
+
     global TimeStart
     TimeStart = time.time()
 
@@ -298,7 +302,7 @@ def main():
     # check option 'mode' and generate process list:
     (mode, pstat) = pstat_init(p,modes,options.mode,options.source,options.iphost)
     
-    # make jobdir
+    # set now time and process (job) id
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     jid = os.getpid()
 
@@ -400,6 +404,8 @@ def process(options,pstat,OUT):
                 options.verb,
                 options.mdprefix,
                 options.mdsubset,
+                options.ckan_check,
+                options.handle_check,
                 options.target_mdschema
             ]]
     elif(options.list):
@@ -409,8 +415,8 @@ def process(options,pstat,OUT):
         mode = 'multi'
         logger.debug(' |- Joblist:  \t%s' % options.list)
         ## HEW set options.target_mdschema to NONE for Training
-        options.target_mdschema=None
-        reqlist=parse_list_file('harvest',options.list, options.community,options.mdsubset,options.mdprefix,options.target_mdschema)
+        ## options.target_mdschema=None
+        reqlist=parse_list_file(options)
 
     ## check job request (processing) options
     for opt in procOptions :
@@ -593,312 +599,65 @@ def process_oaiconvert(MP, rlist):
         
         # save stats:
         MP.OUT.save_stats(request[0]+'-' + request[3],request[4],'o',results)
-
-
+        
 def process_upload(UP, rlist):
-    ##HEW-D-ec credentials,ec = None,None
-
-    def print_extra(key,jsondata):
-        for v in jsondata['extras']:
-            if v['key'] == key:
-                print(' Key : %s | Value : %s |' % (v['key'],v['value']))
- 
-
-    ###HEW-D disabled for Training create credentials and handle cleint if required
-    options.handle_check=False  ###HEW-D disabled for Training
-    if (options.handle_check):
-          try:
-              cred = PIDClientCredentials.load_from_JSON('credentials_11098')
-          except Exception as err:
-              logging.critical("[CRITICAL %s ] : Could not create credentials from credstore %s" % (err,options.handle_check))
-              ##p.print_help()
-              sys.exit(-1)
-          else:
-              logging.debug("Create EUDATHandleClient instance")
-              HandleClient = EUDATHandleClient.instantiate_with_credentials(cred)
-    else:
-        cred=None
-        HandleClient=None
 
     CKAN = UP.CKAN
     last_community = ''
     package_list = dict()
 
     ir=0
-    mdschemas={
-        "ddi" : "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd",
-        "oai_ddi" : "http://www.icpsr.umich.edu/DDI/Version1-2-2.xsd",
-        "marcxml" : "http://www.loc.gov/MARC21/slim http://www.loc.gov/standards",
-        "iso" : "http://www.isotc211.org/2005/gmd/metadataEntity.xsd",        
-        "oai_dc" : "http://www.openarchives.org/OAI/2.0/oai_dc.xsd",
-        "oai_qdc" : "http://pandata.org/pmh/oai_qdc.xsd",
-        "cmdi" : "http://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/profiles/clarin.eu:cr1:p_1369752611610/xsd",
-        "json" : "http://json-schema.org/latest/json-schema-core.html",
-        "fgdc" : "No specification for fgdc available",
-        "hdcp2" : "No specification for hdcp2 available"
-        }
     for request in rlist:
         ir+=1
-        logging.info('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
-        community, source = request[0:2]
+        print ('   |# %-4d : %-10s\t%-20s \n\t|- %-10s |@ %-10s |' % (ir,request[0],request[2:5],'Started',time.strftime("%H:%M:%S")))
+        community=request[0]
         mdprefix = request[3]
-
-        if len(request) > 4:
-            subset = request[4]
-        else:
-            subset = 'SET'
+        mdsubset=request[4]   if len(request)>4 else None
+        ## dir = dir+'/'+subset
         
-        results = {
-            'count':0,
-            'ecount':0,
-            'tcount':0,
-            'time':0
-        }
-
         try:
             ckangroup=CKAN.action('group_list')
             if community not in ckangroup['result'] :
                 logger.critical('Can not found community %s' % community)
                 sys.exit(-1)
-        except Exception as err:
-            logging.critical("%s : Can not show CKAN group %s" % (err,community))
-            sys.exit()
-            
-        if 'success' not in ckangroup and ckangroup['success'] != True :
-            logging.critical(" CKAN group %s does not exist" % community)
-            sys.exit()
+        except Exception :
+            logging.critical("Can not list communities (CKAN groups)")
+            sys.exit(-1)
+  
 
-        print ('|- Community %s\n |- MD prefix %s\n |- Subset %s\n' % (community,mdprefix,subset))
-
-        path=os.path.abspath('oaidata/'+request[0]+'-'+request[3]+'/'+subset)
-
-        if not os.path.exists(path):
-            logging.critical('The directory "%s" does not exist! No files for uploading are found!' % path)
-            
-            # save stats:
-            ##UP.OUT.save_stats(community+'-'+mdprefix,subset,'u',results)
-            
-            continue
-        
-        logging.debug('    |   | %-4s | %-40s |\n    |%s|' % ('#','id',"-" * 53))
-        ##HEW : For Training no ckan_check
-        options.ckan_check = 'False'
-        if (last_community != community and options.ckan_check == 'True'):
+        if (last_community != community) :
             last_community = community
-            UP.get_packages(community)
-        
+            if options.ckan_check == 'True' :
+                UP.get_packages(community)
+            if options.clean == 'True' :
+                delete_file = '/'.join([UP.base_outdir,'delete',community+'-'+mdprefix+'.del'])
+                if os.path.exists(delete_file) :
+                    logging.warning("All datasets listed in %s will be removed" % delte_file)
+                    with open (delete_file,'r') as df :
+                        for id in df.readlines() :
+                            UP.delete(id,'to_delete')
+
+
+        ##HEW-D-Test sys.exit(0)
+
         uploadstart = time.time()
+
+
+        cstart = time.time()
         
-        # find all .json files in dir/json:
-        files = filter(lambda x: x.endswith('.json'), os.listdir(path+'/json'))
-        
-        results['tcount'] = len(list(files))
-        
-        scount = 0
-        fcount = 0
-        oldperc = 0
-        for filename in files:
-            ## counter and progress bar
-            fcount+=1
-            if (fcount<scount): continue
-            perc=int(fcount*100/int(len(files)))
-            bartags=perc/5
-            if perc%10 == 0 and perc != oldperc :
-                oldperc=perc
-                print("\t[%-20s] %d / %d%%\r" % ('='*bartags, fcount, perc ))
-                sys.stdout.flush()
+        results = UP.upload(request)
 
-            jsondata = dict()
-            pathfname= path+'/json/'+filename
-            if ( os.path.getsize(pathfname) > 0 ):
-                with open(pathfname, 'r') as f:
-                    try:
-                        jsondata=json.loads(f.read())
-                    except:
-                        logging.error('    | [ERROR] Cannot load the json file %s' % path+'/json/'+filename)
-                        results['ecount'] += 1
-                        continue
-            else:
-                results['ecount'] += 1
-                continue
-
-            # get dataset id (CKAN name) from filename (a uuid generated identifier):
-            ds_id = os.path.splitext(filename)[0]
-            
-            logging.info('    | u | %-4d | %-40s |' % (fcount,ds_id))
-
-            # get OAI identifier from json data extra field 'oai_identifier':
-            if 'oai_identifier' not in jsondata :
-                jsondata['oai_identifier'] = [ds_id]
-
-            oai_id = jsondata['oai_identifier'][0]
-            logging.debug("        |-> identifier: %s\n" % (oai_id))
-            
-            ### CHECK JSON DATA for upload
-            jsondata=UP.check(jsondata)
-
-            ### ADD SOME EXTRA FIELDS TO JSON DATA:
-            #  generate get record request for field MetaDataAccess:
-            if (mdprefix == 'json'):
-               reqpre = source + '/dataset/'
-               mdaccess = reqpre + oai_id
-            else:
-               reqpre = source + '?verb=GetRecord&metadataPrefix=' + mdprefix
-               mdaccess = reqpre + '&identifier=' + oai_id
-            index1 = mdaccess
-
-            # exceptions for some communities:
-            if (community == 'clarin' and oai_id.startswith('mi_')):
-                mdaccess = 'http://www.meertens.knaw.nl/oai/oai_server.php?verb=GetRecord&metadataPrefix=cmdi&identifier=http://hdl.handle.net/10744/' + oai_id
-            elif (community == 'sdl'):
-                mdaccess =reqpre+'&identifier=oai::record/'+oai_id
-
-            ###HEW!!! if (field.split('.')[0] == 'extras'): # append extras field
-            ###HEW!!!        self.add_unique_to_dict_list(newds['extras'], field.split('.')[1], value)
-
-            ## Move all CKAN extra fields to the list jsondata['extras']
-            
-            jsondata['MetaDataAccess']=mdaccess
-
-            jsondata=UP.json2ckan(jsondata)
-##            # determine checksum of json record and append
-##            try:
-##                checksum=hashlib.md5(unicode(json.dumps(jsondata))).hexdigest()
-##                checksum=hashlib.md5(json.dumps(jsondata)).hexdigest()
-##            except UnicodeEncodeError:
-##                logging.error('        |-> [ERROR] Unicode encoding failed during md checksum determination')
-##                checksum=None
-##            except Exception as err:
-##                logging.error('        |-> [ERROR] %s' % err)
-##                checksum=None
-##            else:
-##                jsondata['version'] = checksum
-            jsondata['version'] = None
-            jsondata['owner_org'] = options.ckan_organization
-                
-            # Set the tag ManagerVersion:
-            jsondata['extras'].append({
-                      "key" : "ManagerVersion",
-                      "value" : ManagerVersion
-                     })
-            
-            ### CHECK STATE OF DATASET IN CKAN AND HANDLE SERVER:
-            # status of data set
-            dsstatus="unknown"
-     
-            # check against handle server
-            handlestatus="unknown"
-            checksum2=None
-            if (options.handle_check):
-                try:
-                    ##HEW-D pid = "11098/eudat-jmd_" + ds_id ##HEW?? 
-                    pid = cred.get_prefix() + '/eudat-jmd_' + ds_id 
-                    rec = client.retrieve_handle_record_json(pid)
-                    checksum2 = client.get_value_from_handle(pid, "CHECKSUM",rec)
-                    ManagerVersion2 = client.get_value_from_handle(pid, "JMDVERSION",rec)
-                    B2findHost = client.get_value_from_handle(pid,"B2FINDHOST",rec)
-                except Exception as err:
-                    logging.error("[CRITICAL : %s] in client.get_value_from_handle" % err )
-                else:
-                    logging.debug("Got checksum2 %s, ManagerVersion2 %s and B2findHost %s from PID %s" % (checksum2,ManagerVersion2,B2findHost,pid))
-                if (checksum2 == None):
-                    logging.debug("        |-> Can not access pid %s to get checksum" % pid)
-                    handlestatus="new"
-                elif ( checksum == checksum2) and ( ManagerVersion2 == ManagerVersion ) and ( B2findHost == options.iphost ) :
-                    logging.debug("        |-> checksum, ManagerVersion and B2FIND host of pid %s not changed" % (pid))
-                    handlestatus="unchanged"
-                else:
-                    logging.debug("        |-> checksum, ManagerVersion or B2FIND host of pid %s changed" % (pid))
-                    handlestatus="changed"
-                dsstatus=handlestatus
-
-            # check against CKAN database
-            ckanstatus = 'unknown'                  
-            if (options.ckan_check == 'True'):
-                ckanstatus=UP.check_dataset(ds_id,checksum)
-                if (dsstatus == 'unknown'):
-                    dsstatus = ckanstatus
-
-            upload = 0
-            # depending on status of handle upload record to B2FIND 
-            logging.debug('        |-> Dataset is [%s]' % (dsstatus))
-            if ( dsstatus == "unchanged") : # no action required
-                logging.info('        |-> %s' % ('No upload required'))
-            else:
-                upload = UP.upload(ds_id,dsstatus,community,jsondata)
-                if (upload == 1):
-                    logging.info('        |-> Creation of %s record succeed' % dsstatus )
-                elif (upload == 2):
-                    logging.info('        |-> Update of %s record succeed' % dsstatus )
-                    upload=1
-                else:
-                    logging.error('        |-> Upload of %s record %s failed ' % (dsstatus, ds_id ))
-                    logging.error('        |-> JSON data :\n\t %s ' % json.dumps(jsondata, indent=2))
-                    sys.exit()
-
-            # update PID in handle server                           
-            if (options.handle_check):
-                if (handlestatus == "unchanged"):
-                    logging.info("        |-> No action required for %s" % pid)
-                else:
-                    if (upload >= 1): # new or changed record
-                        ckands='http://b2find.eudat.eu/dataset/'+ds_id
-                        if (handlestatus == "new"): # Create new PID
-                            logging.info("        |-> Create a new handle %s with checksum %s" % (pid,checksum))
-                            try:
-                                npid = client.register_handle(pid, ckands, checksum, None, True ) ## , additional_URLs=None, overwrite=False, **extratypes)
-                            except (HandleAuthenticationError,HandleSyntaxError) as err :
-                                logging.critical("[CRITICAL : %s] in client.register_handle" % err )
-                            except Exception as err:
-                                logging.critical("[CRITICAL : %s] in client.register_handle" % err )
-                                sys.exit()
-                            else:
-                                logging.debug(" New handle %s with checksum %s created" % (pid,checksum))
-                        else: # PID changed => update URL and checksum
-                            logging.info("        |-> Update handle %s with changed checksum %s" % (pid,checksum))
-                            try:
-                                client.modify_handle_value(pid,URL=ckands) ##HEW-T !!! as long as URLs not all updated !!
-                                client.modify_handle_value(pid,CHECKSUM=checksum)
-                            except (HandleAuthenticationError,HandleNotFoundException,HandleSyntaxError) as err :
-                                logging.critical("[CRITICAL : %s] client.modify_handle_value %s" % (err,pid))
-                            except Exception as err:
-                                logging.critical("[CRITICAL : %s]  client.modify_handle_value %s" % (err,pid))
-                                sys.exit()
-                            else:
-                                logging.debug(" Modified JMDVERSION, COMMUNITY or B2FINDHOST of handle %s " % pid)
-
-                    try: # update PID entries in all cases (except handle status is 'unchanged'
-                        client.modify_handle_value(pid, JMDVERSION=ManagerVersion)
-                        client.modify_handle_value(pid, COMMUNITY=community)
-                        client.modify_handle_value(pid, SUBSET=subset)
-                        client.modify_handle_value(pid, B2FINDHOST=options.iphost)
-                        client.modify_handle_value(pid, IS_METADATA=True)
-                        client.modify_handle_value(pid, MD_SCHEMA=mdschemas[mdprefix])
-                        client.modify_handle_value(pid, MD_STATUS='B2FIND_uploaded')
-                    except (HandleAuthenticationError,HandleNotFoundException,HandleSyntaxError) as err :
-                        logging.critical("[CRITICAL : %s] in client.modify_handle_value of pid %s" % (err,pid))
-                    except Exception as err:
-                        logging.critical("[CRITICAL : %s] in client.modify_handle_value of %s" % (err,pid))
-                        sys.exit()
-                    else:
-                        logging.debug(" Modified JMDVERSION, COMMUNITY or B2FINDHOST of handle %s " % pid)
-
-            results['count'] +=  upload
-            
-        uploadtime=time.time()-uploadstart
-        results['time'] = uploadtime
-        logging.info(
-                '   \n\t|- %-10s |@ %-10s |\n\t| Provided | Uploaded | Failed |\n\t| %8d | %6d | %6d |' 
-                % ( 'Finished',time.strftime("%H:%M:%S"),
-                    results['tcount'],
-                    fcount,
-                    results['ecount']
-                ))
+        ctime=time.time()-cstart
+        results['time'] = ctime
         
         # save stats:
-        ##HEW-DDD UP.OUT.save_stats(community+'-'+mdprefix,subset,'u',results)
+        if len(request) > 4:
+            UP.OUT.save_stats(request[0]+'-'+request[3],request[4],'u',results)
+        else:
+            UP.OUT.save_stats(request[0]+'-'+request[3],'SET_1','u',results)
 
-def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,target_mdschema=None):
+def parse_list_file(options):
+    filename=options.list
     if(not os.path.isfile(filename)):
         logging.critical('[CRITICAL] Can not access job list file %s ' % filename)
         exit()
@@ -911,20 +670,14 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
     inside_comment = False
     reqlist = []
 
-    logging.debug(' Arguments given to parse_list_file:\n\tcommunity:\t%s\n\tmdprefix:\t%s\n\tsubset:\t%s\n\ttarget_mdschema:\t%s' % (community,mdprefix,subset,target_mdschema))
-
-
     l = 0
     for request in lines:
-        logging.debug(' Request in %s : %s' % (filename,request))
-    
         l += 1
-        
+
         # recognize multi-lines-comments (starts with '<#' and ends with '>'):
         if (request.startswith('<#')):
             inside_comment = True
             continue
-
         if ((request.startswith('>') or request.endswith('>')) and (inside_comment == True)):
             inside_comment = False
             continue
@@ -934,31 +687,40 @@ def parse_list_file(process,filename,community=None,subset=None,mdprefix=None,ta
             continue
        
         # sort out lines that don't match given community
-        if((community != None) and ( not request.startswith(community))):
+        if((options.community != None) and (not request.split()[0] == options.community)):
             continue
 
+        reqarr=request.split()
         # sort out lines that don't match given mdprefix
-        if (mdprefix != None):
-            if ( not request.split()[3] == mdprefix) :
+        if (options.mdprefix != None):
+            if ( not reqarr[3] == options.mdprefix) :
               continue
 
         # sort out lines that don't match given subset
-        if (subset != None):
-            if len(request.split()) < 5 :
-               continue
-            elif ( not request.split()[4] == subset ) and (not ( subset.endswith('*') and request.split()[4].startswith(subset.translate(None, '*')))) :
-              continue
+        if (options.mdsubset != None):
+            if len(reqarr) < 5 :
+                reqarr.append(options.mdsubset)
+            elif ( reqarr[4] == options.mdsubset.split('_')[0] ) :
+                reqarr[4] = options.mdsubset
+            elif not ( options.mdsubset.endswith('*') and reqarr[4].startswith(options.mdsubset.translate(None, '*'))) :
+                continue
+                
+        if (options.target_mdschema != None and not options.target_mdschema.startswith('#')):
+            if len(reqarr) < 6 :
+                print('reqarr %s' % reqarr)
+                reqarr.append(options.target_mdschema)
+        elif len(reqarr) > 5 and reqarr[5].startswith('#') :
+            del reqarr[5:]
 
-##        if (target_mdschema != None):
-##            request+=' '+target_mdschema  
-
-        reqlist.append(request.split())
+        logging.debug('Next request : %s' % reqarr)
+        reqlist.append(reqarr)
         
     if len(reqlist) == 0:
-        logging.critical(' No matching request found in %s' % filename)
+        logging.critical(' No matching request found in %s\n\tfor options %s' % (filename,options) )
         exit()
  
     return reqlist
+
 
 def options_parser(modes):
     
@@ -974,7 +736,9 @@ def options_parser(modes):
 ''',
         formatter = optparse.TitledHelpFormatter(),
         prog = 'mdmanager.py',
-        epilog='For any further information and documentation please look at the README.md file or send an email to widmann@dkrz.de.'
+        epilog='For any further information and documentation please look at the README.md file or send an email to widmann@dkrz.de.',
+        version = "%prog " + settings.B2FINDVersion,
+        usage = "%prog [options]" 
     )
         
     p.add_option('-v', '--verbose', action="count",
@@ -1007,7 +771,8 @@ def options_parser(modes):
     group_map.add_option('--subset', help="Subdirectory of harvested meta data records to be mapped. By default this is the same as the the term given by option '--mdsubset'.",default=None, metavar='STRING')
     group_map.add_option('--mdschema', help="Metadata format and schema of harvested meta data records to be mapped. By default this is the same as the term given by option '--mdprefix'.",default=None, metavar='STRING')
 
-    ##HEW-D : Not used in Training (yet) !!! group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
+    ##HEW-D : Not used in Training (yet) !!! 
+    group_single.add_option('--target_mdschema', help="Meta data schema of the target",default=None,metavar='STRING')
     
     group_upload = optparse.OptionGroup(p, "Upload Options",
         "These options will be required to upload an dataset to a CKAN database.")
@@ -1017,6 +782,8 @@ def options_parser(modes):
          help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credstore file", default=None,metavar='FILE')
     group_upload.add_option('--ckan_check',
          help="check existence and checksum against existing datasets in CKAN database", default='False', metavar='BOOLEAN')
+    group_upload.add_option('--clean',
+         help="Clean CKAN from datasets listed in delete file", default='False', metavar='BOOLEAN')
     group_upload.add_option('--ckan_organization', help="CKAN Organization name (by default 'rda')",default='eudat',metavar='STRING')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--handle_check', help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credential file", default=None,metavar='FILE')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--ckan_check',help="check existence and checksum against existing datasets in CKAN dattabase",default='False', metavar='BOOLEAN')
