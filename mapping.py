@@ -442,13 +442,14 @@ class Mapper(object):
         self.logger.debug('invalue %s' % (invalue,))
 
         if not any(invalue) :
-            self.logger.critical('Coordinate list has only None entries : %s' % (invalue,))
+            self.logger.warning('Coordinate list has only None entries : %s' % (invalue,))
+            return (desc,None,None,None,None)
         desc=''
         ## check coordinates
         if len(invalue) > 1 :
             for lat in [invalue[1],invalue[3]]:
                 if float(lat) < -90. or float(lat) > 90. :
-                    self.logger.critical('Latitude %s is not in range [-90,90]' % lat)
+                    self.logger.error('Latitude %s is not in range [-90,90]' % lat)
             for lon in [invalue[2],invalue[4]]:
                 if float(lon) < 0. or float(lon) > 360. :
                     self.logger.warning('Longitude %s is not in range [0,360]' % lon)
@@ -484,31 +485,6 @@ class Mapper(object):
                 else : # western max longitude
                     desc+='%-2.0fW)' % (float(invalue[4]) * -1.0)              
 
-##                  if geotab:
-##                      ec=0
-##                      for gentry in geotab :
-##                          if val == gentry[0]:
-##                              desc+=' '+val
-##                              coordarr.append(gentry[1])
-##                              coordarr.append(gentry[2])
-##                              break
-##                      else:
-##                          ec+=1
-##                          if ec<10 :
-##                              geoname=self.map_geonames(val)
-##                              time.sleep(0.1)
-##                          else:
-##                              continue
-##                          if geoname == None :
-##                              continue
-##                          importance=geoname.raw['importance']
-##                          if importance < 0.7 : # wg. Claudia :-(
-##                              continue
-##                          nc=2
-##                          coordarr.append(geoname.latitude)
-##                          coordarr.append(geoname.longitude)
-##HEW-D                  desc+=' '+val+','
-
         self.logger.info('Spatial description %s' % desc)
         return (desc,invalue[1],invalue[2],invalue[3],invalue[4])
  
@@ -527,7 +503,7 @@ class Mapper(object):
               if len(invalue) == 1:
                   valarr=invalue[0].split()
               else:
-                  valarr=self.flatten(invalue)
+                  valarr=' '.join(invalue).split()
            else:
               valarr=invalue.split() ##HEW??? [invalue]
            self.logger.info('   | Valarr:\t%s' % valarr)
@@ -544,13 +520,14 @@ class Mapper(object):
                   else :
                       retValue = (desc)
               else:
-                  self.logger.info('value %s' % val)
+                  self.logger.debug('value %s' % val)
                   if self.is_float_try(val) is True :
                       coordarr.append(val)
                       nc+=1
+           self.logger.debug('coordarr %s' % coordarr)
            if nc==2 :
               retValue = (desc,coordarr[0],coordarr[1],coordarr[0],coordarr[1])
-           elif nc==4 :
+           elif nc>=4 :
               retValue = (desc,coordarr[0],coordarr[1],coordarr[2],coordarr[3])
            elif desc :
               retValue = (desc,None,None,None,None) 
@@ -1195,12 +1172,12 @@ class Mapper(object):
 
     def xpathmdmapper(self,xmldata,xrules,namespaces):
         # returns list or string, selected from xmldata by xpath rules (and namespaces)
-        self.logger.info(' XPATH rules %s' % xrules)
+        self.logger.debug(' XPATH rules %s' % xrules)
         self.logger.info(' | %-10s | %-10s | %-20s | \n' % ('Field','XPATH','Value'))
         jsondata=dict()
 
         for line in xrules:
-          self.logger.info(' Next line of xpath rules : %-20s' % (line))
+          self.logger.debug(' Next line of xpath rules : %-20s' % (line))
           try:
             retval=list()
             m = re.match(r'(\s+)<field name="(.*?)">', line)
@@ -1208,7 +1185,7 @@ class Mapper(object):
                 field=m.group(2)
                 if field in ['Discipline','oai_set','Source']: ## set default for mandatory fields !!
                     retval=['Not stated']
-                self.logger.info(' Field:xpathrule : %-10s:%-20s\n' % (field,line))
+                self.logger.debug(' Field:xpathrule : %-10s:%-20s\n' % (field,line))
             else:
                 xpath=''
                 m2 = re.compile('(\s+)(<xpath>)(.*?)(</xpath>)').search(line)
@@ -1219,15 +1196,15 @@ class Mapper(object):
                     retval=xpath
                 elif m2:
                     xpath=m2.group(3)
-                    self.logger.info(' xpath %-10s' % xpath)
+                    self.logger.debug(' xpath %-10s' % xpath)
                     retval=self.evalxpath(xmldata, xpath, namespaces)
                 else:
-                    self.logger.info(' Found no xpath expression')
+                    self.logger.debug(' Found no xpath expression')
                     continue
 
                 if retval and len(retval) > 0 :
                     jsondata[field]=retval ### .extend(retval)
-                    self.logger.info(' | %-10s | %10s | %20s | \n' % (field,xpath,retval[:20]))
+                    self.logger.info(' | %-10s | %10s | %20s | \n' % (field,xpath,';'.join(str[:40] for str in retval)))
                 elif field in ['Discipline','oai_set']:
                     jsondata[field]=['Not stated']
           except Exception as e:
@@ -1513,10 +1490,11 @@ class Mapper(object):
                     self.logger.info('\t|<- %-10s : %-10s |' % ( 'MappedFacet','Mappedvalue'))
 
                     for key in jsondata :
-                        if key in ['fulltext']:
+                        if key in ['fulltext','notes']:
                             self.logger.debug('\t|<- %-10s : %-10s |' % (key,jsondata[key]))
                         else:
                             self.logger.info('\t|<- %-10s : %-10s |' % (key,jsondata[key]))
+
                     ## write to JSON file
                     jsonfilename=os.path.splitext(filename)[0]+'.json'
                 
