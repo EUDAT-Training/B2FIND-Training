@@ -246,7 +246,7 @@ And edit
                URIEncoding="UTF-8"
                redirectPort="8443" />
 ```    
-Finally restart Tomcat and check landing page with new port:
+Finally restart Tomcat and check landing page with the new port:
 ```
 sudo service tomcat restart
 ```
@@ -259,7 +259,7 @@ unzip joai_v3.1.1.4.zip
 sudo cp joai_v3.1.1.4/oai.war /var/lib/tomcat/webapps/
 sudo service tomcat restart
 ```
-Now go to `http://<FQDN or IP or localhost>:8080/oai` and check whether you find the OAI-PMH server landing page.
+Now go to `http://<FQDN or IP or localhost>:8181/oai` and check whether you find the OAI-PMH server landing page.
 
 
 
