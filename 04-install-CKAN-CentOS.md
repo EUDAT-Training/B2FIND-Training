@@ -136,7 +136,60 @@ The install script created a solr service account, become this user and configur
 sudo su solr
 cd /opt/solr/bin
 ./solr create -c ckan
-exit
+```
+
+```
+cd /var/solr/data/ckan/conf
+vi solrconfig.xml
+```
+
+Insert 
+
+```
+  <schemaFactory class="ClassicIndexSchemaFactory"/>
+```
+before 
+```
+  <luceneMatchVersion>6.2.1</luceneMatchVersion>
+```
+
+And delete the following blocks:
+
+```sh
+<initParams path="/update/**">
+  <lst name="defaults">
+    <str name="update.chain">add-unknown-fields-to-the-schema</str>
+  </lst>
+</initParams>
+```
+
+```sh
+<processor class="solr.AddSchemaFieldsUpdateProcessorFactory">
+  <str name="defaultFieldType">strings</str>
+  <lst name="typeMapping">
+    <str name="valueClass">java.lang.Boolean</str>
+    <str name="fieldType">booleans</str>
+  </lst>
+  <lst name="typeMapping">
+    <str name="valueClass">java.util.Date</str>
+    <str name="fieldType">tdates</str>
+  </lst>
+  <lst name="typeMapping">
+    <str name="valueClass">java.lang.Long</str>
+    <str name="valueClass">java.lang.Integer</str>
+    <str name="fieldType">tlongs</str>
+  </lst>
+  <lst name="typeMapping">
+    <str name="valueClass">java.lang.Number</str>
+    <str name="fieldType">tdoubles</str>
+  </lst>
+</processor>
+```
+
+Finally remove
+
+```sh
+rm managed-schema
 ```
 
 Create symlink for the CKAN Schema and restart solr:
