@@ -19,5 +19,7 @@ def init():
     B2FINDVersion = '2.4.0'
     global TimeStart
     TimeStart = time.time()
+    global ckanorg
+    ckanorg = 'rda'
     
 

@@ -260,7 +260,7 @@ class Uploader(object):
         print ('Upload of record failed'
     """
     
-    def __init__(self, CKAN, ckan_check, HandleClient,cred, OUT, base_outdir, fromdate, iphost):
+    def __init__(self, CKAN, ckan_check, HandleClient,cred, OUT, base_outdir, fromdate, iphost, ckanorg):
         ##HEW-D logging = logging.getLogger()
         self.CKAN = CKAN
         self.ckan_check = ckan_check
@@ -271,6 +271,7 @@ class Uploader(object):
         self.base_outdir = base_outdir
         self.fromdate = fromdate
         self.iphost = iphost
+        self.ckanorg = ckanorg
         self.package_list = dict()
 
         # Read in B2FIND metadata schema and fields
@@ -588,14 +589,11 @@ class Uploader(object):
                 ds_id = os.path.splitext(filename)[0]
                 self.logger.warning('    | u | %-4d | %-40s |' % (fcount,ds_id))
  
-               # add some general CKAN specific fields to dictionary:
+                # add some general CKAN specific fields to dictionary:
                 jsondata["name"] = ds_id
                 jsondata["state"]='active'
                 jsondata["groups"]=[{ "name" : community }]
-                if self.iphost.startswith('eudat-b1') :
-                    jsondata["owner_org"]="eudat"
-                else:
-                    jsondata["owner_org"]="eudat-b2find"
+                jsondata["owner_org"]=self.ckanorg
 
                 # get OAI identifier from json data extra field 'oai_identifier':
                 if 'oai_identifier' not in jsondata :
@@ -840,8 +838,8 @@ class Uploader(object):
         jsondata["name"] = ds
         jsondata["state"]='active'
         jsondata["groups"]=[{ "name" : community }]
-        jsondata["owner_org"]="eudat"
-   
+        jsondata["owner_org"]=self.ckanorg
+
         # if the dataset checked as 'new' so it is not in ckan package_list then create it with package_create:
         if (dsstatus == 'new' or dsstatus == 'unknown') :
             self.logger.debug('\t - Try to create dataset %s' % ds)

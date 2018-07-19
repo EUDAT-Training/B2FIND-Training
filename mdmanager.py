@@ -465,7 +465,7 @@ def process(options,pstat,OUT):
                 cred=None
                 HandleClient=None
 
-            UP = Uploader(CKAN,options.ckan_check,HandleClient,cred,OUT,options.outdir,options.fromdate,options.iphost)
+            UP = Uploader(CKAN,options.ckan_check,HandleClient,cred,OUT,options.outdir,options.fromdate,options.iphost,options.ckan_organization)
             logger.info(' |- Host:  \t%s' % CKAN.ip_host )
             process_upload(UP, reqlist)
 
@@ -773,7 +773,7 @@ def options_parser(modes):
          help="check existence and checksum against existing datasets in CKAN database", default='False', metavar='BOOLEAN')
     group_upload.add_option('--clean',
          help="Clean CKAN from datasets listed in delete file", default='False', metavar='BOOLEAN')
-    group_upload.add_option('--ckan_organization', help="CKAN Organization name (by default 'rda')",default='eudat',metavar='STRING')
+    group_upload.add_option('--ckan_organization', help="CKAN Organization name (by default 'rda')",default=settings.ckanorg,metavar='STRING')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--handle_check', help="check and generate handles of CKAN datasets in handle server and with credentials as specified in given credential file", default=None,metavar='FILE')
     ##HEW-D:(Not used yet in the Training) group_upload.add_option('--ckan_check',help="check existence and checksum against existing datasets in CKAN dattabase",default='False', metavar='BOOLEAN')
 
