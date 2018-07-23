@@ -12,7 +12,7 @@ This training module provides detailed instructions for the usage of the [ EUDAT
 
 Additionally, we provide hands-on material for the whole metadata management workflow, from metadata generation and formating,  providing and harvesting (using OAI-PMH ), to mapping and validation, and finally uploading to a metadata catalogue and portal (based on CKAN). This workflow is shown, together with the training modules, in the figure below.
 
-<img align="centre" src="img/MD_workflow.png" width="800px">
+<img align="centre" src="img/B2FIND_MD_workflow.png" width="800px">
 
 The training material consists of step-by-step installation instructions which indicate how the training services and tools are set up. By this users get deeper insight into how components of the service are linked to each other. Note, that we not only provide the view of a service adapter (community) or researcher using the platform to search through the metadata catalogue, but also the view of the service provider EUDAT. At the end of the tutorial you will have stepped into each of the roles. 
 
