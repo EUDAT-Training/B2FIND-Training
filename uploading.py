@@ -109,59 +109,8 @@ class CKAN_CLIENT(object):
         response=''
         rvalue = 0
         api_url = "http://{host}/api/rest".format(host=self.ip_host)
-        action_url = "{apiurl}/dataset".format(apiurl=api_url)	# default for 'package_create'
 
-        # "package_delete_all", "package_activate_all" and "member_create" are special actions
-        # which are not supported by APIv3 of CKAN
-        # special cases:
-        if (action == "package_activate_all"):
-            if data_dict['group']:
-	            data = self.action('member_list',{"id" : data_dict['group'], "object_type":"package"})
-            else:
-	            data = self.action('package_list',{})
-
-            print ('Total number of datasets: ' + str(len(data['result'])))
-            for dataset in data['result']:
-	            logging.info('\tTry to activate object: ' + str(dataset))
-	            self.action('package_update',{"name" : dataset[0], "state":"active"})
-
-            return True
-        elif (action == "package_delete_all"):
-            if (data_dict['group']):
-                data = self.action('member_list',{"id" : data_dict['group'], "object_type":"package"})
-            elif (data_dict['list']):
-                data['result'] = data_dict['list']
-            else:
-                data = self.action('package_list',{})
-            pcount = 0
-            print ('Total number of datasets: ' + str(len(data['result'])))
-
-            for dataset in data['result']:
-                pcount += 1
-                print('\tTry to delete object (' + str(pcount) + ' of ' + str(len(data['result'])) + '): ' + str(dataset))
-                print ('\t', (self.action('package_update',{"name" : dataset[0], "state":"delete"}))['success'])
-
-            return True
-        elif (action == "member_create" or action == "organization_member_create"):
-            api_url = "http://{host}/api/action".format(host=self.ip_host)
-            action_url = "{apiurl}/{action}".format(apiurl=api_url,action=action)
-
-            ds_id = data_dict['id']
-
-            if (data_dict['id'] == None):
-                            ds_id = (self.action('package_show',{"id" : data_dict['name']}))['id']
-
-            member_dict = {
-	            "id": data_dict['group'],
-	            "object": ds_id,
-	            "object_type": "package", 
-	            "capacity" : "public"
-            }
-
-            data_dict	= member_dict
-        # normal case:
-        else:
-            action_url = 'http://{host}/api/3/action/{action}'.format(host=self.ip_host,action=action)
+        action_url = 'http://{host}/api/3/action/{action}'.format(host=self.ip_host,action=action)
 
         self.logger.debug(' CKAN request:\n |- Action\t%s\n |- RequestURL\t%s\n |- Data_dict\t%s' % (action,action_url,data_dict))	
 
@@ -170,11 +119,11 @@ class CKAN_CLIENT(object):
         ##encoding='ISO-8859-15'
         try:
             if PY2 :
-                data_string = quote(json.dumps(data_dict))##.encode("utf-8") ## HEW-D 160810 , encoding="latin-1" ))##HEW-D .decode(encoding)
+                data_string = quote(json.dumps(data_dict))
             else :
-                data_string = parse.quote(json.dumps(data_dict)).encode(encoding) ## HEW-D 160810 , encoding="latin-1" ))##HEW-D .decode(encoding)
+                data_string = parse.quote(json.dumps(data_dict)).encode(encoding)
         except Exception as err :
-            logging.critical('%s while building url data' % err)
+            self.logger.critical('%s while building url data' % err)
 
         try:
             request = Request(action_url,data_string)
@@ -211,7 +160,6 @@ class CKAN_CLIENT(object):
             self.logger.debug('out %s' % out)
             assert response.code >= 200
             return out
-
 
 class Uploader(object):
     """
