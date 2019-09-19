@@ -7,7 +7,8 @@ python-Levenshtein
 git+https://github.com/noumar/iso639.git
 dublincore
 ckanapi
-b2handle
+#b2handle
+git+https://github.com/EUDAT-B2STAGE/B2HANDLE.git@master
 babel
 pyenchant
 pyparsing
