@@ -17,14 +17,14 @@ seisnet  http://doidb.wdc-terra.org/oaip/oai  ListRecords   oai_datacite  DOIDB.
 ##%%% EARLINET : MD Provider eudat-oai.dkrz.de (directly extracted from CERA)
 earlinet    http://eudat-oai.dkrz.de:8080/oai/provider ListIdentifiers  iso 
 ##%%% EUDAT B2SHARE
-b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml Linguistics
-b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml EUON
-b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml Eudat
-b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml DRIHM
-b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml BBMRI
-b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml NRM
-b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml GBIF
-b2share  http://b2share.eudat.eu/oai2d ListRecords marcxml RDA
+b2share  http://b2share.eudat.eu/api/oai2d ListRecords marcxml Linguistics
+b2share  http://b2share.eudat.eu/api/oai2d ListRecords marcxml EUON
+b2share  http://b2share.eudat.eu/api/oai2d ListRecords marcxml Eudat
+b2share  http://b2share.eudat.eu/api/oai2d ListRecords marcxml DRIHM
+b2share  http://b2share.eudat.eu/api/oai2d ListRecords marcxml BBMRI
+b2share  http://b2share.eudat.eu/api/oai2d ListRecords marcxml NRM
+b2share  http://b2share.eudat.eu/api/oai2d ListRecords marcxml GBIF
+b2share  http://b2share.eudat.eu/api/oai2d ListRecords marcxml RDA
 ##%%% DataCite : MD Provider is DataCite.org 
 datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-1 ## Griffith University; 38;
 datacite  http://oai.datacite.org/oai  ListIdentifiers  oai_dc ANDS.CENTRE-2 ## CSSE Uni Melbourne; 4;
