@@ -20,6 +20,6 @@ def init():
     global TimeStart
     TimeStart = time.time()
     global ckanorg
-    ckanorg = 'rda'
+    ckanorg = 'eudat-b2find'
     
 
