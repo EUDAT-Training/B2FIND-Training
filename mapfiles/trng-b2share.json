@@ -1,0 +1,5 @@
+{ "name" : "trng-b2share",
+     "title" : "B2SHARE-Training",
+     "description" : "Training instance of B2SHARE - a user-friendly, secure, robust, reliable and trusted service to share and store your research data adding value to your research data by assigning Persistent Identifiers to ensure long-lasting access and reference.",
+     "image_url" : "https://gitlab.eudat.eu/eudat-prace-2019/instructions_for_datadiscovery_handson/raw/master/B2SHARE-training-logo.png"
+}
