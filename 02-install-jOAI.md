@@ -199,3 +199,68 @@ This page can also be accessed through the menus, following **Data Provider**, a
 After this installation, anyone can access all ionformation on the server. To restrict access to sensitive data, such as harvesting information, follow the instructions on [this page](https://uc.dls.ucar.edu/joai/docs/configuring_joai.jsp#accessControl).
 This is optional and not required for this tutorial. However we strongly recommend to restrict access on a production system .
 
+## Centos Install
+Here we briefly desctribe how to set up an OAI server on a centos machine.
+
+### 1. Set hostname and firewall
+```sh
+sudo hostnamectl set-hostname b2find
+sudo iptables -A INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
+sudo iptables -A INPUT -p tcp -m tcp --dport 8181 -j ACCEPT
+```
+Make sure there is no `-A INPUT -j DROP` before the upper two lines. You can delete and add the 'DROP' like this:
+```sh
+sudo iptables -L --line-numbers
+sudo iptables -D INPUT <Line number with DROP>
+sudo iptables -A INPUT -j DROP
+```
+Finally save the firewall configuration:
+```sh
+sudo service iptables save
+```
+
+### 2. Install Java dependencies and Tomcat
+```sh
+sudo yum install jre
+sudo yum install tomcat
+sudo yum install tomcat-webapps tomcat-admin-webapps
+```
+Start Tomcat:
+```sh
+sudo systemctl -l restart tomcat
+```
+To check whether Tomcat runs open a webbrowser and go to `http://<FQDN or IP or localhost>:8080`. You should see the Tomcat welcome page.
+
+### 3. Redirect Tomcat to port 8181
+To avoid clashes with the CKAN server which we will install later redirect Tomcat to port 8181.
+```
+sudo cp /etc/tomcat/server.xml /etc/tomcat/server.xml_orig
+sudo vi /etc/tomcat/server.xml
+```
+And edit 
+
+```sh
+   <!-- Changed port 8080 to 8181 -->
+    <Connector port="8181" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               URIEncoding="UTF-8"
+               redirectPort="8443" />
+```    
+Finally restart Tomcat and check landing page with the new port:
+```
+sudo service tomcat restart
+```
+
+### Install JOAI
+```
+sudo yum install unzip
+wget https://sourceforge.net/projects/dlsciences/files/jOAI%20-%20OAI%20Provider_Harvester/v3.1.1.4/joai_v3.1.1.4.zip
+unzip joai_v3.1.1.4.zip
+sudo cp joai_v3.1.1.4/oai.war /var/lib/tomcat/webapps/
+sudo service tomcat restart
+```
+Now go to `http://<FQDN or IP or localhost>:8181/oai` and check whether you find the OAI-PMH server landing page.
+
+
+
+
